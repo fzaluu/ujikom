@@ -76,7 +76,7 @@
             <table class="table table-hover-custom align-middle mb-0">
                 <thead class="table-light text-uppercase fs-7 text-muted">
                     <tr>
-                        <th width="5%" class="py-3 ps-3 rounded-start-3">#</th>
+                        <th width="5%" class="py-3 ps-3 rounded-start-3">No</th>
                         <th class="py-3">Nama</th>
                         <th class="py-3">Email</th>
                         <th width="15%" class="py-3">Role</th>
@@ -122,21 +122,38 @@
                         <td class="pe-3">
                             <div class="d-flex justify-content-center gap-1">
                                 <a href="{{ route('admin.users.edit', $user) }}"
-                                   class="btn btn-warning btn-sm text-white shadow-sm rounded-2" title="Edit User">
-                                    <i class="bi bi-pencil-square"></i>
+                                class="btn btn-light btn-sm border text-secondary shadow-none" 
+                                style="transition: all 0.2s;"
+                                onmouseover="this.style.backgroundColor='#e2e8f0'; this.style.color='#1e293b';" 
+                                onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.color='#6c757d';"
+                                title="Edit User">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
 
-                                <form action="{{ route('admin.users.destroy', $user) }}"
-                                      method="POST"
-                                      class="d-inline"
-                                      onsubmit="return confirm('Yakin ingin menghapus user ini?')">
-                                    @csrf
-                                    @method('DELETE')
+                                {{-- Sembunyikan atau nonaktifkan tombol hapus jika itu akun sendiri --}}
+                                @if($user->id !== auth()->id())
+                                    <form action="{{ route('admin.users.destroy', $user) }}"
+                                        method="POST"
+                                        class="d-inline"
+                                        id="delete-form-{{ $user->id }}">
+                                        @csrf
+                                        @method('DELETE')
 
-                                    <button class="btn btn-danger btn-sm shadow-sm rounded-2" title="Hapus User">
-                                        <i class="bi bi-trash"></i>
+                                        <button type="button" 
+                                                class="btn btn-light btn-sm border text-danger shadow-none" 
+                                                style="transition: all 0.2s;"
+                                                onmouseover="this.style.backgroundColor='#fee2e2';" 
+                                                onmouseout="this.style.backgroundColor='#f8f9fa';"
+                                                title="Hapus User"
+                                                onclick="openDeleteModal('{{ $user->id }}', 'Apakah Anda yakin ingin menghapus user ini?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                @else
+                                    <button class="btn btn-light btn-sm border text-muted shadow-none" disabled title="Akun sedang digunakan">
+                                        <i class="bi bi-slash-circle"></i>
                                     </button>
-                                </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -152,6 +169,7 @@
             </table>
         </div>
 
+        
         {{-- Footer Pagination --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center border-top pt-4 mt-3">
             <small class="text-muted mb-2 mb-md-0">
@@ -161,7 +179,67 @@
                 {{ $users->links() }}
             </div>
         </div>
-
+        
     </div>
 </div>
+{{-- Modal Konfirmasi Hapus di Tengah --}}
+<div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg animate-page">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi Hapus
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-trash text-danger display-4 mb-3"></i>
+                <p id="deleteModalMessage" class="text-dark fs-6 mb-0">Apakah Anda yakin ingin menghapus data ini?</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4 gap-2">
+                <button type="button" class="btn btn-light px-4 rounded-3 shadow-none border" data-bs-dismiss="modal">Batal</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger px-4 rounded-3 shadow-sm">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeDeleteFormId = null;
+
+    function openDeleteModal(id, message) {
+        activeDeleteFormId = 'delete-form-' + id;
+        document.getElementById('deleteModalMessage').innerText = message;
+        
+        // Reset tombol hapus ke kondisi semula jika sebelumnya sempat loading
+        let btn = document.getElementById('confirmDeleteBtn');
+        btn.disabled = false;
+        btn.innerHTML = 'Ya, Hapus';
+
+        // Reset tombol batal agar bisa diklik lagi
+        let cancelBtn = document.getElementById('cancelDeleteBtn');
+        if (cancelBtn) cancelBtn.disabled = false;
+
+        // Memunculkan modal menggunakan Bootstrap 5 Modal API
+        var myModal = new bootstrap.Modal(document.getElementById('customDeleteModal'));
+        myModal.show();
+    }
+
+    // Ketika tombol "Ya, Hapus" di dalam modal diklik
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (activeDeleteFormId) {
+            // Ubah tombol menjadi status loading dengan spinner
+            let btn = this;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menghapus...`;
+            
+            // Nonaktifkan tombol batal agar user tidak menutup modal saat proses berjalan
+            let cancelBtn = document.getElementById('cancelDeleteBtn');
+            if (cancelBtn) cancelBtn.disabled = true;
+
+            // Kirim form
+            document.getElementById(activeDeleteFormId).submit();
+        }
+    });
+</script>
 @endsection

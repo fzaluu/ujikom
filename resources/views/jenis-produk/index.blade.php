@@ -45,9 +45,9 @@
             <table class="table table-hover-custom align-middle mb-0">
                 <thead class="table-light text-uppercase fs-7 text-muted">
                     <tr>
-                        <th width="5%" class="py-3 ps-3 rounded-start-3">#</th>
+                        <th width="5%" class="py-3 ps-3 rounded-start-3">No</th>
                         <th class="py-3">Nama Jenis</th>
-                        <th width="15%" class="py-3">Jumlah Produk</th>
+                        <th width="15%" class="py-3">Jumlah</th>
                         <th width="18%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
                     </tr>
                 </thead>
@@ -76,20 +76,32 @@
                         <td class="pe-3">
                             <div class="d-flex justify-content-center gap-1">
                                 @if($isAdmin)
-                                    <a href="{{ route('jenis-produk.edit', $jenis) }}" class="btn btn-warning btn-sm text-white shadow-sm rounded-2" title="Edit Jenis">
-                                        <i class="bi bi-pencil-square"></i>
+                                    <a href="{{ route('jenis-produk.edit', $jenis) }}" 
+                                    class="btn btn-light btn-sm border text-secondary shadow-none" 
+                                    style="transition: all 0.2s;"
+                                    onmouseover="this.style.backgroundColor='#e2e8f0'; this.style.color='#1e293b';" 
+                                    onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.color='#6c757d';"
+                                    title="Edit Jenis">
+                                        <i class="bi bi-pencil"></i>
                                     </a>
 
                                     <form action="{{ route('jenis-produk.destroy', $jenis) }}"
-                                          method="POST"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Yakin ingin menghapus jenis ini? Produk yang memakai jenis ini tidak akan ikut terhapus, hanya jadi tanpa jenis.')">
+                                        method="POST"
+                                        class="d-inline"
+                                        id="delete-form-jenis-{{ $jenis->id }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="btn btn-danger btn-sm shadow-sm rounded-2" title="Hapus Jenis">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+
+                                            <button type="button" 
+                                                    class="btn btn-light btn-sm border text-danger shadow-none" 
+                                                    style="transition: all 0.2s;"
+                                                    onmouseover="this.style.backgroundColor='#fee2e2';" 
+                                                    onmouseout="this.style.backgroundColor='#f8f9fa';"
+                                                    title="Hapus Jenis"
+                                                    onclick="openDeleteModal('jenis-{{ $jenis->id }}', 'Yakin ingin menghapus jenis ini? Produk yang memakai jenis ini akan menjadi tanpa jenis.')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                 @else
                                     <span class="text-muted small">-</span>
                                 @endif
@@ -125,4 +137,57 @@
 
     </div>
 </div>
+{{-- Modal Konfirmasi Hapus di Tengah --}}
+<div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg animate-page">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi Hapus
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-trash text-danger display-4 mb-3"></i>
+                <p id="deleteModalMessage" class="text-dark fs-6 mb-0">Apakah Anda yakin ingin menghapus data ini?</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4 gap-2">
+                <button type="button" class="btn btn-light px-4 rounded-3 shadow-none border" data-bs-dismiss="modal" id="cancelDeleteBtn">Batal</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger px-4 rounded-3 shadow-sm">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeDeleteFormId = null;
+
+    function openDeleteModal(identifier, message) {
+        activeDeleteFormId = 'delete-form-' + identifier;
+        document.getElementById('deleteModalMessage').innerText = message;
+        
+        // Reset tombol hapus ke kondisi semula jika sebelumnya sempat loading
+        let btn = document.getElementById('confirmDeleteBtn');
+        btn.disabled = false;
+        btn.innerHTML = 'Ya, Hapus';
+
+        var myModal = new bootstrap.Modal(document.getElementById('customDeleteModal'));
+        myModal.show();
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (activeDeleteFormId) {
+            // Ubah tombol menjadi status loading
+            let btn = this;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menghapus...`;
+            
+            // Nonaktifkan tombol batal agar user tidak menutup modal saat proses berjalan
+            document.getElementById('cancelDeleteBtn').disabled = true;
+
+            // Kirim form
+            document.getElementById(activeDeleteFormId).submit();
+        }
+    });
+</script>
 @endsection

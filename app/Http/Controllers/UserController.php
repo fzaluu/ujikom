@@ -14,15 +14,21 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+   public function index(Request $request)
     {
-        // Mengambil data user dengan filter pencarian berdasarkan nama atau email
+        // Mengambil data user dengan filter pencarian dan pengurutan role (Admin di paling atas)
         $users = User::with('role')
             ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
+                });
             })
-            ->latest()
+            // Mengurutkan admin di atas (ASC) lalu kasir di bawahnya
+            ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
+            ->select('users.*')
+            ->orderByRaw("FIELD(roles.name, 'admin', 'kasir') ASC")
+            ->latest('users.created_at')
             ->paginate(10)
             ->withQueryString();
 
@@ -74,11 +80,19 @@ class UserController extends Controller
 
         return redirect()->route('admin.users')->with('success', 'User berhasil diupdate');
     }
-    public function destroy(User $user)
+        public function destroy(User $user)
     {
+        // Cek apakah user yang mau dihapus adalah user yang sedang aktif login
+        if ($user->id === auth()->id()) {
+            return back()->with('errors', 'Peringatan: Anda sedang menggunakan akun ini dan tidak dapat menghapusnya!');
+        }
 
-
-        $user->delete();
-        return redirect()->route('admin.users')->with('success', 'User berhasil dihapus');
+        try {
+            $user->delete();
+            return redirect()->route('admin.users')->with('success', 'User berhasil dihapus');
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Tangkap error jika user terikat dengan data penjualan (foreign key constraint)
+            return back()->with('errors', 'User tidak dapat dihapus karena memiliki riwayat transaksi.');
+        }
     }
 }

@@ -25,16 +25,21 @@ class PenjualanController extends Controller
                     $q->where('name', 'like', '%' . $keyword . '%');
                 });
             })
+            // Mengatur agar status 'OPEN' berada di paling atas, lalu diurutkan dari yang terbaru
+            ->orderByRaw("CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END")
             ->latest()
             ->paginate(10)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return view('penjualan.partials.table', compact('sales'))->render();
+        }
 
         return view('penjualan.index', compact('sales'));
     }
 
     public function create(SearchRequest $request)
     {
-        // Cari transaksi OPEN terakhir milik user yang login, hindari duplikasi data
         $sale = Penjualan::where('user_id', Auth::id())
             ->where('status', 'OPEN')
             ->latest()
@@ -56,15 +61,24 @@ class PenjualanController extends Controller
         $products = Produk::when($keyword, function ($query) use ($keyword) {
             $query->where('nama', 'like', '%' . $keyword . '%');
         })
+        ->orderByRaw('CASE WHEN stok <= 0 THEN 1 ELSE 0 END')
+        ->orderBy('stok', 'desc')
         ->orderBy('nama')
         ->get();
 
+        $totalProdukCount = Produk::count();
         $mode = 'create';
 
-        return view('penjualan.pos', compact('sale', 'products', 'mode'));
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('penjualan.partials.product-grid', compact('products', 'sale'))->render()
+            ]);
+        }
+
+        return view('penjualan.pos', compact('sale', 'products', 'mode', 'totalProdukCount'));
     }
 
-    public function edit(Penjualan $penjualan)
+    public function edit(Penjualan $penjualan, Request $request)
     {
         $sale = $penjualan;
 
@@ -72,16 +86,32 @@ class PenjualanController extends Controller
         $this->authorize('update', $sale);
 
         $sale->load('itemPenjualan.produk');
-        $products = Produk::orderBy('nama')->get();
+        
+        $keyword = $request->input('search');
+        $products = Produk::when($keyword, function ($query) use ($keyword) {
+            $query->where('nama', 'like', '%' . $keyword . '%');
+        })
+        ->orderByRaw('CASE WHEN stok <= 0 THEN 1 ELSE 0 END')
+        ->orderBy('stok', 'desc')
+        ->orderBy('nama')
+        ->get();
+
+        $totalProdukCount = Produk::count();
         $mode = 'edit';
 
-        return view('penjualan.pos', compact('sale', 'products', 'mode'));
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('penjualan.partials.product-grid', compact('products', 'sale'))->render()
+            ]);
+        }
+
+        return view('penjualan.pos', compact('sale', 'products', 'mode', 'totalProdukCount'));
     }
 
     public function update(Request $request, Penjualan $penjualan)
     {
         $request->validate([
-            'payment_method' => 'required|in:CASH,QRIS'
+            'payment_method' => 'required|in:CASH,QRIS,BAYAR_NANTI'
         ]);
 
         if ($penjualan->status == 'COMPLETED') {
@@ -94,40 +124,45 @@ class PenjualanController extends Controller
             return back()->with('error', 'Keranjang masih kosong');
         }
 
-        DB::transaction(function () use ($penjualan, $request) {
+        // Tentukan status berdasarkan metode pembayaran
+        // Jika BAYAR_NANTI -> Tetap OPEN agar bisa diedit/dilanjutkan pembayaran nanti
+        // Jika CASH / QRIS -> COMPLETED
+        $newStatus = ($request->payment_method === 'BAYAR_NANTI') ? 'OPEN' : 'COMPLETED';
+
+        DB::transaction(function () use ($penjualan, $request, $newStatus) {
             $total = $penjualan->itemPenjualan()->sum('subtotal');
 
             $penjualan->update([
                 'metode_pembayaran' => $request->payment_method,
                 'total_pembayaran' => $total,
-                'status' => 'COMPLETED'
+                'status' => $newStatus
             ]);
         });
 
+        $message = ($newStatus === 'OPEN') 
+            ? 'Transaksi berhasil disimpan (Bayar Nanti)' 
+            : 'Transaksi berhasil diselesaikan';
+
         return redirect()
             ->route('penjualan.index')
-            ->with('success', 'Transaksi berhasil diselesaikan');
+            ->with('success', $message);
     }
 
-   public function destroy(Penjualan $penjualan)
+    public function destroy(Penjualan $penjualan)
     {
         $user = Auth::user();
-
-        // Cek apakah admin (mendukung huruf besar/kecil)
         $isAdmin = strtolower(optional($user->role)->name) === 'admin';
-        
-        // Cek apakah pemilik transaksi
         $isOwner = $user->id === $penjualan->user_id;
 
-        // UBAH DI SINI: Jika ingin kasir juga bebas menghapus transaksi OPEN milik siapa saja, hapus syarat $isOwner
-        // Atau jika hanya pemilik & admin, pastikan Anda login pakai akun admin (ID 1) atau akun owner (ID 4)
         if (!($isAdmin || $isOwner) || $penjualan->status !== 'OPEN') {
-            return redirect()->route('penjualan.index')->with('error', 'Aksi tidak diizinkan atau transaksi bukan milik anda.');
+            return redirect()->route('penjualan.index')->with('error', 'Aksi tidak diizinkan.');
         }
 
         DB::transaction(function () use ($penjualan) {
             foreach ($penjualan->itemPenjualan as $item) {
-                $item->produk->increment('stok', $item->kuantitas);
+                if ($item->produk) {
+                    $item->produk->increment('stok', $item->kuantitas);
+                }
             }
 
             $penjualan->itemPenjualan()->delete();
@@ -138,6 +173,7 @@ class PenjualanController extends Controller
             ->route('penjualan.index')
             ->with('success', 'Transaksi berhasil dibatalkan');
     }
+
     public function show(Penjualan $penjualan)
     {
         $sale = $penjualan->load('itemPenjualan.produk', 'user');

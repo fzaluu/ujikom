@@ -9,6 +9,10 @@ use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\ItemPenjualanController;
 use App\Http\Controllers\JenisProdukController;
 
+use App\Http\Controllers\perulanganController;
+use App\Http\Controllers\percabanganController;
+use App\Http\Controllers\variabelController;
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'auth'])->name('auth.login');
@@ -49,4 +53,9 @@ Route::middleware('auth')->group(function () {
     // Penjualan & item penjualan: transaksi POS, dapat diakses semua role login
     Route::resource('/penjualan', PenjualanController::class);
     Route::resource('/itempenjualan', ItemPenjualanController::class);
-});
+
+    Route::get('/tes/perulangan', [perulanganController::class, 'index'])->name('tes.perulangan');
+    Route::get('/tes/percabangan', [percabanganController::class, 'index'])->name('tes.percabangan');
+    Route::get('/tes/variable', [variabelController::class, 'index'])->name('tes.variable');
+
+    });

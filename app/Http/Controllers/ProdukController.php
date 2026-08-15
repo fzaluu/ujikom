@@ -22,6 +22,10 @@ class ProdukController extends Controller
             ->when($request->filled('jenis_id'), function ($query) use ($request) {
                 $query->where('jenis_id', $request->jenis_id);
             })
+            // Tambahkan logika pencarian berdasarkan nama produk di sini
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $query->where('nama', 'like', "%{$request->search}%");
+            })
             ->latest()
             ->paginate(10)
             ->withQueryString();

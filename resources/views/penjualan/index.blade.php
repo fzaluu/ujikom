@@ -63,7 +63,7 @@
             <table class="table table-hover-custom align-middle mb-0">
                 <thead class="table-light text-uppercase fs-7 text-muted">
                     <tr>
-                        <th scope="col" width="5%" class="py-3 ps-3 rounded-start-3">#</th>
+                        <th scope="col" width="5%" class="py-3 ps-3 rounded-start-3">No</th>
                         <th scope="col" class="py-3">Tanggal Transaksi</th>
                         <th scope="col" class="py-3">Kasir</th>
                         <th scope="col" class="py-3">Total Pembayaran</th>
@@ -102,28 +102,51 @@
                             @endif
                         </td>
                         <td class="pe-3">
-                            <div class="d-flex justify-content-center gap-1">
-                                <a href="{{ route('penjualan.show', $sale) }}" class="btn btn-info btn-sm text-white shadow-sm rounded-2" title="Detail Transaksi">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                
-                                @can('update', $sale)
-                                    @if($sale->status === 'OPEN')
-                                        <a href="{{ route('penjualan.edit', $sale) }}" class="btn btn-warning btn-sm text-white shadow-sm rounded-2" title="Lanjut / Edit Kasir">
-                                            <i class="bi bi-cart-plus"></i>
-                                        </a>
-                                        
-                                        <form action="{{ route('penjualan.destroy', $sale) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah anda yakin akan menghapus penjualan ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-danger btn-sm shadow-sm rounded-2" title="Hapus Transaksi">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                @endcan
-                            </div>
-                        </td>
+    <div class="d-flex justify-content-center gap-1">
+        {{-- Tombol Detail Transaksi (Clean Style dengan Aksen Biru Soft) --}}
+        <a href="{{ route('penjualan.show', $sale) }}" 
+           class="btn btn-light btn-sm border text-info shadow-none" 
+           style="transition: all 0.2s;"
+           onmouseover="this.style.backgroundColor='#e0f2fe';" 
+           onmouseout="this.style.backgroundColor='#f8f9fa';"
+           title="Detail Transaksi">
+            <i class="bi bi-eye"></i>
+        </a>
+        
+        @can('update', $sale)
+            @if($sale->status === 'OPEN')
+                {{-- Tombol Lanjut / Edit Kasir (Clean Style dengan Aksen Kuning/Oranye Soft) --}}
+                <a href="{{ route('penjualan.edit', $sale) }}" 
+                   class="btn btn-light btn-sm border text-warning shadow-none" 
+                   style="transition: all 0.2s;"
+                   onmouseover="this.style.backgroundColor='#fef3c7'; this.style.color='#d97706';" 
+                   onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.color='#f59e0b';"
+                   title="Lanjut / Edit Kasir">
+                    <i class="bi bi-cart-plus"></i>
+                </a>
+                
+                {{-- Form & Tombol Hapus Transaksi (Modal Pop-up Tengah) --}}
+                <form action="{{ route('penjualan.destroy', $sale) }}" 
+                      method="POST" 
+                      class="d-inline"
+                      id="delete-form-penjualan-{{ $sale->id }}">
+                    @csrf
+                    @method('DELETE')
+                    
+                    <button type="button" 
+                            class="btn btn-light btn-sm border text-danger shadow-none" 
+                            style="transition: all 0.2s;"
+                            onmouseover="this.style.backgroundColor='#fee2e2';" 
+                            onmouseout="this.style.backgroundColor='#f8f9fa';"
+                            title="Hapus Transaksi"
+                            onclick="openDeleteModal('penjualan-{{ $sale->id }}', 'Apakah anda yakin akan menghapus penjualan ini?')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            @endif
+        @endcan
+    </div>
+</td>
                     </tr>
                     @empty
                     <tr>
@@ -149,4 +172,62 @@
 
     </div>
 </div>
+{{-- Modal Konfirmasi Hapus di Tengah --}}
+<div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg animate-page">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi Hapus
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-trash text-danger display-4 mb-3"></i>
+                <p id="deleteModalMessage" class="text-dark fs-6 mb-0">Apakah Anda yakin ingin menghapus data ini?</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4 gap-2">
+                <button type="button" class="btn btn-light px-4 rounded-3 shadow-none border" data-bs-dismiss="modal" id="cancelDeleteBtn">Batal</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger px-4 rounded-3 shadow-sm">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeDeleteFormId = null;
+
+    function openDeleteModal(identifier, message) {
+        activeDeleteFormId = 'delete-form-' + identifier;
+        document.getElementById('deleteModalMessage').innerText = message;
+        
+        // Reset tombol hapus ke kondisi semula jika sebelumnya sempat loading
+        let btn = document.getElementById('confirmDeleteBtn');
+        btn.disabled = false;
+        btn.innerHTML = 'Ya, Hapus';
+
+        // Reset tombol batal agar bisa diklik lagi
+        let cancelBtn = document.getElementById('cancelDeleteBtn');
+        if (cancelBtn) cancelBtn.disabled = false;
+
+        var myModal = new bootstrap.Modal(document.getElementById('customDeleteModal'));
+        myModal.show();
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (activeDeleteFormId) {
+            // Ubah tombol menjadi status loading dengan spinner
+            let btn = this;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menghapus...`;
+            
+            // Nonaktifkan tombol batal agar user tidak menutup modal saat proses berjalan
+            let cancelBtn = document.getElementById('cancelDeleteBtn');
+            if (cancelBtn) cancelBtn.disabled = true;
+
+            // Kirim form
+            document.getElementById(activeDeleteFormId).submit();
+        }
+    });
+</script>
 @endsection

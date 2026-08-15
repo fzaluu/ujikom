@@ -133,7 +133,7 @@
     <!-- Global Loading Overlay -->
     <div id="page-loader">
         <div class="spinner-ring mb-3"></div>
-        <div class="fw-medium text-light small tracking-wide">POS SMART Loading...</div>
+        <div class="fw-medium text-light small tracking-wide"></div>
     </div>
 
     <!-- Toast Container -->
@@ -178,21 +178,33 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Page Loader on Link & Form Submit
         document.addEventListener("DOMContentLoaded", function() {
             const loader = document.getElementById('page-loader');
+
+            // 1. Loading hanya aktif saat form dikirim atau link di dalam Sidebar yang diklik
             document.querySelectorAll('form').forEach(form => {
                 form.addEventListener('submit', () => {
                     if(!form.classList.contains('no-loader')) loader.classList.add('show');
                 });
             });
-            document.querySelectorAll('a').forEach(link => {
+
+            // Membatasi efek loading hanya untuk menu navigasi di dalam sidebar
+            document.querySelectorAll('.sidebar-pos a').forEach(link => {
                 link.addEventListener('click', function(e) {
                     let href = this.getAttribute('href');
                     if (href && href !== '#' && !href.startsWith('javascript') && !this.hasAttribute('data-bs-toggle')) {
                         loader.classList.add('show');
                     }
                 });
+            });
+
+            // 2. Otomatis menghilangkan Notifikasi / Toast setelah 6 detik (6000 milidetik)
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(toastEl => {
+                let toast = new bootstrap.Toast(toastEl, {
+                    delay: 6000 // Durasi 6 detik
+                });
+                toast.show();
             });
         });
     </script>

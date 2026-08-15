@@ -22,7 +22,7 @@ class StoreRequest extends FormRequest
                 // ->ignore() dipakai saat update supaya nama sendiri tidak dianggap duplikat.
                 // 'jenis_produk' route parameter (bukan 'jenisProduk') karena itu nama parameter di URI.
                 Rule::unique('jenis_produk', 'nama')->ignore($this->route('jenis_produk')),
-                'foto'       => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'foto' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             ],
         ];
     }
