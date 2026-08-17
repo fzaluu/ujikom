@@ -23,15 +23,31 @@ class ItemPenjualanController extends Controller
         $errorMessage = null;
 
         DB::transaction(function () use ($request, &$errorMessage) {
-            $sale = Penjualan::where('user_id', Auth::id())
-                ->where('status', 'OPEN')
-                ->firstOrFail();
+            // Cek apakah penjualan_id dikirim dan valid
+            if ($request->filled('penjualan_id')) {
+                $sale = Penjualan::where('id', $request->penjualan_id)
+                    ->where('user_id', Auth::id())
+                    ->where('status', 'OPEN')
+                    ->first();
+            } else {
+                $sale = null;
+            }
+
+            // Jika belum ada record penjualan (transaksi baru yang belum masuk database), buat sekarang!
+            if (!$sale) {
+                $sale = Penjualan::create([
+                    'user_id' => Auth::id(),
+                    'status' => 'OPEN',
+                    'total_pembayaran' => 0,
+                    'metode_pembayaran' => 'CASH'
+                ]);
+            }
 
             $product = Produk::lockForUpdate()->findOrFail($request->product_id);
 
             if ($product->stok < $request->quantity) {
                 $errorMessage = 'Produk stok tidak mencukupi!';
-                return; // batalkan penambahan item, transaksi DB tetap aman (tidak ada perubahan disimpan)
+                return;
             }
 
             $product->decrement('stok', $request->quantity);
@@ -57,13 +73,19 @@ class ItemPenjualanController extends Controller
 
             $sale->total_pembayaran = $sale->itemPenjualan()->sum('subtotal');
             $sale->save();
+            
+            // Simpan ID sale ke session/request agar view bisa merefresh dengan ID yang benar
+            request()->merge(['active_sale_id' => $sale->id]);
         });
 
         if ($errorMessage) {
             return redirect()->back()->with('error', $errorMessage);
         }
 
-        return redirect()->back()->with('success', 'Produk ditambahkan ke keranjang.');
+        // Redirect kembali ke halaman edit POS dengan ID transaksi yang baru dibuat agar keranjang langsung muncul
+        $activeSaleId = Penjualan::where('user_id', Auth::id())->where('status', 'OPEN')->latest()->first()->id;
+
+        return redirect()->route('penjualan.edit', $activeSaleId)->with('success', 'Produk ditambahkan ke keranjang.');
     }
 
     public function update(Request $request, ItemPenjualan $itempenjualan)

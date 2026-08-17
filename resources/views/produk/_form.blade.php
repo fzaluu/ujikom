@@ -9,7 +9,7 @@
             </div>
             <div class="card-footer bg-white border-0 pt-0 pb-3">
                 {{-- Tanpa onchange, kita tangkap lewat script di bawah --}}
-                <input id="fotoInput" type="file" accept="image/*" name="foto" class="form-control @error('foto') is-invalid @enderror" required>
+                <input id="fotoInput" type="file" accept="image/*" name="foto" class="form-control @error('foto') is-invalid @enderror" {{ (isset($produk) && !empty($produk->foto)) ? '' : 'required' }}>
                 @error('foto')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror

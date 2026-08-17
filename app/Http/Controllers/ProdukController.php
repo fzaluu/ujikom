@@ -22,11 +22,19 @@ class ProdukController extends Controller
             ->when($request->filled('jenis_id'), function ($query) use ($request) {
                 $query->where('jenis_id', $request->jenis_id);
             })
-            // Tambahkan logika pencarian berdasarkan nama produk di sini
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->where('nama', 'like', "%{$request->search}%");
             })
-            ->latest()
+            // --- URUTKAN BERDASARKAN PRIORITAS STOK ---
+            ->orderByRaw("
+                CASE 
+                    WHEN stok = 0 THEN 1
+                    WHEN stok <= 5 THEN 2
+                    WHEN stok > 100 THEN 4
+                    ELSE 3
+                END ASC
+            ")
+            ->latest('updated_at') // Urutan lapis kedua jika prioritas stoknya sama
             ->paginate(10)
             ->withQueryString();
 

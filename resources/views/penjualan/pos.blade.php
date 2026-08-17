@@ -10,9 +10,19 @@
             <h3 class="fw-bold text-dark mb-1">Kasir Transaksi Penjualan</h3>
             <p class="text-muted small mb-0">Pilih produk di sebelah kiri untuk dimasukkan ke dalam keranjang kasir.</p>
         </div>
-        <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 py-2">
-            <i class="bi bi-arrow-left-circle me-1"></i> Kembali ke Riwayat
-        </a>
+        @if($sale->exists)
+            <form action="{{ route('penjualan.destroy', $sale->id) }}" method="POST" class="d-inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-secondary shadow-sm rounded-3 py-2" onclick="markExplicitAction()">
+                    <i class="bi bi-arrow-left-circle me-1"></i> Kembali ke Riwayat
+                </button>
+            </form>
+        @else
+            <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 py-2" onclick="markExplicitAction()">
+                <i class="bi bi-arrow-left-circle me-1"></i> Kembali ke Riwayat
+            </a>
+        @endif
     </div>
 
     <div class="row g-4">
@@ -114,7 +124,7 @@
                     </div>
                     
                     {{-- Form Checkout --}}
-                    <form id="checkoutForm" method="POST" action="{{ route('penjualan.update', $sale->id) }}">
+                    <form id="checkoutForm" method="POST" action="{{ $sale->exists ? route('penjualan.update', $sale->id) : '#' }}">
                         @csrf
                         @method('PUT')
                         <select name="payment_method" id="paymentMethodSelect" class="form-select mb-2 rounded-3 shadow-none" required>
@@ -130,13 +140,19 @@
                     </form>
 
                     {{-- Form Batal Transaksi --}}
-                    <form id="cancelTransactionForm" method="POST" action="{{ route('penjualan.destroy', $sale->id) }}" class="mt-2">
-                        @csrf
-                        @method('DELETE')
-                        <button type="button" class="btn btn-outline-danger w-100 py-2 rounded-3 small {{ $sale->status == 'COMPLETED' ? 'disabled' : '' }}" onclick="openCustomConfirm('cancel')">
+                    @if($sale->exists)
+                        <form id="cancelTransactionForm" method="POST" action="{{ route('penjualan.destroy', $sale->id) }}" class="mt-2">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" class="btn btn-outline-danger w-100 py-2 rounded-3 small {{ $sale->status == 'COMPLETED' ? 'disabled' : '' }}" onclick="openCustomConfirm('cancel')">
+                                <i class="bi bi-x-circle me-1"></i> Batal Transaksi
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('penjualan.index') }}" class="btn btn-outline-danger w-100 py-2 rounded-3 small mt-2 text-decoration-none text-center" onclick="markExplicitAction()">
                             <i class="bi bi-x-circle me-1"></i> Batal Transaksi
-                        </button>
-                    </form>
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -168,6 +184,11 @@
 <script>
     let activeActionType = null;
     let activeDeleteFormId = null;
+    let isExplicitAction = false;
+
+    function markExplicitAction() {
+        isExplicitAction = true;
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
         // --- Live Search Produk ---
@@ -285,6 +306,7 @@
 
     // Submit form ketika tombol konfirmasi di dalam modal diklik
     document.getElementById('posModalConfirmBtn').addEventListener('click', function() {
+        isExplicitAction = true;
         let btn = this;
         let cancelBtn = document.getElementById('posCancelBtn');
         
@@ -302,6 +324,23 @@
             if (activeDeleteFormId) {
                 document.getElementById(activeDeleteFormId).submit();
             }
+        }
+    });
+
+    // --- Deteksi jika kasir tidak sengaja meninggalkan halaman POS ---
+    window.addEventListener('beforeunload', function (e) {
+        if (isExplicitAction) return; // Jika user sengaja checkout, batal, atau klik tombol kembali
+
+        let saleId = "{{ $sale->id ?? '' }}";
+        let itemCount = "{{ $sale->itemPenjualan->count() ?? 0 }}";
+
+        if (saleId && itemCount > 0) {
+            let url = "{{ route('penjualan.bayarNantiAuto', $sale->id ?? 0) }}";
+            let formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            
+            // Mengirim request background secara aman saat halaman ditinggalkan
+            navigator.sendBeacon(url, formData);
         }
     });
 </script>

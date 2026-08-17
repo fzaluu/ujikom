@@ -52,10 +52,14 @@ Route::middleware('auth')->group(function () {
 
     // Penjualan & item penjualan: transaksi POS, dapat diakses semua role login
     Route::resource('/penjualan', PenjualanController::class);
+    
+    // Rute otomatis untuk mengubah status jadi BAYAR_NANTI jika kasir tidak sengaja meninggalkan halaman POS
+    Route::post('/penjualan/{penjualan}/bayar-nanti-auto', [PenjualanController::class, 'setBayarNanti'])->name('penjualan.bayarNantiAuto');
+
     Route::resource('/itempenjualan', ItemPenjualanController::class);
 
     Route::get('/tes/perulangan', [perulanganController::class, 'index'])->name('tes.perulangan');
     Route::get('/tes/percabangan', [percabanganController::class, 'index'])->name('tes.percabangan');
     Route::get('/tes/variable', [variabelController::class, 'index'])->name('tes.variable');
 
-    });
+});

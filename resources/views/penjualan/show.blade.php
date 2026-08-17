@@ -42,8 +42,24 @@
                 </div>
                 <div class="col-md-6">
                     <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Metode Pembayaran</div>
-                    <div class="fw-semibold text-secondary">{{ $sale->metode_pembayaran ?? '-' }}</div>
-                </div>
+                    <div>
+                        @if($sale->metode_pembayaran === 'CASH')
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-cash-stack"></i> Cash (Tunai)
+                            </span>
+                        @elseif($sale->metode_pembayaran === 'QRIS')
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-qr-code-scan"></i> QRIS
+                            </span>
+                        @elseif($sale->metode_pembayaran === 'BAYAR_NANTI')
+                            <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-clock-history"></i> Bayar Nanti (Pending)
+                            </span>
+                        @else
+                            <span class="text-muted fw-semibold">-</span>
+                        @endif
+                    </div>
+                </div>  
             </div>
         </div>
 
@@ -56,10 +72,10 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light text-uppercase fs-7 text-muted">
                             <tr>
-                                <th width="5%" class="py-3 ps-3 rounded-start">#</th>
+                                <th width="5%" class="py-3 ps-3 rounded-start">No</th>
                                 <th class="py-3">Nama Produk</th>
                                 <th class="py-3">Harga Satuan</th>
-                                <th class="py-3">Qty</th>
+                                <th class="py-3">Jumlah</th>
                                 <th class="py-3 pe-3 rounded-end text-end">Subtotal</th>
                             </tr>
                         </thead>

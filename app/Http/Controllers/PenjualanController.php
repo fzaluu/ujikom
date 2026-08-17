@@ -40,21 +40,15 @@ class PenjualanController extends Controller
 
     public function create(SearchRequest $request)
     {
-        $sale = Penjualan::where('user_id', Auth::id())
-            ->where('status', 'OPEN')
-            ->latest()
-            ->first();
-
-        if (!$sale) {
-            $sale = Penjualan::create([
-                'user_id' => Auth::id(),
-                'status' => 'OPEN',
-                'total_pembayaran' => 0,
-                'metode_pembayaran' => 'CASH'
-            ]);
-        }
-
-        $sale->load('itemPenjualan.produk');
+        // Jangan langsung buat record di database saat masuk halaman create.
+        // Buat objek kosong penampung sementara untuk view POS.
+        $sale = new Penjualan([
+            'user_id' => Auth::id(),
+            'status' => 'OPEN',
+            'total_pembayaran' => 0,
+            'metode_pembayaran' => 'CASH'
+        ]);
+        // Belum disimpan ke database ($sale->id masih null sampai ada item yang ditambahkan)
 
         $keyword = $request->input('search');
 
@@ -68,12 +62,6 @@ class PenjualanController extends Controller
 
         $totalProdukCount = Produk::count();
         $mode = 'create';
-
-        if ($request->ajax()) {
-            return response()->json([
-                'html' => view('penjualan.partials.product-grid', compact('products', 'sale'))->render()
-            ]);
-        }
 
         return view('penjualan.pos', compact('sale', 'products', 'mode', 'totalProdukCount'));
     }

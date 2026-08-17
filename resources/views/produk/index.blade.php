@@ -156,9 +156,18 @@
                         </td>
 
                         <td>
-                            <span class="badge {{ $product->stok > 5 ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger' }} px-2 py-1">
-                                {{ $product->stok }} Unit
-                            </span>
+                            @php
+                                if ($product->stok == 0) {
+                                    $badgeColor = 'danger'; // Merah (Stok Habis)
+                                } elseif ($product->stok <= 5) {
+                                    $badgeColor = 'warning'; // Kuning (Stok Menipis)
+                                } elseif ($product->stok > 100) {
+                                    $badgeColor = 'info'; // Biru (Stok di atas 100)
+                                } else {
+                                    $badgeColor = 'success'; // Hijau (Stok Normal aman)
+                                }
+                            @endphp
+                            <span class="badge bg-{{ $badgeColor }} bg-opacity-10 text-{{ $badgeColor }} px-2.5 py-1.5 fw-semibold">{{ $product->stok }} Unit</span>
                         </td>
 
                         <td class="pe-3">
