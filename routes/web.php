@@ -46,15 +46,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/jenis-produk/create', [JenisProdukController::class, 'create'])->name('jenis-produk.create');
         Route::get('/jenis-produk/{jenis_produk}/edit', [JenisProdukController::class, 'edit'])->name('jenis-produk.edit');
         Route::resource('/jenis-produk', JenisProdukController::class)->except(['index', 'create', 'edit']);
+        Route::resource('/jenis-produk', JenisProdukController::class)->only(['index']);
     });
-    // Jenis Produk: Rute publik (index) untuk semua role login
-    Route::resource('/jenis-produk', JenisProdukController::class)->only(['index']);
-
     // Penjualan & item penjualan: transaksi POS, dapat diakses semua role login
     Route::resource('/penjualan', PenjualanController::class);
     
     // Rute otomatis untuk mengubah status jadi BAYAR_NANTI jika kasir tidak sengaja meninggalkan halaman POS
     Route::post('/penjualan/{penjualan}/bayar-nanti-auto', [PenjualanController::class, 'setBayarNanti'])->name('penjualan.bayarNantiAuto');
+    Route::delete('/penjualan/{penjualan}/batal-edit', [App\Http\Controllers\PenjualanController::class, 'batalEdit'])->name('penjualan.batalEdit');
 
     Route::resource('/itempenjualan', ItemPenjualanController::class);
 

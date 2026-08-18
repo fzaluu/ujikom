@@ -167,4 +167,33 @@ class PenjualanController extends Controller
         $sale = $penjualan->load('itemPenjualan.produk', 'user');
         return view('penjualan.show', compact('sale'));
     }
+    public function batalEdit(Penjualan $penjualan)
+    {
+        $user = Auth::user();
+        $isAdmin = strtolower(optional($user->role)->name) === 'admin';
+        $isOwner = $user->id === $penjualan->user_id;
+
+        if (!($isAdmin || $isOwner)) {
+            return redirect()->route('penjualan.index')->with('error', 'Aksi tidak diizinkan.');
+        }
+
+        DB::transaction(function () use ($penjualan) {
+            // Cek apakah transaksi ini statusnya OPEN dan keranjangnya masih kosong (belum ada item yang dimasukkan)
+            if ($penjualan->status === 'OPEN' && $penjualan->itemPenjualan()->count() === 0) {
+                // Jika kosong, hapus permanen dari database agar tidak menjadi sampah riwayat
+                $penjualan->delete();
+            } else {
+                // Jika sudah ada item di dalamnya, kembalikan stok produk yang telanjur terpotong (jika ada) lalu hapus
+                foreach ($penjualan->itemPenjualan as $item) {
+                    if ($item->produk) {
+                        $item->produk->increment('stok', $item->kuantitas);
+                    }
+                }
+                $penjualan->itemPenjualan()->delete();
+                $penjualan->delete();
+            }
+        });
+
+        return redirect()->route('penjualan.index');
+    }
 }

@@ -59,11 +59,11 @@
                             <span class="text-muted fw-semibold">-</span>
                         @endif
                     </div>
-                </div>  
+                </div> 
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 p-0 overflow-hidden">
+        <div class="card border-0 shadow-sm rounded-4 p-0 overflow-hidden mb-4">
             <div class="card-header bg-white border-0 p-3 pb-0">
                 <h5 class="fw-bold text-dark mb-0">Daftar Item Produk yang Dibeli</h5>
             </div>
@@ -83,7 +83,7 @@
                             @forelse($sale->itemPenjualan as $item)
                             <tr>
                                 <td class="ps-3 py-3 text-muted">{{ $loop->iteration }}</td>
-                                <td class="fw-semibold text-dark">{{ $item->produk->nama }}</td>
+                                <td class="fw-semibold text-dark">{{ $item->produk->nama ?? 'Produk Dihapus' }}</td>
                                 <td class="text-muted small">Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                                 <td>{{ $item->kuantitas }} Unit</td>
                                 <td class="pe-3 fw-bold text-success text-end">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
@@ -105,6 +105,38 @@
             </div>
         </div>
 
+        {{-- TOMBOL AKSI: Lanjutkan / Selesaikan Pembayaran jika status masih OPEN --}}
+        @if($sale->status === 'OPEN')
+            <div class="mt-4 pt-3 border-top">
+                <a href="{{ route('penjualan.edit', $sale->id) }}" 
+                   id="btnSelesaikanBayar"
+                   class="btn w-100 py-3 rounded-4 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-white position-relative overflow-hidden text-decoration-none" 
+                   style="background: linear-gradient(135deg, #059669 0%, #10B981 100%); transition: all 0.2s ease;"
+                   onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.3)';" 
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)';"
+                   onclick="handleLoading(this)">
+                    <i class="bi bi-cart-check-fill fs-5" id="btnIcon"></i> 
+                    <span id="btnText">Selesaikan Pembayaran</span>
+                </a>
+            </div>
+        @endif
+
     </div>
 </div>
+
+{{-- Script Animasi Loading --}}
+<script>
+    function handleLoading(element) {
+        // Mencegah klik berulang kali
+        element.style.pointerEvents = 'none';
+        element.style.opacity = '0.85';
+        
+        // Ubah isi tombol menjadi animasi spinner loading
+        const icon = document.getElementById('btnIcon');
+        const text = document.getElementById('btnText');
+        
+        if (icon) icon.className = 'spinner-border spinner-border-sm me-2';
+        if (text) text.textContent = 'Memuat Halaman Kasir...';
+    }
+</script>
 @endsection

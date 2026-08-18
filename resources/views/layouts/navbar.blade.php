@@ -102,14 +102,15 @@
                 <i class="bi bi-box-seam fs-5"></i> Produk
             </a>
         </li>
+        @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
         <li class="nav-item">
             <a href="{{ route('jenis-produk.index') }}" class="nav-link {{ request()->routeIs('jenis-produk*') ? 'active' : '' }}">
                 <i class="bi bi-tags fs-5"></i> Jenis Produk
             </a>
         </li>
 
-        @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
-            <li class="nav-item">
+      
+        <li class="nav-item">
                 <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                     <i class="bi bi-people fs-5"></i> User
                 </a>

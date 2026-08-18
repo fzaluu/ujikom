@@ -10,19 +10,9 @@
             <h3 class="fw-bold text-dark mb-1">Kasir Transaksi Penjualan</h3>
             <p class="text-muted small mb-0">Pilih produk di sebelah kiri untuk dimasukkan ke dalam keranjang kasir.</p>
         </div>
-        @if($sale->exists)
-            <form action="{{ route('penjualan.destroy', $sale->id) }}" method="POST" class="d-inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-outline-secondary shadow-sm rounded-3 py-2" onclick="markExplicitAction()">
-                    <i class="bi bi-arrow-left-circle me-1"></i> Kembali ke Riwayat
-                </button>
-            </form>
-        @else
             <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 py-2" onclick="markExplicitAction()">
                 <i class="bi bi-arrow-left-circle me-1"></i> Kembali ke Riwayat
             </a>
-        @endif
     </div>
 
     <div class="row g-4">
