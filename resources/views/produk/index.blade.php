@@ -126,8 +126,13 @@
                                     data-bs-target="#productImageModal"
                                     data-image="{{ asset('storage/' . $product->foto) }}"
                                     data-name="{{ $product->nama }}">
-                                <img src="{{ asset('storage/' . $product->foto) }}" alt="{{ $product->nama }}" class="img-thumbnail rounded-3 shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
-                            </button>
+                                <img src="{{ asset('storage/' . $product->foto) }}" 
+                                    alt="{{ $product->nama }}" 
+                                    class="img-thumbnail rounded-3 shadow-sm border" 
+                                    style="width: 48px; height: 48px; object-fit: cover; transition: transform 0.2s;"
+                                    onmouseover="this.style.transform='scale(1.08)'"
+                                    onmouseout="this.style.transform='scale(1)'">
+                                </button>
                             @else
                                 <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1">No Image</span>
                             @endif
