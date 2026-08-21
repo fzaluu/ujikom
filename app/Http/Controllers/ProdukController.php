@@ -25,11 +25,11 @@ class ProdukController extends Controller
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->where('nama', 'like', "%{$request->search}%");
             })
-            // --- URUTKAN BERDASARKAN PRIORITAS STOK ---
+            // --- URUTKAN BERDASARKAN PRIORITAS STOK YANG DISESUAIKAN ---
             ->orderByRaw("
                 CASE 
                     WHEN stok = 0 THEN 1
-                    WHEN stok <= 5 THEN 2
+                    WHEN stok <= 10 THEN 2
                     WHEN stok > 100 THEN 4
                     ELSE 3
                 END ASC
@@ -100,13 +100,21 @@ class ProdukController extends Controller
     {
         $produk = Produk::findOrFail($id);
 
-        // Hapus file fisik dari storage jika ada
-        if ($produk->foto && Storage::disk('public')->exists($produk->foto)) {
-            Storage::disk('public')->delete($produk->foto);
+        try {
+            // Coba hapus data dari database terlebih dahulu
+            $produk->delete();
+
+            // Jika berhasil terhapus dari database, baru hapus file fisik fotonya dari storage
+            if ($produk->foto && Storage::disk('public')->exists($produk->foto)) {
+                Storage::disk('public')->delete($produk->foto);
+            }
+
+            return redirect()->route('produk.index')->with('success', 'Produk berhasil dihapus!');
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Jika gagal karena masih terikat transaksi, database menolak dan foto aman tidak terhapus
+            return redirect()
+                ->route('produk.index')
+                ->with('error', 'Produk tidak dapat dihapus karena masih tercatat dalam riwayat transaksi penjualan!');
         }
-
-        $produk->delete();
-
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil dihapus!');
     }
 }

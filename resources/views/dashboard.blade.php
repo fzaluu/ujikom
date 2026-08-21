@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - POS SMART')
+@section('title', 'Dashboar')
 
 @section('content')
 @php
@@ -366,7 +366,7 @@
                                 <small class="text-muted" style="font-size: 0.75rem;">Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</small>
                             </div>
                         </div>
-                        <span class="badge bg-danger bg-opacity-10 text-danger px-2.5 py-1 fw-bold">0 Unit</span>
+                        <span class="badge bg-danger bg-opacity-10 text-danger px-2.5 py-1 fw-bold">Habis</span>
                     </div>
                 @empty
                     <div class="text-center py-4 text-muted">

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Produk - POS SMART')
+@section('title', ' Produk')
 
 @section('content')
 @php
@@ -37,13 +37,45 @@
                     Kelola data produk barang, harga, dan ketersediaan stok sistem POS.
                 </p>
             </div>
+        </div>
 
+        {{-- Baris Tombol Tambah Produk di Kiri & Search Bar di Kanan --}}
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
             {{-- Tombol Tambah Produk HANYA MUNCUL JIKA ADMIN --}}
-            @if($isAdmin)
-                <a href="{{ route('produk.create') }}" class="btn btn-primary shadow-sm rounded-3 py-2 px-3">
-                    <i class="bi bi-plus-circle me-1"></i> Tambah Produk Baru
-                </a>
-            @endif
+            <div>
+                @if($isAdmin)
+                    <a href="{{ route('produk.create') }}" class="btn btn-primary shadow-sm rounded-3 py-2 px-3 text-nowrap">
+                        <i class="bi bi-plus-circle me-1"></i> Tambah Produk Baru
+                    </a>
+                @endif
+            </div>
+
+            {{-- Search Bar Mentok ke Kanan --}}
+            <form action="{{ route('produk.index') }}" method="GET" class="mb-0" style="max-width: 350px; width: 100%;">
+                @if($selectedJenis)
+                    <input type="hidden" name="jenis_id" value="{{ $selectedJenis->id }}">
+                @endif
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input
+                        type="text"
+                        class="form-control bg-light border-start-0 ps-0 shadow-none"
+                        name="search"
+                        placeholder="Cari nama produk..."
+                        value="{{ request('search') }}"
+                    >
+                    <button class="btn btn-outline-primary px-3" type="submit">
+                        Cari
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ route('produk.index') }}" class="btn btn-outline-secondary">
+                            Reset
+                        </a>
+                    @endif
+                </div>
+            </form>
         </div>
 
         @if($selectedJenis)
@@ -55,70 +87,39 @@
             </div>
         @endif
 
-        {{-- Search Bar & Filter --}}
-        <div class="row mb-4">
-            <div class="col-md-5">
-                <form action="{{ route('produk.index') }}" method="GET">
-                    @if($selectedJenis)
-                        <input type="hidden" name="jenis_id" value="{{ $selectedJenis->id }}">
-                    @endif
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input
-                            type="text"
-                            class="form-control bg-light border-start-0 ps-0"
-                            name="search"
-                            placeholder="Cari nama produk..."
-                            value="{{ request('search') }}"
-                        >
-                        <button class="btn btn-primary px-3">
-                            Cari
-                        </button>
-                        @if(request('search'))
-                            <a href="{{ route('produk.index') }}" class="btn btn-outline-secondary">
-                                Reset
-                            </a>
-                        @endif
-                    </div>
-                </form>
-            </div>
-        </div>
-
         {{-- Table Produk --}}
         <div class="table-responsive">
-            <table class="table table-hover-custom align-middle mb-0">
-                <thead class="table-light text-uppercase fs-7 text-muted">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">
                     <tr>
-                        <th width="5%" class="py-3 ps-3 rounded-start-3">No</th>
-                        <th class="py-3">User Input</th>
-                        <th width="12%" class="py-3">Foto</th>
-                        <th class="py-3">Nama Produk</th>
-                        <th class="py-3">Jenis</th>
+                        <th width="4%" class="py-3 ps-3 rounded-start-3">No</th>
+                        <th width="12%" class="py-3">User Input</th>
+                        <th width="8%" class="py-3 text-center">Foto</th>
+                        <th width="20%" class="py-3">Nama Produk</th>
+                        <th width="15%" class="py-3">Jenis</th>
                         @if($isAdmin)
-                            <th class="py-3">Harga Beli</th>
+                            <th width="11%" class="py-3">Harga Beli</th>
                         @endif
-                        <th class="py-3">Harga Jual</th>
-                        <th width="10%" class="py-3">Stok</th>
-                        <th width="18%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
+                        <th width="11%" class="py-3">Harga Jual</th>
+                        <th width="9%" class="py-3">Stok</th>
+                        <th width="{{ $isAdmin ? '10%' : '15%' }}" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
                     </tr>
                 </thead>
 
                 <tbody>
                 @forelse($products as $index => $product)
                     <tr>
-                        <td class="ps-3 py-3 text-muted">
+                        <td class="ps-3 py-3 text-muted fw-medium">
                             {{ $products->firstItem() + $index }}
                         </td>
 
-                        <td class="text-muted small">
-                            <span class="badge bg-light text-dark border px-2 py-1">
-                                <i class="bi bi-person me-1"></i> {{ $product->user->name ?? '-' }}
+                        <td>
+                            <span class="badge bg-light text-dark border px-2 py-1 fw-normal">
+                                <i class="bi bi-person me-1 text-muted"></i> {{ $product->user->name ?? '-' }}
                             </span>
                         </td>
 
-                        <td>
+                        <td class="text-center">
                             @if($product->foto)
                                 <button type="button"
                                     class="btn btn-link p-0 text-decoration-none"
@@ -126,25 +127,25 @@
                                     data-bs-target="#productImageModal"
                                     data-image="{{ asset('storage/' . $product->foto) }}"
                                     data-name="{{ $product->nama }}">
-                                <img src="{{ asset('storage/' . $product->foto) }}" 
-                                    alt="{{ $product->nama }}" 
-                                    class="img-thumbnail rounded-3 shadow-sm border" 
-                                    style="width: 48px; height: 48px; object-fit: cover; transition: transform 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.08)'"
-                                    onmouseout="this.style.transform='scale(1)'">
+                                    <img src="{{ asset('storage/' . $product->foto) }}" 
+                                        alt="{{ $product->nama }}" 
+                                        class="img-thumbnail rounded-3 shadow-sm border" 
+                                        style="width: 42px; height: 42px; object-fit: cover; transition: transform 0.2s;"
+                                        onmouseover="this.style.transform='scale(1.08)'"
+                                        onmouseout="this.style.transform='scale(1)'">
                                 </button>
                             @else
                                 <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1">No Image</span>
                             @endif
                         </td>
 
-                        <td class="fw-semibold text-dark">
+                        <td class="fw-semibold text-dark text-capitalize">
                             {{ $product->nama }}
                         </td>
 
                         <td>
                             @if($product->jenisProduk)
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1">{{ $product->jenisProduk->nama }}</span>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 fw-normal">{{ $product->jenisProduk->nama }}</span>
                             @else
                                 <span class="text-muted small">-</span>
                             @endif
@@ -160,26 +161,32 @@
                             Rp {{ number_format($product->harga_jual, 0, ',', '.') }}
                         </td>
 
-                        <td>
-                            @php
-                                if ($product->stok == 0) {
-                                    $badgeColor = 'danger'; // Merah (Stok Habis)
-                                } elseif ($product->stok <= 5) {
-                                    $badgeColor = 'warning'; // Kuning (Stok Menipis)
-                                } elseif ($product->stok > 100) {
-                                    $badgeColor = 'info'; // Biru (Stok di atas 100)
-                                } else {
-                                    $badgeColor = 'success'; // Hijau (Stok Normal aman)
-                                }
-                            @endphp
-                            <span class="badge bg-{{ $badgeColor }} bg-opacity-10 text-{{ $badgeColor }} px-2.5 py-1.5 fw-semibold">{{ $product->stok }} Unit</span>
+                       <td>
+                                @php
+                                    if ($product->stok == 0) {
+                                        $badgeColor = 'danger'; // Merah
+                                        $stokText = 'Habis';   // Teks berubah jadi Habis
+                                    } elseif ($product->stok <= 10) {
+                                        $badgeColor = 'warning'; // Kuning (Stok Menipis)
+                                        $stokText = $product->stok . ' Unit';
+                                    } elseif ($product->stok > 100) {
+                                        $badgeColor = 'info'; // Biru (Stok Banyak)
+                                        $stokText = $product->stok . ' Unit';
+                                    } else {
+                                        $badgeColor = 'success'; // Hijau (Normal)
+                                        $stokText = $product->stok . ' Unit';
+                                    }
+                                @endphp
+                            <span class="badge bg-{{ $badgeColor }} bg-opacity-10 text-{{ $badgeColor }} px-2.5 py-1.5 fw-semibold">
+                                {{ $stokText }}
+                            </span>
                         </td>
 
-                        <td class="pe-3">
+                        <td class="pe-3 text-center">
                             <div class="d-flex justify-content-center gap-1">
-                                {{-- Tombol Detail (Clean Style dengan Aksen Biru Soft) --}}
+                                {{-- Tombol Detail --}}
                                 <a href="{{ route('produk.show', $product) }}" 
-                                class="btn btn-light btn-sm border text-info shadow-none" 
+                                class="btn btn-light btn-sm border text-info shadow-none px-2" 
                                 style="transition: all 0.2s;"
                                 onmouseover="this.style.backgroundColor='#e0f2fe';" 
                                 onmouseout="this.style.backgroundColor='#f8f9fa';"
@@ -189,9 +196,9 @@
                                 
                                 {{-- Tombol Edit & Hapus (Hanya Admin) --}}
                                 @if($isAdmin)
-                                    {{-- Tombol Edit Produk (Clean Style) --}}
+                                    {{-- Tombol Edit --}}
                                     <a href="{{ route('produk.edit', $product) }}" 
-                                    class="btn btn-light btn-sm border text-secondary shadow-none" 
+                                    class="btn btn-light btn-sm border text-secondary shadow-none px-2" 
                                     style="transition: all 0.2s;"
                                     onmouseover="this.style.backgroundColor='#e2e8f0'; this.style.color='#1e293b';" 
                                     onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.color='#6c757d';"
@@ -199,16 +206,15 @@
                                         <i class="bi bi-pencil"></i>
                                     </a>
 
-                                    {{-- Form & Tombol Hapus Produk (Modal Pop-up Tengah) --}}
+                                    {{-- Tombol Hapus --}}
                                     <form action="{{ route('produk.destroy', $product) }}"
                                         method="POST"
                                         class="d-inline"
                                         id="delete-form-produk-{{ $product->id }}">
                                         @csrf
                                         @method('DELETE')
-                                        
                                         <button type="button" 
-                                                class="btn btn-light btn-sm border text-danger shadow-none" 
+                                                class="btn btn-light btn-sm border text-danger shadow-none px-2" 
                                                 style="transition: all 0.2s;"
                                                 onmouseover="this.style.backgroundColor='#fee2e2';" 
                                                 onmouseout="this.style.backgroundColor='#f8f9fa';"
@@ -309,12 +315,10 @@
         activeDeleteFormId = 'delete-form-' + identifier;
         document.getElementById('deleteModalMessage').innerText = message;
         
-        // Reset tombol hapus ke kondisi semula jika sebelumnya sempat loading
         let btn = document.getElementById('confirmDeleteBtn');
         btn.disabled = false;
         btn.innerHTML = 'Ya, Hapus';
 
-        // Reset tombol batal agar bisa diklik lagi
         let cancelBtn = document.getElementById('cancelDeleteBtn');
         if (cancelBtn) cancelBtn.disabled = false;
 
@@ -324,16 +328,13 @@
 
     document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
         if (activeDeleteFormId) {
-            // Ubah tombol menjadi status loading dengan spinner
             let btn = this;
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menghapus...`;
             
-            // Nonaktifkan tombol batal agar user tidak menutup modal saat proses berjalan
             let cancelBtn = document.getElementById('cancelDeleteBtn');
             if (cancelBtn) cancelBtn.disabled = true;
 
-            // Kirim form
             document.getElementById(activeDeleteFormId).submit();
         }
     });

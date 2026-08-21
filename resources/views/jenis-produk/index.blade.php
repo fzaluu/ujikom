@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Jenis Produk - POS SMART')
+@section('title', 'Jenis Produk')
 
 @section('content')
 @php
@@ -32,30 +32,35 @@
                     Kelola kategori produk. Klik salah satu jenis untuk melihat daftar produknya.
                 </p>
             </div>
+        </div>
 
-            @if($isAdmin)
-                <a href="{{ route('jenis-produk.create') }}" class="btn btn-primary shadow-sm rounded-3 py-2 px-3">
-                    <i class="bi bi-plus-circle me-1"></i> Tambah Jenis Produk
-                </a>
-            @endif
+        {{-- Baris Tombol Aksi di Kiri --}}
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
+            <div>
+                @if($isAdmin)
+                    <a href="{{ route('jenis-produk.create') }}" class="btn btn-primary shadow-sm rounded-3 py-2 px-3 text-nowrap">
+                        <i class="bi bi-plus-circle me-1"></i> Tambah Jenis Produk
+                    </a>
+                @endif
+            </div>
         </div>
 
         {{-- Table Jenis Produk --}}
         <div class="table-responsive">
-            <table class="table table-hover-custom align-middle mb-0">
-                <thead class="table-light text-uppercase fs-7 text-muted">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">
                     <tr>
                         <th width="5%" class="py-3 ps-3 rounded-start-3">No</th>
-                        <th class="py-3">Nama Jenis</th>
-                        <th width="15%" class="py-3">Jumlah</th>
-                        <th width="18%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
+                        <th width="55%" class="py-3">Nama Jenis</th>
+                        <th width="25%" class="py-3">Jumlah</th>
+                        <th width="15%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
                     </tr>
                 </thead>
 
                 <tbody>
                 @forelse($jenisProduk as $index => $jenis)
                     <tr>
-                        <td class="ps-3 py-3 text-muted">
+                        <td class="ps-3 py-3 text-muted fw-medium">
                             {{ $jenisProduk->firstItem() + $index }}
                         </td>
 
@@ -67,41 +72,41 @@
 
                         <td>
                             <a href="{{ route('produk.index', ['jenis_id' => $jenis->id]) }}" class="text-decoration-none">
-                                <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1">
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-2.5 py-1 fw-semibold">
                                     {{ $jenis->produk_count }} Produk
                                 </span>
                             </a>
                         </td>
 
-                        <td class="pe-3">
+                        <td class="pe-3 text-center">
                             <div class="d-flex justify-content-center gap-1">
                                 @if($isAdmin)
                                     <a href="{{ route('jenis-produk.edit', $jenis) }}" 
-                                    class="btn btn-light btn-sm border text-secondary shadow-none" 
-                                    style="transition: all 0.2s;"
-                                    onmouseover="this.style.backgroundColor='#e2e8f0'; this.style.color='#1e293b';" 
-                                    onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.color='#6c757d';"
-                                    title="Edit Jenis">
+                                       class="btn btn-light btn-sm border text-secondary shadow-none px-2" 
+                                       style="transition: all 0.2s;"
+                                       onmouseover="this.style.backgroundColor='#e2e8f0'; this.style.color='#1e293b';" 
+                                       onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.color='#6c757d';"
+                                       title="Edit Jenis">
                                         <i class="bi bi-pencil"></i>
                                     </a>
 
                                     <form action="{{ route('jenis-produk.destroy', $jenis) }}"
-                                        method="POST"
-                                        class="d-inline"
-                                        id="delete-form-jenis-{{ $jenis->id }}">
+                                          method="POST"
+                                          class="d-inline"
+                                          id="delete-form-jenis-{{ $jenis->id }}">
                                         @csrf
                                         @method('DELETE')
 
-                                            <button type="button" 
-                                                    class="btn btn-light btn-sm border text-danger shadow-none" 
-                                                    style="transition: all 0.2s;"
-                                                    onmouseover="this.style.backgroundColor='#fee2e2';" 
-                                                    onmouseout="this.style.backgroundColor='#f8f9fa';"
-                                                    title="Hapus Jenis"
-                                                    onclick="openDeleteModal('jenis-{{ $jenis->id }}', 'Yakin ingin menghapus jenis ini? Produk yang memakai jenis ini akan menjadi tanpa jenis.')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" 
+                                                class="btn btn-light btn-sm border text-danger shadow-none px-2" 
+                                                style="transition: all 0.2s;"
+                                                onmouseover="this.style.backgroundColor='#fee2e2';" 
+                                                onmouseout="this.style.backgroundColor='#f8f9fa';"
+                                                title="Hapus Jenis"
+                                                onclick="openDeleteModal('jenis-{{ $jenis->id }}', 'Yakin ingin menghapus jenis ini? Produk yang memakai jenis ini akan menjadi tanpa jenis.')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 @else
                                     <span class="text-muted small">-</span>
                                 @endif
@@ -137,6 +142,7 @@
 
     </div>
 </div>
+
 {{-- Modal Konfirmasi Hapus di Tengah --}}
 <div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
@@ -166,7 +172,6 @@
         activeDeleteFormId = 'delete-form-' + identifier;
         document.getElementById('deleteModalMessage').innerText = message;
         
-        // Reset tombol hapus ke kondisi semula jika sebelumnya sempat loading
         let btn = document.getElementById('confirmDeleteBtn');
         btn.disabled = false;
         btn.innerHTML = 'Ya, Hapus';
@@ -177,15 +182,12 @@
 
     document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
         if (activeDeleteFormId) {
-            // Ubah tombol menjadi status loading
             let btn = this;
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menghapus...`;
             
-            // Nonaktifkan tombol batal agar user tidak menutup modal saat proses berjalan
             document.getElementById('cancelDeleteBtn').disabled = true;
 
-            // Kirim form
             document.getElementById(activeDeleteFormId).submit();
         }
     });

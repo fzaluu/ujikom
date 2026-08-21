@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Kasir POS - POS SMART')
+@section('title', 'Transaksi')
 
 @section('content')
 <div class="container-fluid px-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <span class="text-primary fw-semibold small text-uppercase tracking-wider">Point of Sale</span>
-            <h3 class="fw-bold text-dark mb-1">Kasir Transaksi Penjualan</h3>
-            <p class="text-muted small mb-0">Pilih produk di sebelah kiri untuk dimasukkan ke dalam keranjang kasir.</p>
+            <h3 class="fw-bold text-dark mb-1">Transaksi Penjualan</h3>
+            <p class="text-muted small mb-0">Pilih produk di sebelah kiri untuk dimasukkan ke dalam keranjang.</p>
         </div>
             <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 py-2" onclick="markExplicitAction()">
                 <i class="bi bi-arrow-left-circle me-1"></i> Kembali ke Riwayat
@@ -121,7 +121,7 @@
                             <option value="">-- Pilih Metode Pembayaran --</option>
                             <option value="CASH" {{ $sale->metode_pembayaran == 'CASH' ? 'selected' : '' }}>Cash (Tunai)</option>
                             <option value="QRIS" {{ $sale->metode_pembayaran == 'QRIS' ? 'selected' : '' }}>QRIS</option>
-                            <option value="BAYAR_NANTI" {{ $sale->metode_pembayaran == 'BAYAR_NANTI' ? 'selected' : '' }}>Bayar Nanti (Pending)</option>
+                            <option value="BAYAR_NANTI" {{ $sale->metode_pembayaran == 'BAYAR NANTI' ? 'selected' : '' }}>Bayar Nanti (Pending)</option>
                         </select>
 
                         <button type="button" id="checkoutBtn" class="btn btn-success w-100 py-2.5 rounded-3 fw-semibold shadow-sm {{ $sale->status == 'COMPLETED' ? 'disabled' : '' }}" onclick="openCustomConfirm('checkout')">

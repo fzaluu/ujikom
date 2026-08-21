@@ -79,8 +79,8 @@
 
     <!-- Logo / Brand (Centered) -->
     <a href="{{ route('dashboard') }}" class="d-flex flex-column align-items-center text-center mb-3 text-decoration-none py-2">
-        <span class="brand-title mb-0 fw-bold text-dark fs-5" style="letter-spacing: 0.5px;">POS SMART</span>
-        <small class="text-muted" style="font-size: 0.65rem;">Modern Point Of Sale</small>
+        <span class="brand-title mb-0 fw-bold text-dark fs-5" style="letter-spacing: 0.5px;">RAJA CELL</span>
+        <small class="text-muted" style="font-size: 0.65rem;">Sistem Aplikasi Kasir</small>
     </a>
 
     <hr class="sidebar-divider my-1">
@@ -92,30 +92,33 @@
                 <i class="bi bi-speedometer2 fs-5"></i> Dashboard
             </a>
         </li>
-        <li class="nav-item">
-            <a href="{{ route('penjualan.index') }}" class="nav-link {{ request()->routeIs('penjualan*') ? 'active' : '' }}">
-                <i class="bi bi-bag-check fs-5"></i> Penjualan
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('produk.index') }}" class="nav-link {{ request()->routeIs('produk*') ? 'active' : '' }}">
-                <i class="bi bi-box-seam fs-5"></i> Produk
-            </a>
-        </li>
-        @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
-        <li class="nav-item">
-            <a href="{{ route('jenis-produk.index') }}" class="nav-link {{ request()->routeIs('jenis-produk*') ? 'active' : '' }}">
-                <i class="bi bi-tags fs-5"></i> Jenis Produk
-            </a>
-        </li>
 
-      
+        @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
         <li class="nav-item">
                 <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                     <i class="bi bi-people fs-5"></i> User
                 </a>
             </li>
+        <li class="nav-item">
+            <a href="{{ route('jenis-produk.index') }}" class="nav-link {{ request()->routeIs('jenis-produk*') ? 'active' : '' }}">
+                <i class="bi bi-tags fs-5"></i> Jenis
+            </a>
+        </li>
         @endif
+
+        <li class="nav-item">
+            <a href="{{ route('produk.index') }}" class="nav-link {{ request()->routeIs('produk*') ? 'active' : '' }}">
+                <i class="bi bi-box-seam fs-5"></i> Produk
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ route('penjualan.index') }}" class="nav-link {{ request()->routeIs('penjualan*') ? 'active' : '' }}">
+                <i class="bi bi-bag-check fs-5"></i> Penjualan
+            </a>
+        </li>
+        
+        
     </ul>
 
     <hr class="sidebar-divider my-3">

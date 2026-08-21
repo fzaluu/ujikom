@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit User - POS SMART')
+@section('title', 'Edit')
 
 @section('content')
 <div class="container-fluid px-0">

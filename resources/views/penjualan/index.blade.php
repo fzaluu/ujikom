@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Penjualan - POS SMART')
+@section('title', 'Manajemen Penjualan')
 
 @section('content')
 <style>
@@ -35,118 +35,118 @@
                 </p>
             </div>
 
-            <a href="{{ route('penjualan.create') }}" class="btn btn-primary shadow-sm rounded-3 py-2 px-3">
+        </div>
+        {{-- Tombol Transaksi Baru & Search Bar Terpisah Kiri-Kanan dengan Jarak ke Bawah --}}
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 mb-4">
+            {{-- Tombol Transaksi Baru di Kiri --}}
+            <a href="{{ route('penjualan.create') }}" class="btn btn-primary shadow-sm rounded-3 py-2 px-3 text-nowrap">
                 <i class="bi bi-plus-circle me-1"></i> Transaksi Baru
             </a>
+
+            {{-- Search Bar Mentok ke Kanan (menggunakan ms-sm-auto) --}}
+            <form action="{{ route('penjualan.index') }}" method="GET" class="ms-sm-auto mb-0" style="max-width: 350px; width: 100%;">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" value="{{ request()->search }}" class="form-control bg-light border-start-0 ps-0 shadow-none" placeholder="Cari transaksi...">
+                    <button class="btn btn-outline-primary px-3" type="submit">Cari</button>
+                    @if(request('search'))
+                        <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary">Reset</a>
+                    @endif
+                </div>
+            </form>
         </div>
 
-        {{-- Search Bar --}}
-        <div class="row mb-4">
-            <div class="col-md-5">
-                <form action="{{ route('penjualan.index') }}" method="GET">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" name="search" value="{{ request()->search }}" class="form-control bg-light border-start-0 ps-0" placeholder="Cari transaksi...">
-                        <button class="btn btn-primary px-3" type="submit">Cari</button>
-                        @if(request('search'))
-                            <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary">Reset</a>
-                        @endif
-                    </div>
-                </form>
-            </div>
-        </div>
 
         {{-- Tabel Penjualan --}}
         <div class="table-responsive">
-            <table class="table table-hover-custom align-middle mb-0">
-                <thead class="table-light text-uppercase fs-7 text-muted">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">
                     <tr>
                         <th scope="col" width="5%" class="py-3 ps-3 rounded-start-3">No</th>
-                        <th scope="col" class="py-3">Tanggal Transaksi</th>
-                        <th scope="col" class="py-3">Kasir</th>
-                        <th scope="col" class="py-3">Total Pembayaran</th>
-                        <th scope="col" class="py-3">Metode</th>
-                        <th scope="col" class="py-3">Status</th>
-                        <th scope="col" width="18%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
+                        <th scope="col" width="20%" class="py-3">Tanggal Transaksi</th>
+                        <th scope="col" width="18%" class="py-3">Kasir</th>
+                        <th scope="col" width="18%" class="py-3">Total Pembayaran</th>
+                        <th scope="col" width="14%" class="py-3">Metode</th>
+                        <th scope="col" width="12%" class="py-3">Status</th>
+                        <th scope="col" width="13%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($sales as $sale)
                     <tr>
-                        <th scope="row" class="ps-3 py-3 text-muted">
+                        <th scope="row" class="ps-3 py-3 text-muted fw-medium">
                             {{ $sales->firstItem() + $loop->index }}
                         </th>
                         <td class="text-secondary small">
                             <i class="bi bi-calendar-event me-1 text-primary"></i> {{ $sale->created_at->translatedFormat('d-m-Y H:i:s') }}
                         </td>
                         <td class="fw-semibold text-dark">
-                            <span class="badge bg-light text-dark border px-2 py-1">
-                                <i class="bi bi-person me-1"></i> {{ $sale->user->name }}
+                            <span class="badge bg-light text-dark border px-2 py-1 fw-normal">
+                                <i class="bi bi-person me-1 text-muted"></i> {{ $sale->user->name }}
                             </span>
                         </td>
                         <td class="fw-bold text-success">
                             Rp {{ number_format($sale->total_pembayaran, 0, ',', '.') }}
                         </td>
                         <td>
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1">
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 fw-normal">
                                 {{ $sale->metode_pembayaran ?? 'Belum Dipilih' }}
                             </span>
                         </td>
                         <td>
                             @if($sale->status === 'COMPLETED')
-                                <span class="badge bg-success bg-opacity-10 text-success px-2.5 py-1">Completed</span>
+                                <span class="badge bg-success bg-opacity-10 text-success px-2.5 py-1 fw-semibold">Completed</span>
                             @else
-                                <span class="badge bg-warning bg-opacity-10 text-warning px-2.5 py-1">Open</span>
+                                <span class="badge bg-warning bg-opacity-10 text-warning px-2.5 py-1 fw-semibold">Open</span>
                             @endif
                         </td>
-                        <td class="pe-3">
-    <div class="d-flex justify-content-center gap-1">
-        {{-- Tombol Detail Transaksi (Clean Style dengan Aksen Biru Soft) --}}
-        <a href="{{ route('penjualan.show', $sale) }}" 
-           class="btn btn-light btn-sm border text-info shadow-none" 
-           style="transition: all 0.2s;"
-           onmouseover="this.style.backgroundColor='#e0f2fe';" 
-           onmouseout="this.style.backgroundColor='#f8f9fa';"
-           title="Detail Transaksi">
-            <i class="bi bi-eye"></i>
-        </a>
-        
-        @can('update', $sale)
-            @if($sale->status === 'OPEN')
-                {{-- Tombol Lanjut / Edit Kasir (Clean Style dengan Aksen Kuning/Oranye Soft) --}}
-                <a href="{{ route('penjualan.edit', $sale) }}" 
-                   class="btn btn-light btn-sm border text-warning shadow-none" 
-                   style="transition: all 0.2s;"
-                   onmouseover="this.style.backgroundColor='#fef3c7'; this.style.color='#d97706';" 
-                   onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.color='#f59e0b';"
-                   title="Lanjut / Edit Kasir">
-                    <i class="bi bi-cart-plus"></i>
-                </a>
-                
-                {{-- Form & Tombol Hapus Transaksi (Modal Pop-up Tengah) --}}
-                <form action="{{ route('penjualan.destroy', $sale) }}" 
-                      method="POST" 
-                      class="d-inline"
-                      id="delete-form-penjualan-{{ $sale->id }}">
-                    @csrf
-                    @method('DELETE')
-                    
-                    <button type="button" 
-                            class="btn btn-light btn-sm border text-danger shadow-none" 
-                            style="transition: all 0.2s;"
-                            onmouseover="this.style.backgroundColor='#fee2e2';" 
-                            onmouseout="this.style.backgroundColor='#f8f9fa';"
-                            title="Hapus Transaksi"
-                            onclick="openDeleteModal('penjualan-{{ $sale->id }}', 'Apakah anda yakin akan menghapus penjualan ini?')">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </form>
-            @endif
-        @endcan
-    </div>
-</td>
+                        <td class="pe-3 text-center">
+                            <div class="d-flex justify-content-center gap-1">
+                                {{-- Tombol Detail Transaksi --}}
+                                <a href="{{ route('penjualan.show', $sale) }}" 
+                                class="btn btn-light btn-sm border text-info shadow-none px-2" 
+                                style="transition: all 0.2s;"
+                                onmouseover="this.style.backgroundColor='#e0f2fe';" 
+                                onmouseout="this.style.backgroundColor='#f8f9fa';"
+                                title="Detail Transaksi">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                
+                                @can('update', $sale)
+                                    @if($sale->status === 'OPEN')
+                                        {{-- Tombol Lanjut / Edit Kasir --}}
+                                        <a href="{{ route('penjualan.edit', $sale) }}" 
+                                        class="btn btn-light btn-sm border text-warning shadow-none px-2" 
+                                        style="transition: all 0.2s;"
+                                        onmouseover="this.style.backgroundColor='#fef3c7'; this.style.color='#d97706';" 
+                                        onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.color='#f59e0b';"
+                                        title="Lanjut / Edit Kasir">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </a>
+                                        
+                                        {{-- Form & Tombol Hapus Transaksi --}}
+                                        <form action="{{ route('penjualan.destroy', $sale) }}" 
+                                            method="POST" 
+                                            class="d-inline"
+                                            id="delete-form-penjualan-{{ $sale->id }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" 
+                                                    class="btn btn-light btn-sm border text-danger shadow-none px-2" 
+                                                    style="transition: all 0.2s;"
+                                                    onmouseover="this.style.backgroundColor='#fee2e2';" 
+                                                    onmouseout="this.style.backgroundColor='#f8f9fa';"
+                                                    title="Hapus Transaksi"
+                                                    onclick="openDeleteModal('penjualan-{{ $sale->id }}', 'Apakah anda yakin akan menghapus penjualan ini?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endcan
+                            </div>
+                        </td>
                     </tr>
                     @empty
                     <tr>

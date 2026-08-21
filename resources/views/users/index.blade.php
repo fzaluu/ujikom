@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen User - POS SMART')
+@section('title', ' User')
 
 @section('content')
 <style>
@@ -34,60 +34,61 @@
                     Kelola akun pengguna dan hak akses sistem POS.
                 </p>
             </div>
-
-            <a href="{{ route('admin.users.create') }}" class="btn btn-primary shadow-sm rounded-3 py-2 px-3">
-                <i class="bi bi-plus-circle me-1"></i> Tambah User
-            </a>
         </div>
 
-        {{-- Search Bar --}}
-        <div class="row mb-4">
-            <div class="col-md-5">
-                <form action="{{ route('admin.users') }}" method="GET">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
-                            <i class="bi bi-search"></i>
-                        </span>
-
-                        <input
-                            type="text"
-                            class="form-control bg-light border-start-0 ps-0"
-                            name="search"
-                            placeholder="Cari nama atau email..."
-                            value="{{ request('search') }}"
-                        >
-
-                        <button class="btn btn-primary px-3">
-                            Cari
-                        </button>
-
-                        @if(request('search'))
-                            <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary">
-                                Reset
-                            </a>
-                        @endif
-                    </div>
-                </form>
+        {{-- Baris Tombol Tambah User di Kiri & Search Bar Mentok ke Kanan --}}
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
+            <div>
+                <a href="{{ route('admin.users.create') }}" class="btn btn-primary shadow-sm rounded-3 py-2 px-3 text-nowrap">
+                    <i class="bi bi-plus-circle me-1"></i> Tambah User
+                </a>
             </div>
+
+            {{-- Search Bar --}}
+            <form action="{{ route('admin.users') }}" method="GET" class="mb-0" style="max-width: 350px; width: 100%;">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                        <i class="bi bi-search"></i>
+                    </span>
+
+                    <input
+                        type="text"
+                        class="form-control bg-light border-start-0 ps-0 shadow-none"
+                        name="search"
+                        placeholder="Cari nama atau email..."
+                        value="{{ request('search') }}"
+                    >
+
+                    <button class="btn btn-outline-primary px-3" type="submit">
+                        Cari
+                    </button>
+
+                    @if(request('search'))
+                        <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary">
+                            Reset
+                        </a>
+                    @endif
+                </div>
+            </form>
         </div>
 
         {{-- Table --}}
         <div class="table-responsive">
-            <table class="table table-hover-custom align-middle mb-0">
-                <thead class="table-light text-uppercase fs-7 text-muted">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">
                     <tr>
                         <th width="5%" class="py-3 ps-3 rounded-start-3">No</th>
-                        <th class="py-3">Nama</th>
-                        <th class="py-3">Email</th>
+                        <th width="32%" class="py-3">Nama</th>
+                        <th width="35%" class="py-3">Email</th>
                         <th width="15%" class="py-3">Role</th>
-                        <th width="18%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
+                        <th width="13%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
                     </tr>
                 </thead>
 
                 <tbody>
                 @forelse($users as $index => $user)
                     <tr>
-                        <td class="ps-3 py-3 text-muted">
+                        <td class="ps-3 py-3 text-muted fw-medium">
                             {{ $users->firstItem() + $index }}
                         </td>
 
@@ -95,7 +96,7 @@
                             {{ $user->name }}
                         </td>
 
-                        <td class="text-muted">
+                        <td class="text-muted small">
                             {{ $user->email }}
                         </td>
 
@@ -119,10 +120,10 @@
                             @endif
                         </td>
 
-                        <td class="pe-3">
+                        <td class="pe-3 text-center">
                             <div class="d-flex justify-content-center gap-1">
                                 <a href="{{ route('admin.users.edit', $user) }}"
-                                class="btn btn-light btn-sm border text-secondary shadow-none" 
+                                class="btn btn-light btn-sm border text-secondary shadow-none px-2" 
                                 style="transition: all 0.2s;"
                                 onmouseover="this.style.backgroundColor='#e2e8f0'; this.style.color='#1e293b';" 
                                 onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.color='#6c757d';"
@@ -140,7 +141,7 @@
                                         @method('DELETE')
 
                                         <button type="button" 
-                                                class="btn btn-light btn-sm border text-danger shadow-none" 
+                                                class="btn btn-light btn-sm border text-danger shadow-none px-2" 
                                                 style="transition: all 0.2s;"
                                                 onmouseover="this.style.backgroundColor='#fee2e2';" 
                                                 onmouseout="this.style.backgroundColor='#f8f9fa';"
@@ -150,7 +151,7 @@
                                         </button>
                                     </form>
                                 @else
-                                    <button class="btn btn-light btn-sm border text-muted shadow-none" disabled title="Akun sedang digunakan">
+                                    <button class="btn btn-light btn-sm border text-muted shadow-none px-2" disabled title="Akun sedang digunakan">
                                         <i class="bi bi-slash-circle"></i>
                                     </button>
                                 @endif
@@ -168,7 +169,6 @@
                 </tbody>
             </table>
         </div>
-
         
         {{-- Footer Pagination --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center border-top pt-4 mt-3">
@@ -182,8 +182,9 @@
         
     </div>
 </div>
+
 {{-- Modal Konfirmasi Hapus di Tengah --}}
-<div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg animate-page">
             <div class="modal-header border-0 pb-0">
@@ -197,7 +198,7 @@
                 <p id="deleteModalMessage" class="text-dark fs-6 mb-0">Apakah Anda yakin ingin menghapus data ini?</p>
             </div>
             <div class="modal-footer border-0 justify-content-center pb-4 gap-2">
-                <button type="button" class="btn btn-light px-4 rounded-3 shadow-none border" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-light px-4 rounded-3 shadow-none border" data-bs-dismiss="modal" id="cancelDeleteBtn">Batal</button>
                 <button type="button" id="confirmDeleteBtn" class="btn btn-danger px-4 rounded-3 shadow-sm">Ya, Hapus</button>
             </div>
         </div>
@@ -211,33 +212,26 @@
         activeDeleteFormId = 'delete-form-' + id;
         document.getElementById('deleteModalMessage').innerText = message;
         
-        // Reset tombol hapus ke kondisi semula jika sebelumnya sempat loading
         let btn = document.getElementById('confirmDeleteBtn');
         btn.disabled = false;
         btn.innerHTML = 'Ya, Hapus';
 
-        // Reset tombol batal agar bisa diklik lagi
         let cancelBtn = document.getElementById('cancelDeleteBtn');
         if (cancelBtn) cancelBtn.disabled = false;
 
-        // Memunculkan modal menggunakan Bootstrap 5 Modal API
         var myModal = new bootstrap.Modal(document.getElementById('customDeleteModal'));
         myModal.show();
     }
 
-    // Ketika tombol "Ya, Hapus" di dalam modal diklik
     document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
         if (activeDeleteFormId) {
-            // Ubah tombol menjadi status loading dengan spinner
             let btn = this;
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menghapus...`;
             
-            // Nonaktifkan tombol batal agar user tidak menutup modal saat proses berjalan
             let cancelBtn = document.getElementById('cancelDeleteBtn');
             if (cancelBtn) cancelBtn.disabled = true;
 
-            // Kirim form
             document.getElementById(activeDeleteFormId).submit();
         }
     });
