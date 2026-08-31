@@ -682,7 +682,7 @@
                         </div>
 
                         <h2 class="login-heading mb-2">
-                            Selamat Datang! 👋
+                            Selamat Datang!
                         </h2>
 
                         <p class="login-description mb-0">
