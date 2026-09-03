@@ -64,8 +64,10 @@
                                 <tr class="border-bottom">
                                     <td class="py-2">
                                         @if($item->produk)
-                                            <strong class="text-dark d-block text-truncate" style="max-width: 120px;">{{ $item->produk->nama }}</strong>
-                                            <small class="text-muted" style="font-size: 0.75rem;">Rp {{ number_format($item->produk->harga_jual, 0, ',', '.') }}</small>
+                                            <strong class="text-dark d-block text-truncate" style="max-width: 120px;">
+                                                {{ $item->nama_produk ?? optional($item->produk)->nama ?? 'Produk Dihapus' }}
+                                            </strong>
+                                            <small class="text-muted" style="font-size: 0.75rem;">Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</small>
                                         @else
                                             <span class="text-danger fst-italic small">
                                                 <i class="bi bi-exclamation-triangle-fill me-1"></i> Produk ini sudah tidak tersedia

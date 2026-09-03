@@ -65,6 +65,7 @@ class ItemPenjualanController extends Controller
                 ItemPenjualan::create([
                     'penjualan_id' => $sale->id,
                     'produk_id' => $product->id,
+                    'nama_produk' => $product->nama,
                     'kuantitas' => $request->quantity,
                     'harga_satuan' => $product->harga_jual,
                     'subtotal' => $request->quantity * $product->harga_jual

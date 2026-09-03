@@ -83,7 +83,16 @@
                             @forelse($sale->itemPenjualan as $item)
                             <tr>
                                 <td class="ps-3 py-3 text-muted">{{ $loop->iteration }}</td>
-                                <td class="fw-semibold text-dark">{{ $item->produk->nama ?? 'Produk Dihapus' }}</td>
+                                <td class="fw-semibold text-dark">
+                                    {{ $item->nama_produk ?? 'Produk Tidak Diketahui' }}
+                                    
+                                    {{-- Label kecil akan muncul di samping jika relasi produknya sudah null (sudah dihapus) --}}
+                                    @if(is_null($item->produk_id) || !$item->produk)
+                                        <span class="badge bg-danger bg-opacity-10 text-danger ms-2 px-2 py-0.5" style="font-size: 0.7rem;">
+                                            <i class="bi bi-exclamation-circle me-1"></i> Produk Telah Dihapus
+                                        </span>
+                                    @endif
+                                </td>
                                 <td class="text-muted small">Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                                 <td>{{ $item->kuantitas }} Unit</td>
                                 <td class="pe-3 fw-bold text-success text-end">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
