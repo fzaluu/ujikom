@@ -26,6 +26,7 @@ class ProdukController extends Controller
                 $query->where('nama', 'like', "%{$request->search}%");
             })
             // --- 1. URUTKAN UTAMA: BERDASARKAN ID JENIS (ASC) ---
+            ->orderByRaw("CASE WHEN jenis_id IS NULL THEN 1 ELSE 0 END ASC")
             ->orderBy('jenis_id', 'asc')
             // --- 2. URUTKAN KEDUA: BERDASARKAN PRIORITAS STOK DI DALAM JENISNYA ---
             ->orderByRaw("
