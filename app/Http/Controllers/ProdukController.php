@@ -25,7 +25,9 @@ class ProdukController extends Controller
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->where('nama', 'like', "%{$request->search}%");
             })
-            // --- URUTKAN BERDASARKAN PRIORITAS STOK YANG DISESUAIKAN ---
+            // --- 1. URUTKAN UTAMA: BERDASARKAN ID JENIS (ASC) ---
+            ->orderBy('jenis_id', 'asc')
+            // --- 2. URUTKAN KEDUA: BERDASARKAN PRIORITAS STOK DI DALAM JENISNYA ---
             ->orderByRaw("
                 CASE 
                     WHEN stok = 0 THEN 1
@@ -34,13 +36,13 @@ class ProdukController extends Controller
                     ELSE 3
                 END ASC
             ")
-            ->latest('updated_at') // Urutan lapis kedua jika prioritas stoknya sama
+            // --- 3. URUTKAN KETIGA: DATA TERBARU JIKA STOK & JENIS SAMA ---
+            ->latest('id') // Menggunakan id DESC (produk yang baru di-input berada di atas dalam kategori/stok yang sama)
             ->paginate(10)
             ->withQueryString();
 
         return view('produk.index', compact('products', 'selectedJenis'));
     }
-
     public function create()
     {
         $jenisProduk = JenisProduk::orderBy('nama')->get();

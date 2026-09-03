@@ -1,5 +1,4 @@
 *
 !private/
 !public/
-!products/
-!products/**
+!.gitignore

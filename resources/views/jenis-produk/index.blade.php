@@ -103,7 +103,7 @@
                                                 onmouseover="this.style.backgroundColor='#fee2e2';" 
                                                 onmouseout="this.style.backgroundColor='#f8f9fa';"
                                                 title="Hapus Jenis"
-                                                onclick="openDeleteModal('jenis-{{ $jenis->id }}', 'Yakin ingin menghapus jenis ini? Produk yang memakai jenis ini akan menjadi tanpa jenis.')">
+                                                onclick="openDeleteModal('jenis-{{ $jenis->id }}', 'Apakah Anda yakin ingin menghapus jenis produk ini? Jenis tidak dapat dihapus jika masih terikat dengan produk.')">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>

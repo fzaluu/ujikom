@@ -42,10 +42,16 @@ class JenisProdukController extends Controller
 
     public function destroy(JenisProduk $jenis_produk)
     {
-        // Produk yang masih pakai jenis ini otomatis jadi jenis_id = null (lihat migration nullOnDelete),
-        // bukan ikut terhapus.
+        // Cek apakah jenis produk ini masih digunakan oleh produk lain
+        if ($jenis_produk->produk()->count() > 0) {
+            return redirect()
+                ->route('jenis-produk.index')
+                ->with('error', 'Jenis produk ini tidak dapat dihapus karena masih terikat dengan data produk!');
+        }
+
+        // Jika aman (tidak ada produk yang pakai), lakukan hapus
         $jenis_produk->delete();
 
-        return redirect()->route('jenis-produk.index')->with('success', 'Jenis produk berhasil dihapus. Produk terkait tidak ikut terhapus, hanya jadi tanpa jenis.');
+        return redirect()->route('jenis-produk.index')->with('success', 'Jenis produk berhasil dihapus.');
     }
 }

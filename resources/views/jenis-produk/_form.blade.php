@@ -4,7 +4,7 @@
     <label class="form-label fw-semibold text-secondary small">Nama Jenis Produk</label>
     <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror"
            value="{{ old('nama', isset($jenisProduk) ? $jenisProduk->nama : '') }}"
-           placeholder="Contoh: Minuman, Makanan Ringan, Alat Tulis..." required autofocus>
+           placeholder="Contoh:produk digital dan produk fisik." required autofocus>
     @error('nama')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
