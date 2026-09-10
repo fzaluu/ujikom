@@ -1,66 +1,126 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# 🛒 RAJA CELL
+### Sistem Aplikasi Kasir (Point of Sale) Berbasis Web
 
-## About Laravel
+Aplikasi POS untuk mengelola transaksi penjualan, produk, dan stok pada usaha konter HP — dibangun sebagai proyek Uji Kompetensi Keahlian (UKK) Kompetensi Keahlian Pengembangan Perangkat Lunak dan Gim (PPLG), SMK Negeri 4 Tasikmalaya.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?style=flat&logo=php&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?style=flat&logo=laravel&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=flat&logo=bootstrap&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+</div>
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 📖 Tentang Aplikasi
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**RAJA CELL** adalah sistem Point of Sale (POS) berbasis web yang dibangun untuk menggantikan proses pencatatan transaksi manual pada usaha konter HP. Aplikasi ini menangani pengelolaan produk, kategori produk, transaksi penjualan, manajemen pengguna, serta menyediakan dashboard ringkasan bisnis secara real-time.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ✨ Fitur Utama
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- 🔐 **Autentikasi & Role-Based Access Control** — dua peran (Admin & Kasir) dengan hak akses yang berbeda pada level route maupun tampilan
+- 📊 **Dashboard** — ringkasan penjualan hari ini, produk terlaris (lengkap dengan foto asli), status stok menipis/habis
+- 📦 **Manajemen Produk** — CRUD produk lengkap dengan foto (dengan pratinjau otomatis) dan kategori/jenis produk
+- 🏷️ **Manajemen Jenis Produk** — pengelompokan produk berdasarkan kategori, dengan filter langsung dari halaman kategori
+- 🧾 **Transaksi Penjualan (Kasir POS)** — keranjang belanja, validasi stok otomatis, perhitungan total otomatis, metode pembayaran CASH/QRIS
+- 👥 **Manajemen Pengguna** — khusus Admin, dengan proteksi agar Admin tidak bisa menghapus akunnya sendiri
+- 🔔 **Notifikasi Real-Time** — dikumpulkan otomatis dari transaksi terbaru, status stok, dan aktivitas login (bukan data dummy)
 
-## Laravel Sponsors
+## 🛠️ Teknologi
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Komponen | Versi |
+|---|---|
+| PHP | 8.3.16 |
+| Laravel | 12.64.0 |
+| MySQL | 8.0.30 |
+| Bootstrap | 5.3.8 |
+| Composer | 2.4.1 |
+| Vite | 6.0.11 |
 
-### Premium Partners
+## 🚀 Instalasi & Menjalankan Secara Lokal
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Prasyarat
+Pastikan sudah terpasang: PHP ≥ 8.2, Composer, Node.js & npm, MySQL/MariaDB.
 
-## Contributing
+```bash
+# 1. Clone repository
+git clone https://github.com/username/raja-cell.git
+cd raja-cell
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 2. Install dependency PHP
+composer install
 
-## Code of Conduct
+# 3. Install dependency JS & build asset
+npm install
+npm run build
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 4. Siapkan file environment
+cp .env.example .env
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+### Konfigurasi Database
+Buat database kosong (misalnya `ujikom`), lalu sesuaikan kredensial di file `.env`:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=ujikom
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## License
+```bash
+# 5. Jalankan migration + seeder
+php artisan migrate --seed
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# 6. Hubungkan storage (wajib, agar foto produk bisa tampil)
+php artisan storage:link
+
+# 7. Jalankan server
+php artisan serve
+```
+
+Buka `http://127.0.0.1:8000` di browser. Kredensial akun default dapat dilihat pada `database/seeders/UserSeeder.php`.
+
+> ⚠️ Jika database sudah berisi data (bukan instalasi baru), jalankan `php artisan migrate` saja **tanpa** `--seed` atau `--fresh`, supaya data lama tidak ikut terhapus.
+
+## 👤 Hak Akses Pengguna
+
+| Peran | Akses |
+|---|---|
+| **Admin** | Akses penuh: kelola produk, jenis produk, pengguna, lihat seluruh transaksi & data finansial |
+| **Kasir** | Melakukan transaksi penjualan, melihat produk (tanpa harga beli), melihat transaksi miliknya sendiri |
+
+## 📁 Struktur Proyek Singkat
+
+```
+app/
+├── Http/Controllers/   # Logika request (Produk, Penjualan, User, dll.)
+├── Http/Requests/      # Validasi form terpisah per aksi
+├── Models/             # Eloquent model (Produk, Penjualan, User, dll.)
+├── Policies/           # Aturan otorisasi per model
+└── Services/           # Logika bisnis (laporan, notifikasi, monitoring stok)
+
+database/migrations/    # Struktur tabel database
+resources/views/        # Tampilan Blade
+routes/web.php          # Definisi seluruh route
+```
+
+## 📄 Dokumentasi
+
+Dokumentasi lengkap (BAB I–V, ERD, use case, activity diagram, dsb.) untuk keperluan UKK tersedia terpisah pada laporan proyek.
+
+## 📝 Lisensi
+
+Proyek ini dibuat untuk keperluan pembelajaran dan Uji Kompetensi Keahlian (UKK). Bebas digunakan sebagai referensi belajar.
+
+---
+
+<div align="center">
+Dibuat oleh <b>Fraza Saka Afgani</b> — XII PPLG 2, SMK Negeri 4 Tasikmalaya
+</div>
