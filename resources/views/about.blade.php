@@ -41,10 +41,10 @@
                         </div>
 
                         <div>
-                            <a href="{{ url()->previous() }}" class="btn btn-dark px-4 rounded-pill shadow-sm">
-                                 Kembali
-                            </a>
-                        </div>
+                          <a href="{{ route('login') }}" class="btn btn-dark px-4 rounded-pill shadow-sm">
+                               Kembali 
+                          </a>
+                      </div>
                     </div>
                 </div>
             </div>
