@@ -9,6 +9,8 @@ use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\ItemPenjualanController;
 use App\Http\Controllers\JenisProdukController;
 
+use App\Http\Controllers\AboutController;
+
 use App\Http\Controllers\perulanganController;
 use App\Http\Controllers\percabanganController;
 use App\Http\Controllers\variabelController;
@@ -60,5 +62,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/tes/perulangan', [perulanganController::class, 'index'])->name('tes.perulangan');
     Route::get('/tes/percabangan', [percabanganController::class, 'index'])->name('tes.percabangan');
     Route::get('/tes/variable', [variabelController::class, 'index'])->name('tes.variable');
-
-});
+    
+    });
+   Route::view('/about', 'about')->name('about');

@@ -643,13 +643,13 @@
                 </div>
 
 
-                <!-- FOOTER -->
                 <div class="left-content">
-
                     <small style="color: rgba(255,255,255,0.65);">
-                        &copy; {{ date('Y') }} RAJA CELL
+                        &copy; {{ date('Y') }} 
+                        <a href="{{ route('about') }}" style="color: inherit; text-decoration: none;">
+                            FRAZA SAKA AFGANI
+                        </a>
                     </small>
-
                 </div>
 
             </div>
