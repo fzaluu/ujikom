@@ -58,8 +58,10 @@ class ProdukController extends Controller
         $data['user_id'] = auth()->id();
 
         if ($request->hasFile('foto')) {
-            // Simpan ke folder 'products' di disk 'public'
-            $data['foto'] = $request->file('foto')->store('products', 'public');
+            // Simpan langsung ke folder 'products' di dalam public/ (disk 'product_photos'),
+            // BUKAN ke storage/app/public. Ini menghindari ketergantungan pada symlink
+            // storage:link yang sering putus/tidak muncul setelah di-clone di PC lain.
+            $data['foto'] = $request->file('foto')->store('products', 'product_photos');
         }
 
         Produk::create($data);
@@ -87,11 +89,11 @@ class ProdukController extends Controller
 
         if ($request->hasFile('foto')) {
             // Hapus file lama jika ada agar tidak menumpuk
-            if ($produk->foto && Storage::disk('public')->exists($produk->foto)) {
-                Storage::disk('public')->delete($produk->foto);
+            if ($produk->foto && Storage::disk('product_photos')->exists($produk->foto)) {
+                Storage::disk('product_photos')->delete($produk->foto);
             }
-            // Upload baru
-            $data['foto'] = $request->file('foto')->store('products', 'public');
+            // Upload baru langsung ke public/products (disk 'product_photos')
+            $data['foto'] = $request->file('foto')->store('products', 'product_photos');
         }
 
         $produk->update($data);
@@ -108,8 +110,8 @@ class ProdukController extends Controller
             $produk->delete();
 
             // Jika berhasil terhapus dari database, baru hapus file fisik fotonya dari storage
-            if ($produk->foto && Storage::disk('public')->exists($produk->foto)) {
-                Storage::disk('public')->delete($produk->foto);
+            if ($produk->foto && Storage::disk('product_photos')->exists($produk->foto)) {
+                Storage::disk('product_photos')->delete($produk->foto);
             }
 
             return redirect()->route('produk.index')->with('success', 'Produk berhasil dihapus!');

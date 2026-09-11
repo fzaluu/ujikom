@@ -46,7 +46,7 @@ class PenjualanController extends Controller
             'user_id' => Auth::id(),
             'status' => 'OPEN',
             'total_pembayaran' => 0,
-            'metode_pembayaran' => 'CASH'
+            'metode_pembayaran' => 'BAYAR_NANTI'
         ]);
         // Belum disimpan ke database ($sale->id masih null sampai ada item yang ditambahkan)
 

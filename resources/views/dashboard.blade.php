@@ -1,18 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboar')
+@section('title', 'Dashboard')
 
 @section('content')
 @php
-    $hour = date('H');
-    $greeting = 'Selamat Pagi';
-    if ($hour >= 12 && $hour < 15) {
-        $greeting = 'Selamat Siang';
-    } elseif ($hour >= 15 && $hour < 18) {
-        $greeting = 'Selamat Sore';
-    } elseif ($hour >= 18 || $hour < 4) {
-        $greeting = 'Selamat Malam';
-    }
     $userName = auth()->user()->name ?? 'Admin';
 @endphp
 
@@ -57,12 +48,12 @@
     <div class="col-xl-7 col-lg-6 mb-3 mb-lg-0">
         <span class="text-primary fw-semibold small text-uppercase tracking-wider">Dashboard Overview</span>
         <h2 class="fw-bold text-dark mb-1" style="font-size: clamp(1.3rem, 2.2vw, 1.8rem);">
-            Selamat Pagi, {{ $userName }} <span style="display: inline-block;">👋</span>
+            <span id="greeting-text">Selamat Pagi</span>, {{ $userName }} <span style="display: inline-block;">👋</span>
         </h2>
         <p class="text-muted mb-0">Berikut adalah ringkasan performa dan aktivitas toko Anda hari ini.</p>
     </div>
     
-    <!-- Sisi Kanan: Tanggal & Jam Realtime (Dikunci agar rapi di kanan) -->
+    <!-- Sisi Kanan: Tanggal & Jam Realtime -->
     <div class="col-xl-5 col-lg-6 d-flex align-items-center justify-content-lg-end gap-2 flex-wrap">
         <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill border fw-normal d-flex align-items-center gap-2">
             <i class="bi bi-calendar-event text-primary"></i> 
@@ -79,17 +70,14 @@
 <!-- Statistik Kartu Ringkasan -->
 <div class="row g-4 mb-4">
     @php
-        // Hitung persentase real untuk progress bar
-        $targetTransaksiHarian = 20; // Kamu bisa ubah angka target harian sesuai kebutuhan toko
+        $targetTransaksiHarian = 20; 
         $persenTransaksi = min(100, ($ringkasan['total_transaksi'] / max(1, $targetTransaksiHarian)) * 100);
         
         $persenStokMenipis = $totalProduk > 0 ? min(100, ($stokMenipis / $totalProduk) * 100) : 0;
         
-        // Asumsi total produk ideal di toko adalah 50 item untuk progress bar total produk
         $targetKapasitasProduk = 50; 
         $persenTotalProduk = min(100, ($totalProduk / $targetKapasitasProduk) * 100);
 
-        // Untuk admin (finansial): asumsi target omset harian Rp 1.000.000
         $targetOmsetHarian = 1000000; 
         $persenOmset = min(100, ($ringkasan['total_penjualan'] / max(1, $targetOmsetHarian)) * 100);
 
@@ -195,7 +183,7 @@
     </div>
 </div>
 
-<!-- Bagian Bawah: Produk Terlaris & Card Aksi Kasir (Mulai Transaksi) -->
+<!-- Bagian Bawah: Produk Terlaris & Card Aksi Kasir -->
 <div class="row g-4 animate-section-bottom">
     <!-- Produk Terlaris -->
     <div class="col-lg-8">
@@ -226,15 +214,15 @@
                                                 class="btn btn-link p-0 text-decoration-none flex-shrink-0" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#productImageModal" 
-                                                data-image="{{ asset('storage/' . $produk->foto) }}" 
+                                                data-image="{{ asset($produk->foto) }}" 
                                                 data-name="{{ $produk->nama }}"
                                                 title="Klik untuk preview foto">
-                                            <img src="{{ asset('storage/' . $produk->foto) }}" 
-                                                alt="{{ $produk->nama }}" 
-                                                class="rounded-3 shadow-sm border" 
-                                                style="width: 40px; height: 40px; object-fit: cover; transition: transform 0.2s;" 
-                                                onmouseover="this.style.transform='scale(1.08)';" 
-                                                onmouseout="this.style.transform='scale(1)';">
+                                            <img src="{{ asset($produk->foto) }}" 
+                                                 alt="{{ $produk->nama }}" 
+                                                 class="rounded-3 shadow-sm border" 
+                                                 style="width: 40px; height: 40px; object-fit: cover; transition: transform 0.2s;" 
+                                                 onmouseover="this.style.transform='scale(1.08)';" 
+                                                 onmouseout="this.style.transform='scale(1)';">
                                         </button>
                                     @else
                                         <div class="product-icon bg-light rounded-3 p-2 text-primary d-flex align-items-center justify-content-center transition-all flex-shrink-0 border" style="width: 40px; height: 40px;">
@@ -249,13 +237,13 @@
                             <td>
                                 @php
                                     if ($produk->stok == 0) {
-                                        $badgeColor = 'danger'; // Merah (Stok Habis)
+                                        $badgeColor = 'danger';
                                     } elseif ($produk->stok <= 5) {
-                                        $badgeColor = 'warning'; // Kuning (Stok Menipis)
+                                        $badgeColor = 'warning';
                                     } elseif ($produk->stok > 100) {
-                                        $badgeColor = 'info'; // Biru (Stok di atas 100)
+                                        $badgeColor = 'info';
                                     } else {
-                                        $badgeColor = 'success'; // Hijau (Stok Normal aman)
+                                        $badgeColor = 'success';
                                     }
                                 @endphp
                                 <span class="badge bg-{{ $badgeColor }} bg-opacity-10 text-{{ $badgeColor }} px-2.5 py-1.5 fw-semibold">{{ $produk->stok }} Unit</span>
@@ -275,7 +263,7 @@
         </div>
     </div>
 
-    <!-- Quick Actions / Tombol POS (Mulai Transaksi Baru) -->
+    <!-- Quick Actions / Tombol POS -->
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm rounded-4 p-4 h-100 text-white position-relative overflow-hidden d-flex flex-column justify-content-between" style="background: linear-gradient(135deg, #1E40AF 0%, #2563EB 100%);">
             <div class="position-absolute top-0 end-0 p-4 opacity-10 pointer-events-none">
@@ -285,9 +273,6 @@
             <div class="position-relative z-1">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <span class="badge bg-white bg-opacity-25 text-white px-3 py-1.5 rounded-pill small fw-semibold">Kasir Cepat</span>
-                    <!-- <div class="bg-warning bg-opacity-25 text-warning p-2 rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 36px; height: 36px;">
-                        <i class="bi bi-lightning-charge-fill"></i>
-                    </div> -->
                 </div>
                 <h4 class="fw-bold mb-2 text-white">Mulai Transaksi Baru</h4>
                 <p class="text-white-50 small mb-4 lh-base">
@@ -295,7 +280,7 @@
                 </p>
             </div>
 
-            <!-- Card Informasi Ringkas di Dalam Box POS -->
+            <!-- Card Informasi Ringkas -->
             <div class="position-relative z-1 bg-white bg-opacity-10 rounded-3 p-3 border border-white border-opacity-10 mb-4 backdrop-blur">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -303,10 +288,7 @@
                         <strong class="fs-5 text-white">{{ $ringkasan['total_transaksi'] }} Order Hari Ini</strong>
                     </div>
                     <div class="position-relative d-flex align-items-center justify-content-center">
-                        <!-- Efek Glow / Lingkaran cahaya tipis di belakang (dikecilkan blurnya) -->
                         <div class="position-absolute rounded-circle bg-white opacity-25" style="width: 45px; height: 45px; filter: blur(2px);"></div>
-                        
-                        <!-- Lingkaran Utama dengan Icon Warna Putih Pekat -->
                         <div class="bg-white bg-opacity-25 text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm position-relative border border-white border-opacity-50" style="width: 44px; height: 44px; backdrop-filter: blur(8px);">
                             <i class="bi bi-graph-up-arrow fs-5 text-white fw-bold" style="opacity: 1 !important;"></i>
                         </div>
@@ -314,7 +296,7 @@
                 </div>
             </div>
 
-            <!-- Tombol Utama Pemicu ke Halaman Penjualan/POS -->
+            <!-- Tombol Utama Pemicu POS -->
             <div class="position-relative z-1">
                 <a href="{{ route('penjualan.index') }}" class="btn btn-light text-primary fw-bold w-100 py-3 shadow rounded-3 d-flex align-items-center justify-content-center gap-2 text-decoration-none" style="transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                     <i class="bi bi-plus-circle-fill fs-5"></i> Buka Kasir POS
@@ -326,7 +308,7 @@
 
 <!-- Peringatan Stok: Habis & Menipis -->
 <div class="row g-4 mt-1">
-    {{-- Kolom Stok Habis --}}
+    {{-- Stok Habis --}}
     <div class="col-lg-6">
         <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
             <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
@@ -345,16 +327,15 @@
                 @forelse($produkStokHabis as $produk)
                     <div class="d-flex align-items-center justify-content-between py-2.5 px-2 rounded-3 {{ !$loop->last ? 'border-bottom border-light' : '' }}" style="transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#F8FAFC'" onmouseout="this.style.backgroundColor='transparent'">
                         <div class="d-flex align-items-center gap-3">
-                            {{-- Foto Produk dengan Tombol Trigger Modal Preview --}}
                             @if($produk->foto)
                                 <button type="button" 
                                         class="btn btn-link p-0 text-decoration-none border-0 bg-transparent" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#productImageModal" 
-                                        data-image="{{ asset('storage/' . $produk->foto) }}" 
+                                        data-image="{{ asset($produk->foto) }}" 
                                         data-name="{{ $produk->nama }}"
                                         title="Klik untuk preview foto">
-                                    <img src="{{ asset('storage/' . $produk->foto) }}" alt="{{ $produk->nama }}" class="rounded-3 shadow-sm object-fit-cover border" style="width: 40px; height: 40px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+                                    <img src="{{ asset($produk->foto) }}" alt="{{ $produk->nama }}" class="rounded-3 shadow-sm object-fit-cover border" style="width: 40px; height: 40px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
                                 </button>
                             @else
                                 <div class="rounded-3 bg-light border d-flex align-items-center justify-content-center text-muted" style="width: 40px; height: 40px;">
@@ -379,7 +360,7 @@
         </div>
    </div>
 
-   {{-- Kolom Stok Menipis --}}
+    {{-- Stok Menipis --}}
    <div class="col-lg-6">
         <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
             <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
@@ -398,16 +379,15 @@
                 @forelse($produkStokRendah as $produk)
                     <div class="d-flex align-items-center justify-content-between py-2.5 px-2 rounded-3 {{ !$loop->last ? 'border-bottom border-light' : '' }}" style="transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#F8FAFC'" onmouseout="this.style.backgroundColor='transparent'">
                         <div class="d-flex align-items-center gap-3">
-                            {{-- Foto Produk dengan Tombol Trigger Modal Preview --}}
                             @if($produk->foto)
                                 <button type="button" 
                                         class="btn btn-link p-0 text-decoration-none border-0 bg-transparent" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#productImageModal" 
-                                        data-image="{{ asset('storage/' . $produk->foto) }}" 
+                                        data-image="{{ asset($produk->foto) }}" 
                                         data-name="{{ $produk->nama }}"
                                         title="Klik untuk preview foto">
-                                    <img src="{{ asset('storage/' . $produk->foto) }}" alt="{{ $produk->nama }}" class="rounded-3 shadow-sm object-fit-cover border" style="width: 40px; height: 40px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+                                    <img src="{{ asset($produk->foto) }}" alt="{{ $produk->nama }}" class="rounded-3 shadow-sm object-fit-cover border" style="width: 40px; height: 40px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
                                 </button>
                             @else
                                 <div class="rounded-3 bg-light border d-flex align-items-center justify-content-center text-muted" style="width: 40px; height: 40px;">
@@ -433,9 +413,7 @@
    </div>
 </div>
 
-<!-- ========================================== -->
-<!-- MODAL HTML UNTUK PREVIEW FOTO PRODUK      -->
-<!-- ========================================== -->
+<!-- MODAL PREVIEW FOTO PRODUK -->
 <div class="modal fade" id="productImageModal" tabindex="-1" aria-labelledby="productImageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
@@ -451,21 +429,39 @@
     </div>
 </div>
 
-<!-- Script Jam Realtime & Logika Modal Preview -->
+<!-- Script Jam Realtime, Sapaan Otomatis & Logika Modal -->
 <script>
-    // Jam Realtime
-    function updateClock() {
+    function updateClockAndGreeting() {
         const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
+        const hours = now.getHours();
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        // 1. Update Jam Realtime
         const clockEl = document.getElementById('realtime-clock');
         if(clockEl) {
-            clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+            clockEl.textContent = `${String(hours).padStart(2, '0')}:${minutes}:${seconds}`;
+        }
+
+        // 2. Update Sapaan Realtime (Pagi/Siang/Sore/Malam)
+        let greeting = 'Selamat Pagi';
+        if (hours >= 12 && hours < 15) {
+            greeting = 'Selamat Siang';
+        } else if (hours >= 15 && hours < 18) {
+            greeting = 'Selamat Sore';
+        } else if (hours >= 18 || hours < 4) {
+            greeting = 'Selamat Malam';
+        }
+
+        const greetingEl = document.getElementById('greeting-text');
+        if (greetingEl && greetingEl.textContent !== greeting) {
+            greetingEl.textContent = greeting;
         }
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+
+    // Jalankan setiap 1 detik
+    setInterval(updateClockAndGreeting, 1000);
+    updateClockAndGreeting();
 
     // Logika Modal Preview Foto Produk
     document.addEventListener("DOMContentLoaded", function() {

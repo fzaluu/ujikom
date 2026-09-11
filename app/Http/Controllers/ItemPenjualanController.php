@@ -39,7 +39,11 @@ class ItemPenjualanController extends Controller
                     'user_id' => Auth::id(),
                     'status' => 'OPEN',
                     'total_pembayaran' => 0,
-                    'metode_pembayaran' => 'CASH'
+                    // Default BAYAR_NANTI (bukan CASH) supaya kalau kasir tidak sengaja
+                    // keluar/pindah halaman sebelum menyelesaikan pembayaran, transaksi yang
+                    // tertinggal di riwayat statusnya jujur menunjukkan "Bayar Nanti" — bukan
+                    // seolah-olah sudah dibayar CASH padahal belum ada uang yang diterima.
+                    'metode_pembayaran' => 'BAYAR_NANTI'
                 ]);
             }
 

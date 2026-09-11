@@ -52,22 +52,32 @@
         padding: 0.85rem;
     }
 
-    /* Tombol Logout Clean Light */
+    /* ============ TOMBOL LOGOUT ============ */
     .btn-logout-clean {
         background-color: #ffffff;
         border: 1px solid #cbd5e1;
         color: #64748b;
         transition: all 0.2s ease;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
+    
     .btn-logout-clean:hover {
         background-color: #fee2e2;
         border-color: #fca5a5;
         color: #dc2626;
     }
 
+    .btn-logout-clean i.bi-box-arrow-right {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
     /* ============ TOMBOL TOGGLE SIDEBAR ============ */
-    /* Elemen terpisah (fixed) di luar .sidebar-pos supaya tidak ikut ter-clip
-       oleh overflow-x:hidden milik sidebar. Posisinya mengikuti lebar sidebar. */
     .sidebar-toggle-btn {
         position: fixed;
         top: 22px;
@@ -87,15 +97,18 @@
         cursor: pointer;
         transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     }
+    
     .sidebar-toggle-btn:hover {
         background-color: #2563eb;
         border-color: #2563eb;
         color: #ffffff;
     }
+    
     .sidebar-toggle-btn i {
         font-size: 0.85rem;
         transition: transform 0.25s ease;
     }
+    
     body.sidebar-collapsed .sidebar-toggle-btn {
         left: calc(var(--sidebar-width-collapsed) - 13px);
     }
@@ -124,6 +137,7 @@
     .brand-icon-collapsed {
         display: none;
     }
+    
     body.sidebar-collapsed .brand-icon-collapsed {
         display: flex !important;
     }
@@ -135,43 +149,45 @@
 
     body.sidebar-collapsed .sidebar-profile {
         padding: 0.6rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     body.sidebar-collapsed .sidebar-profile .profile-row {
-        justify-content: center;
-        margin-bottom: 0.6rem !important;
+        justify-content: center !important;
+        margin-bottom: 0.5rem !important;
         gap: 0 !important;
+        width: 100%;
     }
 
-    body.sidebar-collapsed .btn-logout-clean span:not(.logout-text) {
-        margin: 0 !important;
+    /* Tombol Logout khusus Mode Ciut */
+    body.sidebar-collapsed .btn-logout-clean {
+        width: 38px !important;
+        height: 38px !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
     }
 
-    /* Panah menghadap ke kanan saat sidebar dalam kondisi ciut */
+    body.sidebar-collapsed .btn-logout-clean i.bi-box-arrow-right {
+        position: relative;
+        left: 1px;
+    }
+
     body.sidebar-collapsed .sidebar-toggle-btn i {
         transform: rotate(180deg);
     }
 
-    /* Sembunyikan tombol toggle di layar kecil (sidebar sudah otomatis tersembunyi via CSS lain) */
+    /* ============ RESPONSIVE / MOBILE ============ */
     @media (max-width: 991.98px) {
         .sidebar-toggle-btn {
             display: none;
         }
-    }
-
-    /* ============ SIDEBAR DISEMBUNYIKAN DI MOBILE ============ */
-    /* Navigasi utama di layar kecil sudah digantikan oleh bottom navigation
-       (lihat layouts/bottom-nav.blade.php), jadi sidebar kiri tidak perlu tampil lagi.
-       !important wajib di sini karena elemen ini juga punya class Bootstrap "d-flex"
-       yang sudah pakai !important (display:flex), sehingga akan selalu menang kalau
-       aturan kita di sini tidak diberi !important juga. */
-    @media (max-width: 991.98px) {
         .sidebar-pos {
             display: none !important;
         }
     }
 </style>
-
 @php
     $name = Auth::user()?->name ?? 'User';
     $words = explode(' ', trim($name));

@@ -8,7 +8,7 @@
         
         <div class="col-7">
             <div class="d-flex align-items-center gap-3">
-                <img src="{{ $product->foto ? asset('storage/' . $product->foto) : 'https://via.placeholder.com/45' }}" alt="Gambar" class="rounded-3 shadow-sm flex-shrink-0" style="width: 45px; height: 45px; object-fit:cover">
+                <img src="{{ $product->foto ? asset($product->foto) : 'https://via.placeholder.com/45' }}" alt="Gambar" class="rounded-3 shadow-sm flex-shrink-0" style="width: 45px; height: 45px; object-fit:cover">
                 <div class="overflow-hidden">
                     <div class="fw-semibold {{ $product->stok <= 0 ? 'text-muted text-decoration-line-through' : 'text-dark' }} text-truncate">{{ $product->nama }}</div>
                     @if($product->stok <= 0)

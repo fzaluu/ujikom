@@ -92,7 +92,7 @@
                         </td>
                         <td>
                             <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 fw-normal">
-                                {{ $sale->metode_pembayaran ?? 'Belum Dipilih' }}
+                                {{ $sale->metode_pembayaran === 'BAYAR_NANTI' ? 'BAYAR NANTI' : ($sale->metode_pembayaran ?? 'Belum Dipilih') }}
                             </span>
                         </td>
                         <td>

@@ -31,7 +31,7 @@
                 <div class="col-md-5">
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-light text-center p-2">
                         @if($produk->foto)
-                            <img src="{{ asset('storage/' . $produk->foto) }}" class="img-fluid rounded-3 w-100 shadow-sm" alt="{{ $produk->nama }}" style="height: 320px; object-fit: cover;">
+                            <img src="{{ asset($produk->foto) }}" class="img-fluid rounded-3 w-100 shadow-sm" alt="{{ $produk->nama }}" style="height: 320px; object-fit: cover;">
                         @else
                             <div class="d-flex flex-column align-items-center justify-content-center text-muted" style="height: 320px;">
                                 <i class="bi bi-image fs-1 mb-2"></i>

@@ -44,6 +44,22 @@ return [
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
         ],
+
+        // Disk khusus untuk foto produk: root-nya langsung folder public/,
+        // BUKAN storage/app/public. Jadi tidak perlu symlink (php artisan storage:link)
+        // sama sekali, dan file-nya adalah file asli biasa yang bisa langsung
+        // di-commit & di-push ke GitHub tanpa masalah symlink yang gampang putus
+        // (apalagi di Windows). Setelah di-clone di PC/laptop lain, foto langsung
+        // muncul tanpa perlu setup tambahan apa pun.
+        // Root sengaja public_path() (bukan public_path('products')) karena subfolder
+        // 'products' sudah ditentukan sendiri lewat ->store('products', 'product_photos')
+        // di ProdukController, supaya hasilnya public/products/nama-file.jpg (tidak nested).
+        'product_photos' => [
+            'driver' => 'local',
+            'root' => public_path(),
+            'url' => env('APP_URL'),
+            'visibility' => 'public',
+        ],
         
         's3' => [
             'driver' => 's3',

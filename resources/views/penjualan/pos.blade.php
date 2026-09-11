@@ -139,7 +139,7 @@
                                     <option value="">-- Pilih Metode Pembayaran --</option>
                                     <option value="CASH" {{ ($sale->metode_pembayaran ?? '') == 'CASH' ? 'selected' : '' }}>Cash (Tunai)</option>
                                     <option value="QRIS" {{ ($sale->metode_pembayaran ?? '') == 'QRIS' ? 'selected' : '' }}>QRIS</option>
-                                    <option value="BAYAR_NANTI" {{ ($sale->metode_pembayaran ?? '') == 'BAYAR NANTI' || ($sale->metode_pembayaran ?? '') == 'BAYAR_NANTI' ? 'selected' : '' }}>Bayar Nanti</option>
+                                    <option value="BAYAR_NANTI" {{ ($sale->metode_pembayaran ?? '') == 'BAYAR NANTI' || ($sale->metode_pembayaran ?? '') == 'BAYAR_NANTI' ? 'selected' : '' }}>BAYAR NANTI</option>
                                 </select>
                             </div>
 
@@ -360,12 +360,32 @@
             }
         }
 
-        // Format input uang sambil mengetik (hanya angka)
+        // Format input uang sambil mengetik (hanya angka, huruf & minus otomatis terhapus)
         if (inputUangDibayar) {
             inputUangDibayar.addEventListener('input', function () {
-                // Biarkan user mengetik bebas, tapi hitung berdasarkan digit saja
+                // Buang semua karakter selain digit (huruf, minus, titik, koma, dll)
+                const cleaned = this.value.replace(/[^\d]/g, '');
+                if (this.value !== cleaned) {
+                    this.value = cleaned;
+                }
                 hitungKembalian();
                 uangError?.classList.add('d-none');
+            });
+
+            // Cegah karakter non-angka langsung sebelum sempat masuk ke field
+            // (jaga-jaga untuk browser/keyboard yang tidak memicu event 'input' dengan benar)
+            inputUangDibayar.addEventListener('keypress', function (e) {
+                if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            // Cegah paste teks yang mengandung karakter non-angka
+            inputUangDibayar.addEventListener('paste', function (e) {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                const cleaned = pasted.replace(/[^\d]/g, '');
+                document.execCommand('insertText', false, cleaned);
             });
         }
 

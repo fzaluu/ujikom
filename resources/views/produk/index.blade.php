@@ -125,9 +125,9 @@
                                     class="btn btn-link p-0 text-decoration-none"
                                     data-bs-toggle="modal"
                                     data-bs-target="#productImageModal"
-                                    data-image="{{ asset('storage/' . $product->foto) }}"
+                                    data-image="{{ asset($product->foto) }}"
                                     data-name="{{ $product->nama }}">
-                                    <img src="{{ asset('storage/' . $product->foto) }}" 
+                                    <img src="{{ asset($product->foto) }}" 
                                         alt="{{ $product->nama }}" 
                                         class="img-thumbnail rounded-3 shadow-sm border" 
                                         style="width: 42px; height: 42px; object-fit: cover; transition: transform 0.2s;"
