@@ -186,6 +186,7 @@
         <!-- Sidebar (Pusat Navigasi Utama) -->
         @auth
             @include('layouts.navbar')
+            @include('layouts.bottom-nav')
         @endauth
 
         <!-- Main Content Wrapper (Tanpa Navbar Atas) -->

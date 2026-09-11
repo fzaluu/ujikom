@@ -158,6 +158,18 @@
             display: none;
         }
     }
+
+    /* ============ SIDEBAR DISEMBUNYIKAN DI MOBILE ============ */
+    /* Navigasi utama di layar kecil sudah digantikan oleh bottom navigation
+       (lihat layouts/bottom-nav.blade.php), jadi sidebar kiri tidak perlu tampil lagi.
+       !important wajib di sini karena elemen ini juga punya class Bootstrap "d-flex"
+       yang sudah pakai !important (display:flex), sehingga akan selalu menang kalau
+       aturan kita di sini tidak diberi !important juga. */
+    @media (max-width: 991.98px) {
+        .sidebar-pos {
+            display: none !important;
+        }
+    }
 </style>
 
 @php
@@ -305,7 +317,7 @@
         document.getElementById('logoutForm').submit();
     }
 
-    // ============ TOGGLE BUKA/TUTUP SIDEBAR ============
+    // ============ TOGGLE BUKA/TUTUP SIDEBAR (DESKTOP) ============
     document.addEventListener('DOMContentLoaded', function () {
         const toggleBtn = document.getElementById('sidebarToggleBtn');
         if (!toggleBtn) return;
