@@ -6,6 +6,7 @@ use App\Models\Produk;
 use App\Models\JenisProduk;
 use App\Http\Requests\Produk\StoreRequest;
 use App\Http\Requests\Produk\UpdateRequest;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -58,10 +59,11 @@ class ProdukController extends Controller
         $data['user_id'] = auth()->id();
 
         if ($request->hasFile('foto')) {
-            // Simpan langsung ke folder 'products' di dalam public/ (disk 'product_photos'),
-            // BUKAN ke storage/app/public. Ini menghindari ketergantungan pada symlink
-            // storage:link yang sering putus/tidak muncul setelah di-clone di PC lain.
-            $data['foto'] = $request->file('foto')->store('products', 'product_photos');
+            // Foto di-resize & dikompres dulu (maks 1000x1000px, kualitas 78%) sebelum
+            // disimpan ke folder 'products' di public/ (disk 'product_photos'). Ini
+            // mencegah foto asli dari HP/kamera yang bisa berukuran 5-10 MB membebani
+            // RAM dan penyimpanan server.
+            $data['foto'] = ImageOptimizer::optimizeAndStore($request->file('foto'), 'products', 'product_photos');
         }
 
         Produk::create($data);
@@ -92,8 +94,8 @@ class ProdukController extends Controller
             if ($produk->foto && Storage::disk('product_photos')->exists($produk->foto)) {
                 Storage::disk('product_photos')->delete($produk->foto);
             }
-            // Upload baru langsung ke public/products (disk 'product_photos')
-            $data['foto'] = $request->file('foto')->store('products', 'product_photos');
+            // Upload baru: di-resize & dikompres dulu sebelum disimpan ke public/products
+            $data['foto'] = ImageOptimizer::optimizeAndStore($request->file('foto'), 'products', 'product_photos');
         }
 
         $produk->update($data);
