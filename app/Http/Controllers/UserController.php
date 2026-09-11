@@ -87,7 +87,7 @@ class UserController extends Controller
     {
         // Cek apakah user yang mau dihapus adalah user yang sedang aktif login
         if ($user->id === auth()->id()) {
-            return back()->with('errors', 'Peringatan: Anda sedang menggunakan akun ini dan tidak dapat menghapusnya!');
+            return back()->with('error', 'Peringatan: Anda sedang menggunakan akun ini dan tidak dapat menghapusnya!');
         }
 
         try {
@@ -95,7 +95,7 @@ class UserController extends Controller
             return redirect()->route('admin.users')->with('success', 'User berhasil dihapus');
         } catch (\Illuminate\Database\QueryException $e) {
             // Tangkap error jika user terikat dengan data penjualan (foreign key constraint)
-            return back()->with('errors', 'User tidak dapat dihapus karena memiliki riwayat transaksi.');
+            return back()->with('error', 'User tidak dapat dihapus karena memiliki riwayat transaksi.');
         }
     }
 }

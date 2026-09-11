@@ -7,6 +7,8 @@
         z-index: 1050;
         background-color: #ffffff !important;
         border-right: 1px solid #e2e8f0;
+        transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-x: hidden;
     }
 
     .sidebar-pos .brand-title {
@@ -62,6 +64,100 @@
         border-color: #fca5a5;
         color: #dc2626;
     }
+
+    /* ============ TOMBOL TOGGLE SIDEBAR ============ */
+    /* Elemen terpisah (fixed) di luar .sidebar-pos supaya tidak ikut ter-clip
+       oleh overflow-x:hidden milik sidebar. Posisinya mengikuti lebar sidebar. */
+    .sidebar-toggle-btn {
+        position: fixed;
+        top: 22px;
+        left: calc(var(--sidebar-width) - 13px);
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        padding: 0;
+        z-index: 1070;
+        cursor: pointer;
+        transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .sidebar-toggle-btn:hover {
+        background-color: #2563eb;
+        border-color: #2563eb;
+        color: #ffffff;
+    }
+    .sidebar-toggle-btn i {
+        font-size: 0.85rem;
+        transition: transform 0.25s ease;
+    }
+    body.sidebar-collapsed .sidebar-toggle-btn {
+        left: calc(var(--sidebar-width-collapsed) - 13px);
+    }
+
+    /* ============ MODE DICIUTKAN (ICON-ONLY) ============ */
+    body.sidebar-collapsed .sidebar-pos {
+        width: 84px;
+    }
+
+    body.sidebar-collapsed .sidebar-pos.p-4 {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    body.sidebar-collapsed .nav-label,
+    body.sidebar-collapsed .profile-text,
+    body.sidebar-collapsed .logout-text {
+        display: none !important;
+    }
+
+    body.sidebar-collapsed .brand-title,
+    body.sidebar-collapsed .brand-subtitle {
+        display: none !important;
+    }
+
+    .brand-icon-collapsed {
+        display: none;
+    }
+    body.sidebar-collapsed .brand-icon-collapsed {
+        display: flex !important;
+    }
+
+    body.sidebar-collapsed .nav-link {
+        justify-content: center;
+        padding: 0.75rem 0.5rem;
+    }
+
+    body.sidebar-collapsed .sidebar-profile {
+        padding: 0.6rem;
+    }
+
+    body.sidebar-collapsed .sidebar-profile .profile-row {
+        justify-content: center;
+        margin-bottom: 0.6rem !important;
+        gap: 0 !important;
+    }
+
+    body.sidebar-collapsed .btn-logout-clean span:not(.logout-text) {
+        margin: 0 !important;
+    }
+
+    /* Panah menghadap ke kanan saat sidebar dalam kondisi ciut */
+    body.sidebar-collapsed .sidebar-toggle-btn i {
+        transform: rotate(180deg);
+    }
+
+    /* Sembunyikan tombol toggle di layar kecil (sidebar sudah otomatis tersembunyi via CSS lain) */
+    @media (max-width: 991.98px) {
+        .sidebar-toggle-btn {
+            display: none;
+        }
+    }
 </style>
 
 @php
@@ -75,12 +171,20 @@
     }
 @endphp
 
+<!-- Tombol Toggle Buka/Tutup Sidebar (hanya ikon, di luar sidebar-pos agar tidak ter-clip) -->
+<button type="button" id="sidebarToggleBtn" class="sidebar-toggle-btn" title="Ciutkan/Lebarkan Sidebar">
+    <i class="bi bi-chevron-left"></i>
+</button>
+
 <div class="d-flex flex-column flex-shrink-0 p-4 sidebar-pos shadow-sm">
 
     <!-- Logo / Brand (Centered) -->
     <a href="{{ route('dashboard') }}" class="d-flex flex-column align-items-center text-center mb-3 text-decoration-none py-2">
+        <div class="brand-icon-collapsed align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold shadow-sm mb-0" style="width: 38px; height: 38px; font-size: 0.8rem; letter-spacing: 0.5px;" title="RAJA CELL">
+            RC
+        </div>
         <span class="brand-title mb-0 fw-bold text-dark fs-5" style="letter-spacing: 0.5px;">RAJA CELL</span>
-        <small class="text-muted" style="font-size: 0.65rem;">Sistem Aplikasi Kasir</small>
+        <small class="text-muted brand-subtitle" style="font-size: 0.65rem;">Sistem Aplikasi Kasir</small>
     </a>
 
     <hr class="sidebar-divider my-1">
@@ -88,33 +192,33 @@
     <!-- Menu Navigasi -->
     <ul class="nav nav-pills flex-column mb-auto gap-1">
         <li class="nav-item">
-            <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2 fs-5"></i> Dashboard
+            <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" title="Dashboard">
+                <i class="bi bi-speedometer2 fs-5"></i> <span class="nav-label">Dashboard</span>
             </a>
         </li>
 
         @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
         <li class="nav-item">
-                <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
-                    <i class="bi bi-people fs-5"></i> User
+                <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" title="User">
+                    <i class="bi bi-people fs-5"></i> <span class="nav-label">User</span>
                 </a>
             </li>
         <li class="nav-item">
-            <a href="{{ route('jenis-produk.index') }}" class="nav-link {{ request()->routeIs('jenis-produk*') ? 'active' : '' }}">
-                <i class="bi bi-tags fs-5"></i> Jenis
+            <a href="{{ route('jenis-produk.index') }}" class="nav-link {{ request()->routeIs('jenis-produk*') ? 'active' : '' }}" title="Jenis">
+                <i class="bi bi-tags fs-5"></i> <span class="nav-label">Jenis</span>
             </a>
         </li>
         @endif
 
         <li class="nav-item">
-            <a href="{{ route('produk.index') }}" class="nav-link {{ request()->routeIs('produk*') ? 'active' : '' }}">
-                <i class="bi bi-box-seam fs-5"></i> Produk
+            <a href="{{ route('produk.index') }}" class="nav-link {{ request()->routeIs('produk*') ? 'active' : '' }}" title="Produk">
+                <i class="bi bi-box-seam fs-5"></i> <span class="nav-label">Produk</span>
             </a>
         </li>
 
         <li class="nav-item">
-            <a href="{{ route('penjualan.index') }}" class="nav-link {{ request()->routeIs('penjualan*') ? 'active' : '' }}">
-                <i class="bi bi-bag-check fs-5"></i> Penjualan
+            <a href="{{ route('penjualan.index') }}" class="nav-link {{ request()->routeIs('penjualan*') ? 'active' : '' }}" title="Penjualan">
+                <i class="bi bi-bag-check fs-5"></i> <span class="nav-label">Penjualan</span>
             </a>
         </li>
         
@@ -125,11 +229,11 @@
 
     <!-- Profil Pengguna & Logout -->
     <div class="mt-auto sidebar-profile">
-        <div class="d-flex align-items-center mb-3 gap-3">
-            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0" style="width: 38px; height: 38px; font-size: 0.85rem; letter-spacing: 0.5px;">
+        <div class="d-flex align-items-center mb-3 gap-3 profile-row">
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0" style="width: 38px; height: 38px; font-size: 0.85rem; letter-spacing: 0.5px;" title="{{ $name }}">
                 {{ $initials }}
             </div>
-            <div class="d-flex flex-column justify-content-center overflow-hidden" style="line-height: 1.3;">
+            <div class="d-flex flex-column justify-content-center overflow-hidden profile-text" style="line-height: 1.3;">
                 <strong class="text-dark text-truncate d-block small mb-0">{{ $name }}</strong>
                 <span class="text-muted d-block" style="font-size: 0.7rem;">{{ ucfirst(optional(Auth::user()?->role)->name ?? 'Administrator') }}</span>
             </div>
@@ -138,8 +242,8 @@
         <!-- Form Logout dengan pemicu modal kustom -->
         <form id="logoutForm" action="{{ route('logout') }}" method="POST">
             @csrf
-            <button type="button" onclick="openLogoutModal()" class="btn btn-logout-clean btn-sm w-100 rounded-2 py-1.5 d-flex align-items-center justify-content-center gap-2 shadow-none" style="font-size: 0.8rem;">
-                <i class="bi bi-box-arrow-right"></i> Logout
+            <button type="button" onclick="openLogoutModal()" class="btn btn-logout-clean btn-sm w-100 rounded-2 py-1.5 d-flex align-items-center justify-content-center gap-2 shadow-none" style="font-size: 0.8rem;" title="Logout">
+                <i class="bi bi-box-arrow-right"></i> <span class="logout-text">Logout</span>
             </button>
         </form>
     </div>
@@ -200,4 +304,21 @@
         // Submit form logout
         document.getElementById('logoutForm').submit();
     }
+
+    // ============ TOGGLE BUKA/TUTUP SIDEBAR ============
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('sidebarToggleBtn');
+        if (!toggleBtn) return;
+
+        toggleBtn.addEventListener('click', function () {
+            document.body.classList.toggle('sidebar-collapsed');
+
+            try {
+                localStorage.setItem(
+                    'sidebarCollapsed',
+                    document.body.classList.contains('sidebar-collapsed') ? '1' : '0'
+                );
+            } catch (e) {}
+        });
+    });
 </script>

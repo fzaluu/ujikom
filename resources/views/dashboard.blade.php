@@ -52,22 +52,23 @@
 </style>
 
 <!-- Header Sambutan & Utilitas -->
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-2 animate-card-1">
-    <div>
+<div class="row align-items-center justify-content-between mb-4 pb-2 animate-card-1">
+    <!-- Sisi Kiri: Sapaan & Deskripsi -->
+    <div class="col-xl-7 col-lg-6 mb-3 mb-lg-0">
         <span class="text-primary fw-semibold small text-uppercase tracking-wider">Dashboard Overview</span>
-        <h2 class="fw-bold text-dark mb-1">{{ $greeting }}, {{ $userName }} 👋</h2>
+        <h2 class="fw-bold text-dark mb-1" style="font-size: clamp(1.3rem, 2.2vw, 1.8rem);">
+            Selamat Pagi, {{ $userName }} <span style="display: inline-block;">👋</span>
+        </h2>
         <p class="text-muted mb-0">Berikut adalah ringkasan performa dan aktivitas toko Anda hari ini.</p>
     </div>
     
-    <!-- Bagian Kanan Header: Tanggal & Jam Realtime -->
-    <div class="d-flex align-items-center gap-2 flex-wrap">
-        <!-- Tanggal Hari Ini -->
-        <span class="badge bg-white text-dark shadow-sm px-3 py-2.5 rounded-pill border fw-normal d-flex align-items-center gap-2">
+    <!-- Sisi Kanan: Tanggal & Jam Realtime (Dikunci agar rapi di kanan) -->
+    <div class="col-xl-5 col-lg-6 d-flex align-items-center justify-content-lg-end gap-2 flex-wrap">
+        <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill border fw-normal d-flex align-items-center gap-2">
             <i class="bi bi-calendar-event text-primary"></i> 
             <span>{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</span>
         </span>
 
-        <!-- Jam Realtime -->
         <div class="d-flex align-items-center gap-2 text-muted bg-white px-3 py-2 rounded-pill border shadow-sm small">
             <i class="bi bi-clock text-primary"></i>
             <span id="realtime-clock" class="fw-semibold text-dark">00:00:00</span>

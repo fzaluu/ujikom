@@ -18,6 +18,7 @@
     <style>
         :root {
             --sidebar-width: 270px;
+            --sidebar-width-collapsed: 84px;
             --primary-color: #2563EB;
             --primary-hover: #1D4ED8;
             --bg-body: #F8FAFC;
@@ -51,6 +52,13 @@
         @media (max-width: 991.98px) {
             .main-content {
                 margin-left: 0;
+            }
+        }
+
+        /* Konten menyesuaikan saat sidebar diciutkan (hanya layar besar) */
+        @media (min-width: 992px) {
+            body.sidebar-collapsed .main-content {
+                margin-left: var(--sidebar-width-collapsed);
             }
         }
 
@@ -130,6 +138,17 @@
     </style>
 </head>
 <body>
+
+    <script>
+        // Terapkan status sidebar (ciut/lebar) sesegera mungkin agar tidak ada efek kedap-kedip
+        (function () {
+            try {
+                if (localStorage.getItem('sidebarCollapsed') === '1') {
+                    document.body.classList.add('sidebar-collapsed');
+                }
+            } catch (e) {}
+        })();
+    </script>
 
     <!-- Global Loading Overlay -->
     <div id="page-loader">
