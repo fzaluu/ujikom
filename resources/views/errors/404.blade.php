@@ -527,7 +527,7 @@
 
                 <i class="bi bi-info-circle me-1"></i>
 
-                Jika masalah berlanjut, silakan kembali ke halaman utama POS SMART.
+                Jika masalah berlanjut, silakan kembali ke halaman utama RAJA CELL.
 
             </div>
 

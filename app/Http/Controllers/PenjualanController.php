@@ -99,7 +99,9 @@ class PenjualanController extends Controller
     public function update(Request $request, Penjualan $penjualan)
     {
         $request->validate([
-            'payment_method' => 'required|in:CASH,QRIS,BAYAR_NANTI'
+            'payment_method' => 'required|in:CASH,QRIS,BAYAR_NANTI',
+            'uang_dibayar' => 'nullable',
+            'kembalian' => 'nullable',
         ]);
 
         if ($penjualan->status == 'COMPLETED') {
@@ -112,17 +114,30 @@ class PenjualanController extends Controller
             return back()->with('error', 'Keranjang masih kosong');
         }
 
-        // Tentukan status berdasarkan metode pembayaran
-        // Jika BAYAR_NANTI -> Tetap OPEN agar bisa diedit/dilanjutkan pembayaran nanti
-        // Jika CASH / QRIS -> COMPLETED
+        $total = $penjualan->itemPenjualan()->sum('subtotal');
+        
+        $uangDibayar = null;
+        $kembalian = null;
+
+        // Validasi khusus jika metode pembayaran CASH
+        if ($request->payment_method === 'CASH') {
+            // Memastikan data diambil secara aman (pakai float/numeric, fallback ke 0 jika kosong)
+            $uangDibayar = floatval($request->input('uang_dibayar', 0));
+            $kembalian = floatval($request->input('kembalian', 0));
+
+            if ($uangDibayar < $total) {
+                return back()->withErrors(['uang_dibayar' => 'Uang tunai dari pelanggan kurang dari total pembayaran!'])->withInput();
+            }
+        }
+
         $newStatus = ($request->payment_method === 'BAYAR_NANTI') ? 'OPEN' : 'COMPLETED';
 
-        DB::transaction(function () use ($penjualan, $request, $newStatus) {
-            $total = $penjualan->itemPenjualan()->sum('subtotal');
-
+        DB::transaction(function () use ($penjualan, $request, $total, $newStatus, $uangDibayar, $kembalian) {
             $penjualan->update([
                 'metode_pembayaran' => $request->payment_method,
                 'total_pembayaran' => $total,
+                'uang_dibayar' => $uangDibayar,
+                'kembalian' => $kembalian,
                 'status' => $newStatus
             ]);
         });

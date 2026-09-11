@@ -15,6 +15,31 @@ Aplikasi POS untuk mengelola transaksi penjualan, produk, dan stok pada usaha ko
 
 ---
 
+cara menghapus data dummy
+
+Buka halaman phpMyAdmin, lalu klik nama database kamu (ujikom atau contoh).
+
+Pilih menu SQL di bagian atas.
+
+PENTING: Pastikan kotak pilihan "Enable foreign key checks" yang ada di bawah kotak teks SQL dihilangkan centangnya (di-uncheck).
+
+Salin dan tempel kode SQL ini secara utuh ke dalam kotak:
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE item_penjualan;
+TRUNCATE TABLE penjualan;
+TRUNCATE TABLE produk;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+Setelah jalan
+Login default setelah seed:
+
+admin / Admin@2026!
+kasir / Kasir@2026!
+
 ## 📖 Tentang Aplikasi
 
 **RAJA CELL** adalah sistem Point of Sale (POS) berbasis web yang dibangun untuk menggantikan proses pencatatan transaksi manual pada usaha konter HP. Aplikasi ini menangani pengelolaan produk, kategori produk, transaksi penjualan, manajemen pengguna, serta menyediakan dashboard ringkasan bisnis secara real-time.

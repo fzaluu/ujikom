@@ -18,15 +18,18 @@ class UserController extends Controller
     {
         // Mengambil data user dengan filter pencarian dan pengurutan role (Admin di paling atas)
         $users = User::with('role')
-            ->when($request->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-                });
-            })
             // Mengurutkan admin di atas (ASC) lalu kasir di bawahnya
             ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
             ->select('users.*')
+            ->when($request->search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    // Kolom 'name' dan 'email' harus diberi prefix 'users.' karena tabel
+                    // 'roles' juga memiliki kolom 'name', sehingga tanpa prefix ini
+                    // MySQL akan menganggap kolomnya ambigu (error 1052) setelah leftJoin.
+                    $q->where('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.email', 'like', "%{$search}%");
+                });
+            })
             ->orderByRaw("FIELD(roles.name, 'admin', 'kasir') ASC")
             ->latest('users.created_at')
             ->paginate(10)

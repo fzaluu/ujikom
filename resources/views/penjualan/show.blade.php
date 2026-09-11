@@ -1,20 +1,33 @@
 @extends('layouts.app')
 
-@section('title', 'Detail')
+@section('title', 'Detail Transaksi')
 
 @section('content')
 <div class="container-fluid px-0">
-    <div class="card shadow-sm border-0 rounded-4 col-lg-10 mx-auto p-4">
+    {{-- Pembungkus utama struk dengan ID #area-struk --}}
+    <div id="area-struk" class="card shadow-sm border-0 rounded-4 col-lg-10 mx-auto p-4 bg-white">
         
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 d-print-none">
             <div>
                 <span class="text-primary fw-semibold small text-uppercase tracking-wider">Riwayat Kasir</span>
                 <h3 class="fw-bold text-dark mb-1">Detail Penjualan</h3>
-                <p class="text-muted small mb-0">Informasi lengkap transaksi dan item barang yang dibeli.</p>
+                <p class="text-muted small mb-0">Informasi lengkap transaksi dan rincian pembayaran.</p>
             </div>
-            <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 py-2">
-                <i class="bi bi-arrow-left-circle me-1"></i> Kembali
-            </a>
+            <div class="d-flex gap-2">
+                <button onclick="window.print()" class="btn btn-primary shadow-sm rounded-3 py-2">
+                    <i class="bi bi-printer me-1"></i> Cetak Struk
+                </button>
+                <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 py-2">
+                    <i class="bi bi-arrow-left-circle me-1"></i> Kembali
+                </a>
+            </div>
+        </div>
+
+        {{-- Judul Khusus Struk Saat Diprint --}}
+        <div class="text-center mb-4 d-none d-print-block">
+            <h3 class="fw-bold mb-1">RAJA CELL</h3>
+            <p class="text-muted small mb-0">Struk Bukti Pembayaran Sah</p>
+            <hr>
         </div>
 
         <div class="card border-0 bg-light bg-opacity-50 rounded-4 p-4 mb-4">
@@ -28,7 +41,7 @@
                     <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Kasir Bertugas</div>
                     <div class="fw-semibold text-dark">
                         <span class="badge bg-white text-dark border px-2 py-1">
-                            <i class="bi bi-person me-1"></i> {{ $sale->user->name }}
+                            <i class="bi bi-person me-1"></i> {{ optional($sale->user)->name ?? 'Admin' }}
                         </span>
                     </div>
                 </div>
@@ -60,6 +73,17 @@
                         @endif
                     </div>
                 </div> 
+
+                @if($sale->metode_pembayaran === 'CASH')
+                    <div class="col-md-6">
+                        <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Uang Tunai Dibayar</div>
+                        <div class="fw-semibold text-dark">Rp {{ number_format($sale->uang_dibayar ?? 0, 0, ',', '.') }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Uang Kembalian</div>
+                        <div class="fw-semibold text-success">Rp {{ number_format($sale->kembalian ?? 0, 0, ',', '.') }}</div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -84,9 +108,8 @@
                             <tr>
                                 <td class="ps-3 py-3 text-muted">{{ $loop->iteration }}</td>
                                 <td class="fw-semibold text-dark">
-                                    {{ $item->nama_produk ?? 'Produk Tidak Diketahui' }}
+                                    {{ $item->nama_produk ?? optional($item->produk)->nama ?? 'Produk Tidak Diketahui' }}
                                     
-                                    {{-- Label kecil akan muncul di samping jika relasi produknya sudah null (sudah dihapus) --}}
                                     @if(is_null($item->produk_id) || !$item->produk)
                                         <span class="badge bg-danger bg-opacity-10 text-danger ms-2 px-2 py-0.5" style="font-size: 0.7rem;">
                                             <i class="bi bi-exclamation-circle me-1"></i> Produk Telah Dihapus
@@ -108,21 +131,28 @@
                                 <th colspan="4" class="text-end py-3">Total Pembayaran:</th>
                                 <th class="text-end py-3 text-success fs-5 pe-3">Rp {{ number_format($sale->total_pembayaran, 0, ',', '.') }}</th>
                             </tr>
+                            @if($sale->metode_pembayaran === 'CASH')
+                            <tr>
+                                <th colspan="4" class="text-end py-2">Tunai:</th>
+                                <th class="text-end py-2 text-dark fs-6 pe-3">Rp {{ number_format($sale->uang_dibayar ?? 0, 0, ',', '.') }}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-end py-2">Kembalian:</th>
+                                <th class="text-end py-2 text-success fs-6 pe-3">Rp {{ number_format($sale->kembalian ?? 0, 0, ',', '.') }}</th>
+                            </tr>
+                            @endif
                         </tfoot>
                     </table>
                 </div>
             </div>
         </div>
 
-        {{-- TOMBOL AKSI: Lanjutkan / Selesaikan Pembayaran jika status masih OPEN --}}
         @if($sale->status === 'OPEN')
-            <div class="mt-4 pt-3 border-top">
+            <div class="mt-4 pt-3 border-top d-print-none">
                 <a href="{{ route('penjualan.edit', $sale->id) }}" 
                    id="btnSelesaikanBayar"
                    class="btn w-100 py-3 rounded-4 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-white position-relative overflow-hidden text-decoration-none" 
                    style="background: linear-gradient(135deg, #059669 0%, #10B981 100%); transition: all 0.2s ease;"
-                   onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.3)';" 
-                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)';"
                    onclick="handleLoading(this)">
                     <i class="bi bi-cart-check-fill fs-5" id="btnIcon"></i> 
                     <span id="btnText">Selesaikan Pembayaran</span>
@@ -133,14 +163,42 @@
     </div>
 </div>
 
-{{-- Script Animasi Loading --}}
+{{-- CSS PRINT: 100% MENYEMBUNYIKAN SIDEBAR & MERAPIKAN CETAKAN --}}
+<style>
+    @media print {
+        /* Sembunyikan sidebar, navbar, dan seluruh elemen bawaan aplikasi */
+        .sidebar-pos, nav, aside, header, footer, .d-print-none {
+            display: none !important;
+        }
+
+        /* Paksa body bersih tanpa background abu-abu */
+        body, html, .container-fluid {
+            background-color: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+
+        /* Tampilkan area struk memenuhi kertas cetak */
+        #area-struk {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 10px !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
+        }
+    }
+</style>
+
 <script>
     function handleLoading(element) {
-        // Mencegah klik berulang kali
         element.style.pointerEvents = 'none';
         element.style.opacity = '0.85';
         
-        // Ubah isi tombol menjadi animasi spinner loading
         const icon = document.getElementById('btnIcon');
         const text = document.getElementById('btnText');
         

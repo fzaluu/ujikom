@@ -4,25 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>403</title>
+    <title>419 </title>
 
     <!-- Bootstrap 5 CSS -->
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Bootstrap Icons -->
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    >
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Google Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -38,11 +29,6 @@
             --text-light: #98A2B3;
 
             --border: #E3E8F0;
-
-            /* Warna khusus status akses ditolak */
-            --danger: #D9534F;
-            --danger-light: #FFF1F0;
-            --danger-border: #F6D5D2;
         }
 
         * {
@@ -66,11 +52,7 @@
             background: var(--background);
         }
 
-
-        /* =========================================
-            BACKGROUND
-        ========================================= */
-
+        /* Background dekorasi halus seperti halaman login */
         body::before {
             content: '';
 
@@ -92,6 +74,7 @@
                 );
         }
 
+        /* Pola titik halus */
         body::after {
             content: '';
 
@@ -99,7 +82,6 @@
             inset: 0;
 
             pointer-events: none;
-
             opacity: 0.35;
 
             background-image:
@@ -120,31 +102,15 @@
 
 
         /* =========================================
-            WRAPPER
-        ========================================= */
-
-        .error-wrapper {
-            position: relative;
-            z-index: 2;
-
-            width: 100%;
-            min-height: 100vh;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-
-        /* =========================================
             ERROR CARD
         ========================================= */
 
         .error-card {
             position: relative;
+            z-index: 2;
 
-            width: 100%;
             max-width: 560px;
+            width: 100%;
 
             padding: 42px 38px;
 
@@ -168,7 +134,7 @@
 
 
         /* =========================================
-            ERROR CODE
+            ERROR NUMBER
         ========================================= */
 
         .error-code {
@@ -191,7 +157,7 @@
                 contentEnter
                 0.65s
                 cubic-bezier(0.22, 1, 0.36, 1)
-                0.08s
+                0.1s
                 both;
         }
 
@@ -203,12 +169,12 @@
             width: 42px;
             height: 4px;
 
-            bottom: -10px;
-            left: 50%;
-
             border-radius: 10px;
 
             background: var(--primary);
+
+            bottom: -10px;
+            left: 50%;
 
             transform: translateX(-50%);
         }
@@ -219,6 +185,8 @@
         ========================================= */
 
         .error-icon-wrapper {
+            position: relative;
+
             width: 78px;
             height: 78px;
 
@@ -230,17 +198,19 @@
 
             border-radius: 20px;
 
-            color: var(--danger);
+            color: var(--primary);
 
-            background: var(--danger-light);
+            background: var(--primary-light);
 
-            border: 1px solid var(--danger-border);
+            border:
+                1px solid
+                rgba(47, 102, 181, 0.10);
 
             animation:
                 contentEnter
                 0.65s
                 cubic-bezier(0.22, 1, 0.36, 1)
-                0.15s
+                0.16s
                 both;
         }
 
@@ -250,7 +220,7 @@
 
 
         /* =========================================
-            TITLE
+            TEXT
         ========================================= */
 
         .error-title {
@@ -271,17 +241,14 @@
                 both;
         }
 
-
-        /* =========================================
-            DESCRIPTION
-        ========================================= */
-
         .error-description {
             max-width: 440px;
 
-            margin: 0 auto 28px;
+            margin:
+                0 auto 28px;
 
             font-size: 13px;
+
             line-height: 1.8;
 
             color: var(--text-secondary);
@@ -296,7 +263,7 @@
 
 
         /* =========================================
-            BUTTON GROUP
+            BUTTON
         ========================================= */
 
         .button-group {
@@ -329,13 +296,10 @@
                 border-color 0.2s ease;
         }
 
-
-        /* Tombol utama */
-
         .btn-primary {
-            color: #FFFFFF;
-
             border: none !important;
+
+            color: #FFFFFF;
 
             background: var(--primary) !important;
 
@@ -344,7 +308,7 @@
                 rgba(47, 102, 181, 0.20);
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: var(--primary-dark) !important;
 
             transform: translateY(-1px);
@@ -354,13 +318,6 @@
                 rgba(47, 102, 181, 0.25);
         }
 
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-
-        /* Tombol kembali */
-
         .btn-outline-secondary {
             color: var(--text-secondary);
 
@@ -369,7 +326,7 @@
             border-color: var(--border);
         }
 
-        .btn-outline-secondary:hover {
+        .btn-outline-secondary:hover:not(:disabled) {
             color: var(--text-dark);
 
             background: #F8FAFC;
@@ -381,14 +338,15 @@
 
 
         /* =========================================
-            FOOTER
+            FOOTER INFO
         ========================================= */
 
         .error-footer {
             margin-top: 28px;
             padding-top: 20px;
 
-            border-top: 1px solid var(--border);
+            border-top:
+                1px solid var(--border);
 
             font-size: 11px;
 
@@ -488,92 +446,89 @@
             .button-group .btn {
                 width: 100%;
             }
-        }
 
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="error-wrapper">
+    <div class="container d-flex justify-content-center align-items-center">
 
         <div class="error-card">
 
-
-            <!-- ==================================
-                 KODE ERROR
-            =================================== -->
+            <!-- KODE ERROR -->
             <div class="error-code">
-                403
+                419
             </div>
 
 
-            <!-- ==================================
-                 ICON AKSES DITOLAK
-            =================================== -->
+            <!-- ICON -->
             <div class="error-icon-wrapper">
-                <i class="bi bi-shield-lock"></i>
+                <i class="bi bi-clock-history"></i>
             </div>
 
 
-            <!-- ==================================
-                 JUDUL
-            =================================== -->
+            <!-- JUDUL -->
             <h2 class="error-title">
-                Akses Ditolak
+                Sesi Halaman Telah Berakhir
             </h2>
 
 
-            <!-- ==================================
-                 DESKRIPSI
-            =================================== -->
+            <!-- DESKRIPSI -->
             <p class="error-description">
-                Maaf, Anda tidak memiliki hak akses atau izin yang cukup
-                untuk membuka halaman ini. Silakan kembali ke halaman utama
-                atau hubungi Administrator jika Anda merasa ini adalah
-                sebuah kesalahan.
+                Maaf, sesi keamanan halaman ini sudah kedaluwarsa karena terlalu
+                lama tidak aktif. Silakan muat ulang halaman dan coba kirim
+                formulir Anda kembali.
             </p>
 
 
-            <!-- ==================================
-                 TOMBOL
-            =================================== -->
+            <!-- TOMBOL -->
             <div class="button-group d-flex justify-content-center gap-2 flex-wrap">
 
-                <!-- Tombol Beranda dengan Loading -->
+                <!-- Tombol Muat Ulang dengan Loading State -->
                 <a
-                    href="{{ route('dashboard') }}"
+                    href="{{ url()->previous() ?: route('dashboard') }}"
                     class="btn btn-primary"
-                    id="homeBtn"
-                    onclick="handleLoading(event, 'homeBtn', 'Memuat Beranda...')"
+                    id="btnReload"
                 >
-                    <i class="bi bi-house-door me-2" id="homeIcon"></i>
-                    <span id="homeText">Kembali ke Beranda</span>
+                    <span class="btn-text">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        Muat Ulang Halaman
+                    </span>
+                    <span class="btn-loader d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Memuat...
+                    </span>
                 </a>
 
 
-                <!-- Tombol Kembali dengan Loading -->
-                <button
-                    type="button"
+                <!-- Tombol Beranda dengan Loading State -->
+                <a
+                    href="{{ route('dashboard') }}"
                     class="btn btn-outline-secondary"
-                    id="backBtn"
-                    onclick="handleBackLoading(event)"
+                    id="btnDashboard"
                 >
-                    <i class="bi bi-arrow-left me-2" id="backIcon"></i>
-                    <span id="backText">Kembali</span>
-                </button>
+                    <span class="btn-text">
+                        <i class="bi bi-house-door me-2"></i>
+                        Kembali ke Beranda
+                    </span>
+                    <span class="btn-loader d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Memuat...
+                    </span>
+                </a>
 
             </div>
 
 
-            <!-- ==================================
-                 FOOTER
-            =================================== -->
+            <!-- FOOTER -->
             <div class="error-footer">
 
-                <i class="bi bi-shield-check me-1"></i>
+                <i class="bi bi-info-circle me-1"></i>
 
-                Halaman ini dilindungi oleh sistem hak akses RAJA CELL.
+                Ini terjadi demi keamanan akun Anda di sistem RAJA CELL. Data
+                yang belum tersimpan mungkin perlu diisi ulang.
 
             </div>
 
@@ -582,42 +537,40 @@
     </div>
 
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- Script Animasi Loading Tombol -->
     <script>
-        function handleLoading(event, btnId, loadingText) {
-            const btn = document.getElementById(btnId);
-            
-            // Mencegah klik berulang kali
+        // Handler untuk tombol Muat Ulang
+        document.getElementById('btnReload').addEventListener('click', function (e) {
+            e.preventDefault();
+            const btn = this;
+            const href = btn.getAttribute('href');
+
             btn.classList.add('disabled');
-            btn.style.pointerEvents = 'none';
+            btn.querySelector('.btn-text').classList.add('d-none');
+            btn.querySelector('.btn-loader').classList.remove('d-none');
 
-            // Ubah ikon menjadi spinner bootstrap & ganti teks
-            if(btnId === 'homeBtn') {
-                document.getElementById('homeIcon').className = 'spinner-border spinner-border-sm me-2';
-                document.getElementById('homeText').innerText = loadingText;
-            }
-        }
-
-        function handleBackLoading(event) {
-            const btn = document.getElementById('backBtn');
-            
-            btn.classList.add('disabled');
-            btn.style.pointerEvents = 'none';
-
-            document.getElementById('backIcon').className = 'spinner-border spinner-border-sm me-2';
-            document.getElementById('backText').innerText = 'Memuat...';
-
-            // Beri jeda sedikit agar animasi terlihat sebelum kembali ke history sebelumnya
             setTimeout(() => {
-                window.history.back();
+                window.location.href = href;
             }, 300);
-        }
-    </script>
+        });
 
-    <!-- Bootstrap JS -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    ></script>
+        // Handler untuk tombol Beranda
+        document.getElementById('btnDashboard').addEventListener('click', function (e) {
+            e.preventDefault();
+            const btn = this;
+
+            btn.classList.add('disabled');
+            btn.querySelector('.btn-text').classList.add('d-none');
+            btn.querySelector('.btn-loader').classList.remove('d-none');
+
+            setTimeout(() => {
+                window.location.href = "{{ route('dashboard') }}";
+            }, 300);
+        });
+    </script>
 
 </body>
 </html>
