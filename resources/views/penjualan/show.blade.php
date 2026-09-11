@@ -14,7 +14,7 @@
                 <p class="text-muted small mb-0">Informasi lengkap transaksi dan rincian pembayaran.</p>
             </div>
             <div class="d-flex gap-2">
-                <button onclick="window.print()" class="btn btn-primary shadow-sm rounded-3 py-2">
+                <button onclick="cetakStruk()" class="btn btn-primary shadow-sm rounded-3 py-2">
                     <i class="bi bi-printer me-1"></i> Cetak Struk
                 </button>
                 <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 py-2">
@@ -23,14 +23,93 @@
             </div>
         </div>
 
-        {{-- Judul Khusus Struk Saat Diprint --}}
-        <div class="text-center mb-4 d-none d-print-block">
-            <h3 class="fw-bold mb-1">RAJA CELL</h3>
-            <p class="text-muted small mb-0">Struk Bukti Pembayaran Sah</p>
-            <hr>
+        {{-- Struk Cetak (Format E-Receipt Toko, hanya tampil saat print) --}}
+        <div id="struk-print" class="d-none d-print-block">
+            <div class="struk-header text-center">
+                <div class="struk-logo">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <h2 class="struk-brand">RAJA CELL</h2>
+                {{-- Data toko berikut masih placeholder, silakan sesuaikan dengan data asli --}}
+                <p class="struk-address mb-0">Jl. Contoh Alamat No. 123, Kota Anda</p>
+                <p class="struk-address mb-0">No. Telp 0812-0000-0000</p>
+            </div>
+
+            <div class="struk-divider-dashed"></div>
+
+            <div class="struk-meta">
+                <div class="struk-meta-row">
+                    <span>{{ $sale->created_at->format('Y-m-d') }}</span>
+                    <span>{{ optional($sale->user)->name ?? 'Admin' }}</span>
+                </div>
+                <div class="struk-meta-row">
+                    <span>{{ $sale->created_at->format('H:i:s') }}</span>
+                    <span></span>
+                </div>
+                <div class="struk-meta-row">
+                    <span>No. {{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</span>
+                    <span></span>
+                </div>
+            </div>
+
+            <div class="struk-divider-dashed"></div>
+
+            <div class="struk-items">
+                @php $totalQty = 0; @endphp
+                @forelse($sale->itemPenjualan as $item)
+                    @php $totalQty += $item->kuantitas; @endphp
+                    <div class="struk-item-name">{{ $loop->iteration }}. {{ $item->nama_produk ?? optional($item->produk)->nama ?? 'Produk Tidak Diketahui' }}</div>
+                    <div class="struk-item-detail">
+                        <span>{{ $item->kuantitas }} x {{ number_format($item->harga_satuan, 0, ',', '.') }}</span>
+                        <span>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                    </div>
+                @empty
+                    <p class="text-center mb-0">Tidak ada item pada transaksi ini.</p>
+                @endforelse
+            </div>
+
+            <div class="struk-divider-dashed"></div>
+
+            <div class="struk-meta-row">
+                <span>Total QTY</span>
+                <span>: {{ $totalQty }}</span>
+            </div>
+
+            <div class="struk-divider-dashed"></div>
+
+            <div class="struk-totals">
+                <div class="struk-meta-row">
+                    <span>Sub Total</span>
+                    <span>Rp {{ number_format($sale->total_pembayaran, 0, ',', '.') }}</span>
+                </div>
+                <div class="struk-meta-row struk-total-grand">
+                    <span>Total</span>
+                    <span>Rp {{ number_format($sale->total_pembayaran, 0, ',', '.') }}</span>
+                </div>
+                @if($sale->metode_pembayaran === 'CASH')
+                <div class="struk-meta-row">
+                    <span>Bayar (Cash)</span>
+                    <span>Rp {{ number_format($sale->uang_dibayar ?? 0, 0, ',', '.') }}</span>
+                </div>
+                <div class="struk-meta-row">
+                    <span>Kembali</span>
+                    <span>Rp {{ number_format($sale->kembalian ?? 0, 0, ',', '.') }}</span>
+                </div>
+                @endif
+            </div>
+
+            <div class="struk-footer text-center">
+                <p class="mb-2">Terimakasih Telah Berbelanja</p>
+            </div>
+
+            {{-- Placeholder link kritik & saran, silakan ganti dengan link asli jika ada --}}
+            <div class="struk-feedback-box text-center">
+                <p class="mb-1">Link Kritik dan Saran:</p>
+                <p class="mb-0">rajacell.com/e-receipt/{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</p>
+            </div>
         </div>
 
-        <div class="card border-0 bg-light bg-opacity-50 rounded-4 p-4 mb-4">
+        <div class="card border-0 bg-light bg-opacity-50 rounded-4 p-4 mb-4 d-print-none">
             <h5 class="fw-bold text-dark mb-3">Informasi Transaksi</h5>
             <div class="row g-3">
                 <div class="col-md-6">
@@ -87,7 +166,7 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 p-0 overflow-hidden mb-4">
+        <div class="card border-0 shadow-sm rounded-4 p-0 overflow-hidden mb-4 d-print-none">
             <div class="card-header bg-white border-0 p-3 pb-0">
                 <h5 class="fw-bold text-dark mb-0">Daftar Item Produk yang Dibeli</h5>
             </div>
@@ -163,11 +242,77 @@
     </div>
 </div>
 
-{{-- CSS PRINT: 100% MENYEMBUNYIKAN SIDEBAR & MERAPIKAN CETAKAN --}}
+{{-- STRUK: Tampilan e-receipt toko saat dicetak --}}
 <style>
+    #struk-print {
+        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        color: #111827;
+        font-size: 17px;
+        line-height: 1.55;
+    }
+
+    .struk-logo {
+        font-size: 3rem;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .struk-brand {
+        font-weight: 700;
+        margin: 0 0 6px;
+        font-size: 2rem;
+        color: #111827;
+    }
+
+    .struk-address {
+        font-size: 15px;
+        color: #111827;
+    }
+
+    .struk-divider-dashed {
+        border-top: 2px dashed #9ca3af;
+        margin: 14px 0;
+    }
+
+    .struk-meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .struk-item-name {
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .struk-item-detail {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding-left: 16px;
+    }
+
+    .struk-total-grand {
+        font-weight: 700;
+        font-size: 19px;
+    }
+
+    .struk-footer {
+        font-size: 17px;
+        margin-top: 14px;
+    }
+
+    .struk-feedback-box {
+        border: 2px solid #16a34a;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 15px;
+        margin-top: 12px;
+    }
+
     @media print {
         /* Sembunyikan sidebar, navbar, dan seluruh elemen bawaan aplikasi */
-        .sidebar-pos, nav, aside, header, footer, .d-print-none {
+        .sidebar-pos, .mobile-bottom-nav, .sidebar-toggle-btn, nav, aside, header, footer, .d-print-none {
             display: none !important;
         }
 
@@ -179,17 +324,30 @@
             width: 100% !important;
         }
 
-        /* Tampilkan area struk memenuhi kertas cetak */
+        /* Ukuran default/fallback kalau JS di bawah gagal jalan.
+           Nilai sebenarnya akan ditimpa oleh #page-size-dinamis lewat cetakStruk(). */
+        @page {
+            size: 100mm 200mm;
+            margin: 6mm;
+        }
+
         #area-struk {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             margin: 0 !important;
-            padding: 10px !important;
+            padding: 0 !important;
             border: none !important;
             box-shadow: none !important;
             background: white !important;
+        }
+
+        /* Lebar mengikuti area cetak halaman (lihat @page size) supaya kertas
+           ikut menyusut mengikuti ukuran struk, bukan struk kecil di kertas A4 besar. */
+        #struk-print {
+            width: 100%;
+            margin: 0 auto;
         }
     }
 </style>
@@ -204,6 +362,39 @@
         
         if (icon) icon.className = 'spinner-border spinner-border-sm me-2';
         if (text) text.textContent = 'Memuat Halaman Kasir...';
+    }
+
+    // Menghitung tinggi struk asli lalu mengatur ukuran kertas cetak (@page) persis
+    // sesuai tinggi itu, supaya tidak ada sisa kertas kosong yang panjang saat print.
+    // Catatan: printer virtual seperti "Microsoft Print to PDF" kadang tetap memaksa
+    // ukuran kertas standar (Letter/A4) karena keterbatasan drivernya sendiri, di luar
+    // kendali kode ini. Printer nota/thermal asli umumnya mendukung ukuran custom ini.
+    function cetakStruk() {
+        const strukEl = document.getElementById('struk-print');
+        let styleEl = document.getElementById('page-size-dinamis');
+
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'page-size-dinamis';
+            document.head.appendChild(styleEl);
+        }
+
+        if (strukEl) {
+            const tinggiPx = strukEl.scrollHeight;
+            // 1px = 25.4/96 mm, ditambah sedikit ruang ekstra untuk margin cetak
+            const tinggiMm = Math.ceil((tinggiPx * 25.4) / 96) + 15;
+
+            styleEl.innerHTML = `
+                @media print {
+                    @page {
+                        size: 100mm ${tinggiMm}mm;
+                        margin: 6mm;
+                    }
+                }
+            `;
+        }
+
+        window.print();
     }
 </script>
 @endsection
