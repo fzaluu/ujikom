@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', ' Produk')
+@section('title', 'Produk')
 
 @section('content')
 @php
@@ -22,6 +22,17 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.02);
     }
     
+    /* CSS agar pagination responsif dan tidak merusak layout card di HP */
+    .pagination-container {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+    .pagination-container nav {
+        display: inline-block;
+    }
 </style>
 
 <div class="container-fluid px-0 animate-page">
@@ -240,12 +251,12 @@
             </table>
         </div>
 
-        {{-- Footer Pagination --}}
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center border-top pt-4 mt-3">
-            <small class="text-muted mb-2 mb-md-0">
+        {{-- Footer Pagination (Sudah dibungkus class responsif) --}}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center border-top pt-4 mt-3 gap-3">
+            <small class="text-muted mb-0 text-center text-md-start">
                 Menampilkan total <strong>{{ $products->total() }}</strong> data produk
             </small>
-            <div>
+            <div class="pagination-container text-center text-md-end">
                 {{ $products->links() }}
             </div>
         </div>
@@ -287,6 +298,7 @@
         }
     });
 </script>
+
 {{-- Modal Konfirmasi Hapus di Tengah --}}
 <div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
@@ -341,5 +353,3 @@
     });
 </script>
 @endsection
-
-

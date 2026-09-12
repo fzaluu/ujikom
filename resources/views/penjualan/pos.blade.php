@@ -18,34 +18,46 @@
 
     <div class="row g-4">
         {{-- BAGIAN KIRI: DAFTAR PRODUK --}}
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold text-dark mb-0">
-                            <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>Daftar Produk
-                        </h6>
-                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
-                            {{ $totalProdukCount ?? 0 }} Produk
-                        </span>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
-                                <i class="bi bi-search"></i>
+        <div class="col-lg-7 align-self-start" >
+            <div class="card border-0 shadow-sm rounded-4 ">
+                {{-- Dihapus justify-content-between agar tidak meregangkan jarak ke bawah --}}
+                <div class="card-body p-4 pb-3 d-flex flex-column">
+                    {{-- Bagian Atas (Judul, Search, & List Produk) dengan mb-auto --}}
+                    <div class="mb-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-dark mb-0">
+                                <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>Daftar Produk
+                            </h6>
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                                {{ $totalProdukCount ?? 0 }} Produk
                             </span>
-                            <input type="text"
-                                   id="productSearchInput"
-                                   value="{{ request('search') }}"
-                                   class="form-control bg-light border-start-0 ps-0 shadow-none rounded-end-3"
-                                   placeholder="Cari nama produk..."
-                                   autocomplete="off">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text"
+                                       id="productSearchInput"
+                                       value="{{ request('search') }}"
+                                       class="form-control bg-light border-start-0 ps-0 shadow-none rounded-end-3"
+                                       placeholder="Cari nama produk..."
+                                       autocomplete="off">
+                            </div>
+                        </div>
+
+                        {{-- Kotak list produk --}}
+                        <div id="product-grid-container" class="product-list-container pe-1 ">
+                            @include('penjualan.partials.product-grid', ['products' => $products, 'sale' => $sale])
                         </div>
                     </div>
 
-                    <div id="product-grid-container" class="product-list-container pe-1" style="max-height: 58vh; overflow-y: auto;">
-                        @include('penjualan.partials.product-grid', ['products' => $products, 'sale' => $sale])
+                    {{-- BAGIAN BAWAH: PAGINATION (mt-3 agar jaraknya pas dan rapat) --}}
+                    <div class="mt-3 pt-2 border-top d-flex justify-content-center">
+                        <div class="pos-pagination-wrapper">
+                            {{ $products->links() }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -209,6 +221,39 @@
     </div>
 </div>
 
+{{-- Styling Khusus Pagination POS & Scroll --}}
+<style>
+    .pos-pagination-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        padding-bottom: 2px;
+        text-align: center;
+    }
+    .pos-pagination-wrapper nav {
+        display: inline-block;
+    }
+    .pos-pagination-wrapper .pagination {
+        font-size: 0.75rem;
+        margin-bottom: 0;
+        display: inline-flex;
+        gap: 2px;
+    }
+    .pos-pagination-wrapper .page-link {
+        padding: 0.2rem 0.5rem;
+        color: #0d6efd;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+    }
+    .pos-pagination-wrapper .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+    }
+</style>
+
 {{-- Modal Pop-up di Tengah (Disamakan dengan halaman Produk/Create) --}}
 <div class="modal fade" id="posConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
@@ -243,14 +288,12 @@
         isExplicitAction = true;
     }
 
-    // Helper: Parse uang dari format titik ribuan ke angka murni
     function parseUang(value) {
         if (!value) return 0;
         const cleaned = String(value).replace(/\./g, '').replace(/[^\d]/g, '');
         return parseFloat(cleaned) || 0;
     }
 
-    // Inisialisasi atau ambil instance modal Bootstrap secara aman agar tidak bug / layar hitam
     function getPosModal() {
         const modalEl = document.getElementById('posConfirmModal');
         if (!posModalObj) {
@@ -259,7 +302,6 @@
         return posModalObj;
     }
 
-    // Tampilkan modal pop-up peringatan di tengah layar
     function showErrorModal(mainMessage, subMessage) {
         const titleEl = document.getElementById('posModalTitle');
         const iconEl  = document.getElementById('posModalIcon');
@@ -303,6 +345,33 @@
                 }, 300);
             });
         }
+
+        // Menangani klik pagination via AJAX agar sinkron halamannya dan tombol active menyala dengan benar
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.pos-pagination-wrapper a')) {
+                e.preventDefault();
+                let link = e.target.closest('a');
+                let url = link.getAttribute('href');
+                if (!url) return;
+
+                const keyword = document.getElementById('productSearchInput')?.value || '';
+                let fetchUrl = url;
+                if (keyword && !fetchUrl.includes('search=')) {
+                    let separator = fetchUrl.includes('?') ? '&' : '?';
+                    fetchUrl += `${separator}search=${encodeURIComponent(keyword)}`;
+                }
+
+                fetch(fetchUrl, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    gridContainer.innerHTML = data.html;
+                    window.history.pushState({path: url}, '', url);
+                })
+                .catch(err => console.error('Pagination error:', err));
+            }
+        });
 
         const paymentSelect     = document.getElementById('paymentMethodSelect');
         const qrisContainer     = document.getElementById('qrisContainer');
@@ -357,22 +426,18 @@
             }
         }
 
-        // ===== FITUR UTAMA: Format Titik Ribuan Real-time & Batasan 9 Digit (Miliaran) =====
         if (inputUangDibayar) {
             inputUangDibayar.addEventListener('input', function () {
                 let cleaned = this.value.replace(/[^\d]/g, '');
 
-                // Batasan maksimal 9 digit (Miliaran / di bawah 10 Miliar)
                 if (cleaned.length > 9) {
                     cleaned = cleaned.substring(0, 9);
-                    // Peringatan pop-up di tengah persis seperti halaman produk/create
                     showErrorModal(
                         "Yang bener masukin harganya!", 
                         "Jika melebihi batas, <strong class='text-danger'>call owner</strong>!"
                     );
                 }
 
-                // Format angka otomatis dengan titik ribuan secara real-time (contoh: 1.000, 1.000.000)
                 if (cleaned !== "") {
                     this.value = Number(cleaned).toLocaleString('id-ID');
                 } else {
@@ -488,9 +553,7 @@
         getPosModal().show();
     }
 
-    // Event listener tombol konfirmasi utama di dalam modal
     document.getElementById('posModalConfirmBtn').addEventListener('click', function () {
-        // Jika teks tombol adalah "Mengerti", cukup tutup modal dengan bersih tanpa submit form
         if (this.innerText === 'Mengerti') {
             getPosModal().hide();
             return;
@@ -512,7 +575,6 @@
                 const hiddenKembalian = document.getElementById('inputHiddenKembalian');
                 const uangBayar = parseUang(inputUang?.value);
 
-                // Bersihkan titik sebelum dikirim ke database backend agar jadi angka murni
                 if (inputUang) inputUang.value = uangBayar;
 
                 if (hiddenKembalian) {

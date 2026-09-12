@@ -18,6 +18,18 @@
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.02);
     }
+    
+    /* CSS agar pagination aman dan bisa digeser horizontal jika terlalu panjang di HP */
+    .pagination-responsive {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+    .pagination-responsive nav {
+        display: inline-block;
+    }
 </style>
 
 <div class="container-fluid px-0 animate-page">
@@ -34,8 +46,8 @@
                     Kelola riwayat transaksi penjualan, status pesanan, dan pembayaran toko.
                 </p>
             </div>
-
         </div>
+
         {{-- Tombol Transaksi Baru & Search Bar Terpisah Kiri-Kanan dengan Jarak ke Bawah --}}
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 mb-4">
             {{-- Tombol Transaksi Baru di Kiri --}}
@@ -58,17 +70,16 @@
             </form>
         </div>
 
-
         {{-- Tabel Penjualan --}}
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light text-uppercase fs-7 text-secondary fw-bold ">
+                <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">
                     <tr>
                         <th scope="col" width="5%" class="py-3 ps-3 rounded-start-3 align-middle">No</th>
                         <th scope="col" width="20%" class="py-3">Tanggal Transaksi</th>
                         <th scope="col" width="18%" class="py-3 align-middle">Kasir</th>
                         <th scope="col" width="18%" class="py-3">Total Pembayaran</th>
-                        <th scope="col" width="14%" class="py-3 align-middle" >Metode</th>
+                        <th scope="col" width="14%" class="py-3 align-middle">Metode</th>
                         <th scope="col" width="12%" class="py-3 align-middle">Status</th>
                         <th scope="col" width="13%" class="py-3 text-center pe-3 rounded-end-3 align-middle">Aksi</th>
                     </tr>
@@ -84,7 +95,7 @@
                         </td>
                         <td class="fw-semibold text-dark">
                             <span class="badge bg-light text-dark border px-2 py-1 fw-normal">
-                                <i class="bi bi-person me-1 text-muted"></i> {{ $sale->user->name }}
+                                <i class="bi bi-person me-1 text-muted"></i> {{ optional($sale->user)->name ?? 'Admin' }}
                             </span>
                         </td>
                         <td class="fw-bold text-success">
@@ -160,18 +171,19 @@
             </table>
         </div>
 
-        {{-- Footer Pagination --}}
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center border-top pt-4 mt-3">
-            <small class="text-muted mb-2 mb-md-0">
+        {{-- Footer Pagination (Sudah responsif & aman di HP) --}}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center border-top pt-4 mt-3 gap-3">
+            <small class="text-muted mb-0 text-center text-md-start">
                 Menampilkan total <strong>{{ $sales->total() }}</strong> riwayat transaksi
             </small>
-            <div>
+            <div class="pagination-responsive text-center text-md-end">
                 {{ $sales->links() }}
             </div>
         </div>
 
     </div>
 </div>
+
 {{-- Modal Konfirmasi Hapus di Tengah --}}
 <div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
@@ -201,12 +213,10 @@
         activeDeleteFormId = 'delete-form-' + identifier;
         document.getElementById('deleteModalMessage').innerText = message;
         
-        // Reset tombol hapus ke kondisi semula jika sebelumnya sempat loading
         let btn = document.getElementById('confirmDeleteBtn');
         btn.disabled = false;
         btn.innerHTML = 'Ya, Hapus';
 
-        // Reset tombol batal agar bisa diklik lagi
         let cancelBtn = document.getElementById('cancelDeleteBtn');
         if (cancelBtn) cancelBtn.disabled = false;
 
@@ -216,16 +226,13 @@
 
     document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
         if (activeDeleteFormId) {
-            // Ubah tombol menjadi status loading dengan spinner
             let btn = this;
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menghapus...`;
             
-            // Nonaktifkan tombol batal agar user tidak menutup modal saat proses berjalan
             let cancelBtn = document.getElementById('cancelDeleteBtn');
             if (cancelBtn) cancelBtn.disabled = true;
 
-            // Kirim form
             document.getElementById(activeDeleteFormId).submit();
         }
     });

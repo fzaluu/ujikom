@@ -38,7 +38,7 @@ class PenjualanController extends Controller
         return view('penjualan.index', compact('sales'));
     }
 
-    public function create(SearchRequest $request)
+    public function create(Request $request) // Atau tetap gunakan SearchRequest jika itu custom request kamu
     {
         // Jangan langsung buat record di database saat masuk halaman create.
         // Buat objek kosong penampung sementara untuk view POS.
@@ -52,16 +52,25 @@ class PenjualanController extends Controller
 
         $keyword = $request->input('search');
 
+        // Diubah dari ->get() menjadi ->paginate(5) (bisa diubah angkanya sesuai selera, misal 5 atau 6 produk per halaman)
         $products = Produk::when($keyword, function ($query) use ($keyword) {
             $query->where('nama', 'like', '%' . $keyword . '%');
         })
         ->orderByRaw('CASE WHEN stok <= 0 THEN 1 ELSE 0 END')
         ->orderBy('stok', 'desc')
         ->orderBy('nama')
-        ->get();
+        ->paginate(5)
+        ->appends($request->all());
 
         $totalProdukCount = Produk::count();
         $mode = 'create';
+
+        // Jika request datang dari AJAX (saat mengetik pencarian atau klik halaman pagination)
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('penjualan.partials.product-grid', compact('products', 'sale'))->render()
+            ]);
+        }
 
         return view('penjualan.pos', compact('sale', 'products', 'mode', 'totalProdukCount'));
     }
