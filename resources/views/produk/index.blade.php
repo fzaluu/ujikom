@@ -21,6 +21,9 @@
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.02);
     }
+    .table-responsive {
+        overflow-x: hidden !important;
+    }
 </style>
 
 <div class="container-fluid px-0 animate-page">
@@ -90,19 +93,19 @@
         {{-- Table Produk --}}
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">
+                <thead class="table-light text-uppercase text-dark fw-bold">
                     <tr>
-                        <th width="4%" class="py-3 ps-3 rounded-start-3">No</th>
-                        <th width="12%" class="py-3">User Input</th>
-                        <th width="8%" class="py-3 text-center">Foto</th>
-                        <th width="20%" class="py-3">Nama Produk</th>
-                        <th width="15%" class="py-3">Jenis</th>
+                        <th class="align-middle">No</th>
+                        <th class="align-top">User Input</th>
+                        <th class="text-center align-middle">Foto</th>
+                        <th class="align-top">Nama<br>Produk</th>
+                        <th class="align-middle">Jenis</th>
                         @if($isAdmin)
-                            <th width="11%" class="py-3">Harga Beli</th>
+                            <th class="align-top">Harga<br>Beli</th>
                         @endif
-                        <th width="11%" class="py-3">Harga Jual</th>
-                        <th width="9%" class="py-3">Stok</th>
-                        <th width="{{ $isAdmin ? '10%' : '15%' }}" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
+                        <th class="align-top">Harga<br>Jual</th>
+                        <th class="align-middle">Stok</th>
+                        <th class="text-center pe-4 align-middle">Aksi</th>
                     </tr>
                 </thead>
 
@@ -340,3 +343,5 @@
     });
 </script>
 @endsection
+
+

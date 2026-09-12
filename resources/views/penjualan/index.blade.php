@@ -62,15 +62,15 @@
         {{-- Tabel Penjualan --}}
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">
+                <thead class="table-light text-uppercase fs-7 text-secondary fw-bold ">
                     <tr>
-                        <th scope="col" width="5%" class="py-3 ps-3 rounded-start-3">No</th>
+                        <th scope="col" width="5%" class="py-3 ps-3 rounded-start-3 align-middle">No</th>
                         <th scope="col" width="20%" class="py-3">Tanggal Transaksi</th>
-                        <th scope="col" width="18%" class="py-3">Kasir</th>
+                        <th scope="col" width="18%" class="py-3 align-middle">Kasir</th>
                         <th scope="col" width="18%" class="py-3">Total Pembayaran</th>
-                        <th scope="col" width="14%" class="py-3">Metode</th>
-                        <th scope="col" width="12%" class="py-3">Status</th>
-                        <th scope="col" width="13%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
+                        <th scope="col" width="14%" class="py-3 align-middle" >Metode</th>
+                        <th scope="col" width="12%" class="py-3 align-middle">Status</th>
+                        <th scope="col" width="13%" class="py-3 text-center pe-3 rounded-end-3 align-middle">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
