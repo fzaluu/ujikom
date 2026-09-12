@@ -21,9 +21,7 @@
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.02);
     }
-    .table-responsive {
-        overflow-x: hidden !important;
-    }
+    
 </style>
 
 <div class="container-fluid px-0 animate-page">

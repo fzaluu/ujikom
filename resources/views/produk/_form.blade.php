@@ -8,7 +8,6 @@
                 <img id="previewImage" src="{{ (isset($produk) && !empty($produk->foto)) ? asset($produk->foto) : 'https://via.placeholder.com/400x300?text=Preview+Image' }}" alt="Preview Produk" class="img-fluid rounded-3 shadow-sm" style="max-height: 240px; object-fit: cover; width: 100%;">
             </div>
             <div class="card-footer bg-white border-0 pt-0 pb-3">
-                {{-- Tanpa onchange, kita tangkap lewat script di bawah --}}
                 <input id="fotoInput" type="file" accept="image/*" name="foto" class="form-control @error('foto') is-invalid @enderror" {{ (isset($produk) && !empty($produk->foto)) ? '' : 'required' }}>
                 @error('foto')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -47,14 +46,14 @@
                     <div class="row gx-3">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold text-secondary small">Harga Beli</label>
-                            <input type="text" inputmode="numeric" autocomplete="off" id="inputHargaBeli" name="harga_beli" class="form-control @error('harga_beli') is-invalid @enderror" value="{{ old('harga_beli', isset($produk) ? $produk->harga_beli : '') }}" placeholder="Contoh: 10000" required>
+                            <input type="text" inputmode="numeric" autocomplete="off" id="inputHargaBeli" name="harga_beli" class="form-control @error('harga_beli') is-invalid @enderror" value="{{ old('harga_beli', isset($produk) ? $produk->harga_beli : '') }}" placeholder="Contoh: 10.000" required>
                             @error('harga_beli')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold text-secondary small">Harga Jual</label>
-                            <input type="text" inputmode="numeric" autocomplete="off" id="inputHargaJual" name="harga_jual" class="form-control @error('harga_jual') is-invalid @enderror" value="{{ old('harga_jual', isset($produk) ? $produk->harga_jual : '') }}" placeholder="Contoh: 15000" required>
+                            <input type="text" inputmode="numeric" autocomplete="off" id="inputHargaJual" name="harga_jual" class="form-control @error('harga_jual') is-invalid @enderror" value="{{ old('harga_jual', isset($produk) ? $produk->harga_jual : '') }}" placeholder="Contoh: 15.000" required>
                             @error('harga_jual')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -86,29 +85,30 @@
     </a>
 </div>
 
-{{-- Modal Peringatan: Harga Jual Lebih Rendah dari Harga Beli (Berpotensi Rugi) --}}
+{{-- Modal Peringatan (Disamakan 100% dengan Halaman Transaksi/POS) --}}
 <div class="modal fade" id="rugiWarningModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold text-warning">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Peringatan Harga
+                <h5 class="modal-title fw-bold text-dark" id="modalTitleWarning">
+                    <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> Peringatan Batas Nominal
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center py-4">
-                <i class="bi bi-graph-down-arrow text-warning display-4 mb-3"></i>
-                <p class="text-dark fs-6 mb-1">Harga jual yang kamu masukkan <strong>lebih rendah atau sama dengan</strong> harga beli.</p>
-                <p class="text-muted small mb-0">Produk ini berpotensi membuat toko <strong class="text-danger">rugi</strong> setiap kali terjual. Pastikan ini memang disengaja (misalnya untuk promo/cuci gudang).</p>
+                <div class="display-4 mb-3 text-danger" id="modalIconContainer">
+                    <i class="bi bi-exclamation-circle"></i>
+                </div>
+                <p class="text-dark fs-6 mb-1" id="modalTextMain">Yang bener masukin harganya!</p>
+                <p class="text-muted small mb-0" id="modalTextSub">Jika melebihi batas, <strong class="text-danger">call owner</strong>!</p>
             </div>
             <div class="modal-footer border-0 justify-content-center pb-4">
-                <button type="button" class="btn btn-warning text-white px-4 rounded-3 shadow-sm" data-bs-dismiss="modal">Mengerti</button>
+                <button type="button" id="modalActionBtn" class="btn btn-danger px-4 rounded-3 shadow-sm" data-bs-dismiss="modal">Mengerti</button>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Script Khusus Preview dengan Event Listener Mandiri --}}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const fotoInput = document.getElementById('fotoInput');
@@ -127,31 +127,61 @@
             });
         }
 
-        // ===== Sanitasi Input Angka (Harga Beli, Harga Jual, Stok) =====
-        // Hanya boleh digit 0-9, tidak boleh huruf, minus, titik, koma, dll.
-        function sanitizeNumericInput(input) {
+        let warningModalObj = null;
+        function getWarningModal() {
+            const modalEl = document.getElementById('rugiWarningModal');
+            if (!warningModalObj) {
+                warningModalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
+            }
+            return warningModalObj;
+        }
+
+        function showCustomModal(titleHtml, iconHtml, mainText, subText, btnClass) {
+            document.getElementById('modalTitleWarning').innerHTML = titleHtml;
+            document.getElementById('modalIconContainer').innerHTML = iconHtml;
+            document.getElementById('modalTextMain').innerHTML = mainText;
+            document.getElementById('modalTextSub').innerHTML = subText;
+            
+            const btn = document.getElementById('modalActionBtn');
+            if (btn) btn.className = `btn ${btnClass} px-4 rounded-3 shadow-sm`;
+
+            getWarningModal().show();
+        }
+
+        // ===== Fungsi Format Titik Ribuan & Batasan Maksimal 9 Digit (Miliaran) =====
+        function setupMoneyInput(input) {
             if (!input) return;
 
+            if (input.value) {
+                let cleanVal = input.value.replace(/[^\d]/g, '');
+                if (cleanVal.length > 9) cleanVal = cleanVal.substring(0, 9);
+                if (cleanVal !== "") {
+                    input.value = Number(cleanVal).toLocaleString('id-ID');
+                }
+            }
+
             input.addEventListener('input', function () {
-                const cleaned = this.value.replace(/[^\d]/g, '');
-                if (this.value !== cleaned) {
-                    this.value = cleaned;
-                }
-            });
+                let cleaned = this.value.replace(/[^\d]/g, '');
 
-            // Cegah karakter non-angka langsung sebelum sempat masuk ke field
-            input.addEventListener('keypress', function (e) {
-                if (!/[0-9]/.test(e.key)) {
-                    e.preventDefault();
+                // Batasan maksimal 9 digit (Miliaran)
+                if (cleaned.length > 9) {
+                    cleaned = cleaned.substring(0, 9);
+                    
+                    // Peringatan Batas Nominal (Warna Merah sama persis dengan POS)
+                    showCustomModal(
+                        `<i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> Peringatan Batas Nominal`,
+                        `<i class="bi bi-exclamation-circle text-danger"></i>`,
+                        `Yang bener masukin harganya!`,
+                        `Jika melebihi batas, <strong class='text-danger'>call owner</strong>!`,
+                        `btn-danger`
+                    );
                 }
-            });
 
-            // Cegah paste teks yang mengandung karakter non-angka
-            input.addEventListener('paste', function (e) {
-                e.preventDefault();
-                const pasted = (e.clipboardData || window.clipboardData).getData('text');
-                const cleaned = pasted.replace(/[^\d]/g, '');
-                document.execCommand('insertText', false, cleaned);
+                if (cleaned !== "") {
+                    this.value = Number(cleaned).toLocaleString('id-ID');
+                } else {
+                    this.value = "";
+                }
             });
         }
 
@@ -159,37 +189,54 @@
         const inputHargaJual = document.getElementById('inputHargaJual');
         const inputStok = document.getElementById('inputStok');
 
-        sanitizeNumericInput(inputHargaBeli);
-        sanitizeNumericInput(inputHargaJual);
-        sanitizeNumericInput(inputStok);
+        setupMoneyInput(inputHargaBeli);
+        setupMoneyInput(inputHargaJual);
+
+        if (inputStok) {
+            inputStok.addEventListener('input', function () {
+                this.value = this.value.replace(/[^\d]/g, '');
+            });
+        }
 
         // ===== Peringatan Rugi: Harga Jual <= Harga Beli =====
         const hargaRugiHint = document.getElementById('hargaRugiHint');
-        const rugiModalEl = document.getElementById('rugiWarningModal');
-        let rugiModalShown = false; // supaya modal tidak muncul berulang-ulang tiap ketikan
+        let rugiModalShown = false;
 
         function cekPotensiRugi() {
-            const hargaBeli = parseInt(inputHargaBeli?.value || '0', 10) || 0;
-            const hargaJual = parseInt(inputHargaJual?.value || '0', 10) || 0;
+            const hargaBeli = parseInt((inputHargaBeli?.value || '0').replace(/\./g, ''), 10) || 0;
+            const hargaJual = parseInt((inputHargaJual?.value || '0').replace(/\./g, ''), 10) || 0;
 
             const berpotensiRugi = hargaBeli > 0 && hargaJual > 0 && hargaJual <= hargaBeli;
 
             if (berpotensiRugi) {
                 hargaRugiHint?.classList.remove('d-none');
 
-                if (!rugiModalShown && rugiModalEl) {
+                if (!rugiModalShown) {
                     rugiModalShown = true;
-                    new bootstrap.Modal(rugiModalEl).show();
+                    showCustomModal(
+                        `<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i> Peringatan Harga`,
+                        `<i class="bi bi-graph-down-arrow text-warning"></i>`,
+                        `Harga jual yang kamu masukkan <strong>lebih rendah atau sama dengan</strong> harga beli.`,
+                        `Produk ini berpotensi membuat toko <strong class='text-danger'>rugi</strong> setiap kali terjual.`,
+                        `btn-warning text-white`
+                    );
                 }
             } else {
                 hargaRugiHint?.classList.add('d-none');
-                rugiModalShown = false; // reset supaya bisa muncul lagi kalau user ubah jadi rugi lagi nanti
+                rugiModalShown = false;
             }
         }
 
-        // Cek saat user selesai mengisi salah satu dari dua field (blur), bukan tiap ketikan,
-        // supaya modal tidak mengganggu selagi masih mengetik angka.
         inputHargaBeli?.addEventListener('blur', cekPotensiRugi);
         inputHargaJual?.addEventListener('blur', cekPotensiRugi);
+
+        // Bersihkan titik sebelum form dikirim ke server
+        const parentForm = document.querySelector('form');
+        if (parentForm) {
+            parentForm.addEventListener('submit', function () {
+                if (inputHargaBeli) inputHargaBeli.value = inputHargaBeli.value.replace(/\./g, '');
+                if (inputHargaJual) inputHargaJual.value = inputHargaJual.value.replace(/\./g, '');
+            });
+        }
     });
 </script>

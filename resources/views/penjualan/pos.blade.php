@@ -26,7 +26,7 @@
                             <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>Daftar Produk
                         </h6>
                         <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
-                            {{ $totalProdukCount }} Produk
+                            {{ $totalProdukCount ?? 0 }} Produk
                         </span>
                     </div>
 
@@ -162,7 +162,7 @@
                                                name="uang_dibayar"
                                                id="inputUangDibayar"
                                                class="form-control border-start-0 rounded-end-3 shadow-none"
-                                               placeholder="Contoh: 50000"
+                                               placeholder="Contoh: 50.000"
                                                autocomplete="off"
                                                inputmode="numeric">
                                     </div>
@@ -209,7 +209,7 @@
     </div>
 </div>
 
-{{-- Modal Konfirmasi / Error --}}
+{{-- Modal Pop-up di Tengah (Disamakan dengan halaman Produk/Create) --}}
 <div class="modal fade" id="posConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -235,55 +235,53 @@
     let activeActionType = null;
     let activeDeleteFormId = null;
     let isExplicitAction = false;
+    let posModalObj = null;
 
-    // Total belanja dari backend (angka murni)
     const TOTAL_BELANJA = {{ (float) ($sale->total_pembayaran ?? 0) }};
 
     function markExplicitAction() {
         isExplicitAction = true;
     }
 
-    // Helper: ambil hanya digit dari string (aman untuk format Indonesia)
+    // Helper: Parse uang dari format titik ribuan ke angka murni
     function parseUang(value) {
         if (!value) return 0;
-        const cleaned = String(value).replace(/[^\d]/g, '');
+        const cleaned = String(value).replace(/\./g, '').replace(/[^\d]/g, '');
         return parseFloat(cleaned) || 0;
     }
 
-    // Tampilkan error di dalam modal (ganti alert)
-    function showErrorModal(message) {
+    // Inisialisasi atau ambil instance modal Bootstrap secara aman agar tidak bug / layar hitam
+    function getPosModal() {
+        const modalEl = document.getElementById('posConfirmModal');
+        if (!posModalObj) {
+            posModalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
+        }
+        return posModalObj;
+    }
+
+    // Tampilkan modal pop-up peringatan di tengah layar
+    function showErrorModal(mainMessage, subMessage) {
         const titleEl = document.getElementById('posModalTitle');
         const iconEl  = document.getElementById('posModalIcon');
         const msgEl   = document.getElementById('posModalMessage');
         const confirmBtn = document.getElementById('posModalConfirmBtn');
         const cancelBtn  = document.getElementById('posCancelBtn');
 
-        titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i> Perhatian`;
-        iconEl.innerHTML  = `<i class="bi bi-exclamation-circle text-warning"></i>`;
-        msgEl.innerText   = message;
+        titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> Peringatan Batas Nominal`;
+        iconEl.innerHTML  = `<i class="bi bi-exclamation-circle text-danger"></i>`;
+        msgEl.innerHTML   = `${mainMessage}<br><small class="text-muted">${subMessage}</small>`;
 
-        confirmBtn.className = 'btn btn-primary px-4 rounded-3 shadow-sm';
+        confirmBtn.className = 'btn btn-danger px-4 rounded-3 shadow-sm';
         confirmBtn.innerText = 'Mengerti';
-        confirmBtn.onclick = function () {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('posConfirmModal'));
-            if (modal) modal.hide();
-        };
 
         if (cancelBtn) cancelBtn.classList.add('d-none');
 
-        const modal = new bootstrap.Modal(document.getElementById('posConfirmModal'));
+        const modal = getPosModal();
         modal.show();
-
-        // Reset tombol setelah modal ditutup
-        document.getElementById('posConfirmModal').addEventListener('hidden.bs.modal', function handler() {
-            if (cancelBtn) cancelBtn.classList.remove('d-none');
-            confirmBtn.onclick = null;
-            document.getElementById('posConfirmModal').removeEventListener('hidden.bs.modal', handler);
-        }, { once: true });
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        // Live Search
+        // Live Search Produk
         const searchInput = document.getElementById('productSearchInput');
         const gridContainer = document.getElementById('product-grid-container');
         let searchTimeout = null;
@@ -306,7 +304,6 @@
             });
         }
 
-        // Payment UI Logic
         const paymentSelect     = document.getElementById('paymentMethodSelect');
         const qrisContainer     = document.getElementById('qrisContainer');
         const cashContainer     = document.getElementById('cashContainer');
@@ -360,32 +357,30 @@
             }
         }
 
-        // Format input uang sambil mengetik (hanya angka, huruf & minus otomatis terhapus)
+        // ===== FITUR UTAMA: Format Titik Ribuan Real-time & Batasan 9 Digit (Miliaran) =====
         if (inputUangDibayar) {
             inputUangDibayar.addEventListener('input', function () {
-                // Buang semua karakter selain digit (huruf, minus, titik, koma, dll)
-                const cleaned = this.value.replace(/[^\d]/g, '');
-                if (this.value !== cleaned) {
-                    this.value = cleaned;
+                let cleaned = this.value.replace(/[^\d]/g, '');
+
+                // Batasan maksimal 9 digit (Miliaran / di bawah 10 Miliar)
+                if (cleaned.length > 9) {
+                    cleaned = cleaned.substring(0, 9);
+                    // Peringatan pop-up di tengah persis seperti halaman produk/create
+                    showErrorModal(
+                        "Yang bener masukin harganya!", 
+                        "Jika melebihi batas, <strong class='text-danger'>call owner</strong>!"
+                    );
                 }
+
+                // Format angka otomatis dengan titik ribuan secara real-time (contoh: 1.000, 1.000.000)
+                if (cleaned !== "") {
+                    this.value = Number(cleaned).toLocaleString('id-ID');
+                } else {
+                    this.value = "";
+                }
+
                 hitungKembalian();
                 uangError?.classList.add('d-none');
-            });
-
-            // Cegah karakter non-angka langsung sebelum sempat masuk ke field
-            // (jaga-jaga untuk browser/keyboard yang tidak memicu event 'input' dengan benar)
-            inputUangDibayar.addEventListener('keypress', function (e) {
-                if (!/[0-9]/.test(e.key)) {
-                    e.preventDefault();
-                }
-            });
-
-            // Cegah paste teks yang mengandung karakter non-angka
-            inputUangDibayar.addEventListener('paste', function (e) {
-                e.preventDefault();
-                const pasted = (e.clipboardData || window.clipboardData).getData('text');
-                const cleaned = pasted.replace(/[^\d]/g, '');
-                document.execCommand('insertText', false, cleaned);
             });
         }
 
@@ -395,7 +390,6 @@
         }
     });
 
-    // Modal Konfirmasi (Checkout / Batal / Hapus Item)
     function openCustomConfirm(type) {
         activeActionType = type;
 
@@ -412,25 +406,35 @@
             cancelBtn.classList.remove('d-none');
         }
 
-        // Reset onclick confirm
-        confirmBtn.onclick = null;
-
         if (type === 'checkout') {
             if (!paymentSelect || !paymentSelect.value) {
-                showErrorModal('Silakan pilih metode pembayaran terlebih dahulu!');
+                titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i> Perhatian`;
+                iconEl.innerHTML  = `<i class="bi bi-exclamation-circle text-warning"></i>`;
+                msgEl.innerText   = 'Silakan pilih metode pembayaran terlebih dahulu!';
+                confirmBtn.className = 'btn btn-primary px-4 rounded-3 shadow-sm';
+                confirmBtn.innerText = 'Mengerti';
+                if (cancelBtn) cancelBtn.classList.add('d-none');
+
+                getPosModal().show();
                 paymentSelect?.focus();
                 return;
             }
 
             const method = paymentSelect.value;
 
-            // Validasi khusus CASH
             if (method === 'CASH') {
                 const inputUang = document.getElementById('inputUangDibayar');
                 const uangBayar = parseUang(inputUang?.value);
 
                 if (uangBayar < TOTAL_BELANJA) {
-                    showErrorModal('Uang tunai dari pelanggan kurang dari total pembayaran!');
+                    titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i> Perhatian`;
+                    iconEl.innerHTML  = `<i class="bi bi-exclamation-circle text-warning"></i>`;
+                    msgEl.innerText   = 'Uang tunai dari pelanggan kurang dari total pembayaran!';
+                    confirmBtn.className = 'btn btn-primary px-4 rounded-3 shadow-sm';
+                    confirmBtn.innerText = 'Mengerti';
+                    if (cancelBtn) cancelBtn.classList.add('d-none');
+
+                    getPosModal().show();
                     inputUang?.focus();
                     return;
                 }
@@ -455,11 +459,9 @@
             confirmBtn.innerText = 'Ya, Batalkan';
         }
 
-        const modal = new bootstrap.Modal(document.getElementById('posConfirmModal'));
-        modal.show();
+        getPosModal().show();
     }
 
-    // Modal Hapus Item
     function openDeleteModal(identifier, message) {
         activeActionType = 'delete_item';
         activeDeleteFormId = 'delete-item-form-' + identifier;
@@ -483,14 +485,16 @@
         confirmBtn.className = 'btn btn-danger px-4 rounded-3 shadow-sm';
         confirmBtn.innerText = 'Ya, Hapus';
 
-        const modal = new bootstrap.Modal(document.getElementById('posConfirmModal'));
-        modal.show();
+        getPosModal().show();
     }
 
-    // Submit saat tombol konfirmasi diklik
+    // Event listener tombol konfirmasi utama di dalam modal
     document.getElementById('posModalConfirmBtn').addEventListener('click', function () {
-        // Jika sedang mode error (hanya "Mengerti"), jangan submit
-        if (this.innerText === 'Mengerti') return;
+        // Jika teks tombol adalah "Mengerti", cukup tutup modal dengan bersih tanpa submit form
+        if (this.innerText === 'Mengerti') {
+            getPosModal().hide();
+            return;
+        }
 
         isExplicitAction = true;
         const btn = this;
@@ -502,14 +506,13 @@
         if (activeActionType === 'checkout') {
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Memproses...`;
 
-            // Pastikan nilai uang & kembalian bersih sebelum submit
             const paymentSelect = document.getElementById('paymentMethodSelect');
             if (paymentSelect?.value === 'CASH') {
                 const inputUang = document.getElementById('inputUangDibayar');
                 const hiddenKembalian = document.getElementById('inputHiddenKembalian');
                 const uangBayar = parseUang(inputUang?.value);
 
-                // Kirim angka murni (tanpa titik/koma)
+                // Bersihkan titik sebelum dikirim ke database backend agar jadi angka murni
                 if (inputUang) inputUang.value = uangBayar;
 
                 if (hiddenKembalian) {
@@ -529,7 +532,6 @@
         }
     });
 
-    // Auto set Bayar Nanti jika kasir meninggalkan halaman
     window.addEventListener('beforeunload', function (e) {
         if (isExplicitAction) return;
 
@@ -544,4 +546,4 @@
         }
     });
 </script>
-@endsection 
+@endsection
