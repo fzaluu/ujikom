@@ -626,7 +626,7 @@
                             >
                                 <span id="btnText">
                                     <i class="bi bi-box-arrow-in-right me-2"></i>
-                                    Masuk Kasir
+                                    Masuk
                                 </span>
 
                                 <span
