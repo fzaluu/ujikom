@@ -37,9 +37,9 @@
 </div>
 
 <div class="mb-4">
-    <label class="form-label fw-semibold text-secondary small">Hak Akses (Role)</label>
+    <label class="form-label fw-semibold text-secondary small">Hak Akses (Peran)</label>
     <select name="role_id" class="form-select @error('role_id') is-invalid @enderror" required>
-        <option value="">-- Pilih Role --</option>
+        <option value="">-- Pilih Pengguna --</option>
         @foreach($roles as $role)
             <option value="{{ $role->id }}" @selected(old('role_id', $user->role_id ?? '') == $role->id)>
                 {{ ucfirst($role->name) }}
@@ -55,7 +55,7 @@
 
 <div class="d-flex flex-column flex-md-row gap-3 pt-2">
     <button type="submit" class="btn btn-primary py-2.5 px-4 shadow-sm rounded-3 fw-semibold">
-        <i class="bi bi-save me-2"></i> Simpan User
+        <i class="bi bi-save me-2"></i> Simpan Pengguna
     </button>
     <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary py-2.5 px-4 shadow-sm rounded-3 fw-semibold">
         <i class="bi bi-arrow-left-circle me-2"></i> Kembali

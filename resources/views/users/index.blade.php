@@ -28,7 +28,7 @@
             <div>
                 <span class="text-primary fw-semibold small text-uppercase tracking-wider">Manajemen Sistem</span>
                 <h3 class="fw-bold text-dark mb-1">
-                    Manajemen User
+                    Manajemen Pengguna
                 </h3>
                 <p class="text-muted small mb-0">
                     Kelola akun pengguna dan hak akses sistem POS.
@@ -40,7 +40,7 @@
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
             <div>
                 <a href="{{ route('admin.users.create') }}" class="btn btn-primary shadow-sm rounded-3 py-2 px-3 text-nowrap">
-                    <i class="bi bi-plus-circle me-1"></i> Tambah User
+                    <i class="bi bi-plus-circle me-1"></i> Tambah Pengguna
                 </a>
             </div>
 
@@ -80,7 +80,7 @@
                         <th width="5%" class="py-3 ps-3 rounded-start-3">No</th>
                         <th width="32%" class="py-3">Nama</th>
                         <th width="35%" class="py-3">Email</th>
-                        <th width="15%" class="py-3">Role</th>
+                        <th width="15%" class="py-3">Peran</th>
                         <th width="13%" class="py-3 text-center pe-3 rounded-end-3">Aksi</th>
                     </tr>
                 </thead>
@@ -146,7 +146,7 @@
                                                 onmouseover="this.style.backgroundColor='#fee2e2';" 
                                                 onmouseout="this.style.backgroundColor='#f8f9fa';"
                                                 title="Hapus User"
-                                                onclick="openDeleteModal('{{ $user->id }}', 'Apakah Anda yakin ingin menghapus user ini?')">
+                                                onclick="openDeleteModal('{{ $user->id }}', 'Apakah Anda yakin ingin menghapus Pengguna ini?')">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -173,7 +173,7 @@
         {{-- Footer Pagination --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center border-top pt-4 mt-3">
             <small class="text-muted mb-2 mb-md-0">
-                Total User : <strong>{{ $users->total() }}</strong>
+                Total Pengguna : <strong>{{ $users->total() }}</strong>
             </small>
             <div>
                 {{ $users->links() }}

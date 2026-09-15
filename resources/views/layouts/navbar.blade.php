@@ -228,7 +228,7 @@
         @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
         <li class="nav-item">
                 <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" title="User">
-                    <i class="bi bi-people fs-5"></i> <span class="nav-label">User</span>
+                    <i class="bi bi-people fs-5"></i> <span class="nav-label">Pengguna</span>
                 </a>
             </li>
         <li class="nav-item">

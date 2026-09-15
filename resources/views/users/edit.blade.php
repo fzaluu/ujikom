@@ -7,7 +7,7 @@
     <div class="card shadow-sm border-0 rounded-4 col-lg-8 mx-auto p-4">
         <div class="card-header bg-white border-0 p-0 mb-4">
             <span class="text-primary fw-semibold small text-uppercase tracking-wider">Manajemen Sistem</span>
-            <h3 class="fw-bold text-dark mb-1">Edit User</h3>
+            <h3 class="fw-bold text-dark mb-1">Edit Pengguna</h3>
             <p class="text-muted small mb-0">Perbarui informasi akun pengguna sistem POS.</p>
         </div>
 
