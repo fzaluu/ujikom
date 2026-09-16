@@ -9,6 +9,14 @@
         border-right: 1px solid #e2e8f0;
         transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-x: hidden;
+        /* Hilangkan Scrollbar tapi tetap bisa di-scroll jika layar terlalu kecil */
+        overflow-y: auto;
+        scrollbar-width: none; /* Firefox */
+    }
+
+    /* Hilangkan scrollbar untuk Chrome, Safari, dan Edge */
+    .sidebar-pos::-webkit-scrollbar {
+        display: none;
     }
 
     .sidebar-pos .brand-title {
@@ -23,7 +31,7 @@
         color: #64748b;
         transition: all 0.2s ease;
         border-radius: 10px;
-        padding: 0.75rem 1rem;
+        padding: 0.6rem 1rem;
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -49,7 +57,7 @@
         background-color: #f8fafc;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 0.85rem;
+        padding: 0.75rem;
     }
 
     /* ============ TOMBOL LOGOUT ============ */
@@ -118,9 +126,9 @@
         width: 84px;
     }
 
-    body.sidebar-collapsed .sidebar-pos.p-4 {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+    body.sidebar-collapsed .sidebar-pos.px-3 {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
     }
 
     body.sidebar-collapsed .nav-label,
@@ -156,7 +164,7 @@
 
     body.sidebar-collapsed .sidebar-profile .profile-row {
         justify-content: center !important;
-        margin-bottom: 0.5rem !important;
+        margin-bottom: 0.4rem !important;
         gap: 0 !important;
         width: 100%;
     }
@@ -199,23 +207,24 @@
     }
 @endphp
 
-<!-- Tombol Toggle Buka/Tutup Sidebar (hanya ikon, di luar sidebar-pos agar tidak ter-clip) -->
+<!-- Tombol Toggle Buka/Tutup Sidebar -->
 <button type="button" id="sidebarToggleBtn" class="sidebar-toggle-btn" title="Ciutkan/Lebarkan Sidebar">
     <i class="bi bi-chevron-left"></i>
 </button>
 
-<div class="d-flex flex-column flex-shrink-0 p-4 sidebar-pos shadow-sm">
+<!-- Padding vertikal disesuaikan (py-3) agar pas di layar tanpa scrollbar -->
+<div class="d-flex flex-column flex-shrink-0 px-3 py-3 sidebar-pos shadow-sm">
 
-    <!-- Logo / Brand (Centered) -->
-    <a href="{{ route('dashboard') }}" class="d-flex flex-column align-items-center text-center mb-3 text-decoration-none py-2">
-        <div class="brand-icon-collapsed align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold shadow-sm mb-0" style="width: 38px; height: 38px; font-size: 0.8rem; letter-spacing: 0.5px;" title="RAJA CELL">
+    <!-- Logo / Brand -->
+    <a href="{{ route('dashboard') }}" class="d-flex flex-column align-items-center text-center mb-2 text-decoration-none py-1">
+        <div class="brand-icon-collapsed align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold shadow-sm mb-0" style="width: 36px; height: 36px; font-size: 0.8rem; letter-spacing: 0.5px;" title="RAJA CELL">
             RC
         </div>
-        <span class="brand-title mb-0 fw-bold text-dark fs-5" style="letter-spacing: 0.5px;">RAJA CELL</span>
+        <span class="brand-title mb-0 fw-bold text-dark fs-6" style="letter-spacing: 0.5px;">RAJA CELL</span>
         <small class="text-muted brand-subtitle" style="font-size: 0.65rem;">Sistem Aplikasi Kasir</small>
     </a>
 
-    <hr class="sidebar-divider my-1">
+    <hr class="sidebar-divider my-2">
 
     <!-- Menu Navigasi -->
     <ul class="nav nav-pills flex-column mb-auto gap-1">
@@ -227,10 +236,10 @@
 
         @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
         <li class="nav-item">
-                <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" title="User">
-                    <i class="bi bi-people fs-5"></i> <span class="nav-label">Pengguna</span>
-                </a>
-            </li>
+            <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" title="User">
+                <i class="bi bi-people fs-5"></i> <span class="nav-label">Pengguna</span>
+            </a>
+        </li>
         <li class="nav-item">
             <a href="{{ route('jenis-produk.index') }}" class="nav-link {{ request()->routeIs('jenis-produk*') ? 'active' : '' }}" title="Jenis">
                 <i class="bi bi-tags fs-5"></i> <span class="nav-label">Jenis</span>
@@ -250,46 +259,38 @@
             </a>
         </li>
 
-
         <li class="nav-item">
             <a href="{{ route('recap.index') }}" class="nav-link {{ request()->routeIs('recap*') ? 'active' : '' }}" title="Rekapitulasi">
                 <i class="bi bi-file-earmark-text fs-5"></i> <span class="nav-label">Rekapitulasi</span>
             </a>
         </li>
-        
-        <!-- <li class="nav-item">
-            <a href="{{ route('Perusahaan') }}" class="nav-link {{ request()->routeIs('Perusahaan') ? 'active' : '' }}" title="Perusahaan">
-                <i class="bi bi-shop"></i> <span class="nav-label">Perusahaan</span>
-            </a>
-        </li> -->
-        
     </ul>
 
-    <hr class="sidebar-divider my-3">
+    <hr class="sidebar-divider my-2">
 
     <!-- Profil Pengguna & Logout -->
     <div class="mt-auto sidebar-profile">
-        <div class="d-flex align-items-center mb-3 gap-3 profile-row">
-            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0" style="width: 38px; height: 38px; font-size: 0.85rem; letter-spacing: 0.5px;" title="{{ $name }}">
+        <div class="d-flex align-items-center mb-2 gap-2 profile-row">
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.8rem; letter-spacing: 0.5px;" title="{{ $name }}">
                 {{ $initials }}
             </div>
-            <div class="d-flex flex-column justify-content-center overflow-hidden profile-text" style="line-height: 1.3;">
+            <div class="d-flex flex-column justify-content-center overflow-hidden profile-text" style="line-height: 1.2;">
                 <strong class="text-dark text-truncate d-block small mb-0">{{ $name }}</strong>
-                <span class="text-muted d-block" style="font-size: 0.7rem;">{{ ucfirst(optional(Auth::user()?->role)->name ?? 'Administrator') }}</span>
+                <span class="text-muted d-block" style="font-size: 0.68rem;">{{ ucfirst(optional(Auth::user()?->role)->name ?? 'Administrator') }}</span>
             </div>
         </div>
         
-        <!-- Form Logout dengan pemicu modal kustom -->
+        <!-- Form Logout -->
         <form id="logoutForm" action="{{ route('logout') }}" method="POST">
             @csrf
-            <button type="button" onclick="openLogoutModal()" class="btn btn-logout-clean btn-sm w-100 rounded-2 py-1.5 d-flex align-items-center justify-content-center gap-2 shadow-none" style="font-size: 0.8rem;" title="Logout">
+            <button type="button" onclick="openLogoutModal()" class="btn btn-logout-clean btn-sm w-100 rounded-2 py-1 d-flex align-items-center justify-content-center gap-2 shadow-none" style="font-size: 0.78rem;" title="Logout">
                 <i class="bi bi-box-arrow-right"></i> <span class="logout-text">Logout</span>
             </button>
         </form>
     </div>
 </div>
 
-{{-- Modal Pop-up Konfirmasi Logout di Tengah --}}
+{{-- Modal Konfirmasi Logout --}}
 <div class="modal fade" id="customLogoutModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -316,7 +317,6 @@
         let modalEl = document.getElementById('customLogoutModal');
         let logoutModal = new bootstrap.Modal(modalEl);
         
-        // Reset tombol jika sebelumnya sempat loading
         let confirmBtn = document.getElementById('confirmLogoutBtn');
         let cancelBtn = document.getElementById('logoutCancelBtn');
         let closeBtn = document.getElementById('logoutCloseBtn');
@@ -334,18 +334,15 @@
         let cancelBtn = document.getElementById('logoutCancelBtn');
         let closeBtn = document.getElementById('logoutCloseBtn');
 
-        // Ubah tombol menjadi status loading dengan spinner
         confirmBtn.disabled = true;
         if(cancelBtn) cancelBtn.disabled = true;
         if(closeBtn) closeBtn.disabled = true;
         
         confirmBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Keluar...`;
 
-        // Submit form logout
         document.getElementById('logoutForm').submit();
     }
 
-    // ============ TOGGLE BUKA/TUTUP SIDEBAR (DESKTOP) ============
     document.addEventListener('DOMContentLoaded', function () {
         const toggleBtn = document.getElementById('sidebarToggleBtn');
         if (!toggleBtn) return;

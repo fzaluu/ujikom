@@ -17,15 +17,19 @@ class ProdukFactory extends Factory
      * Define the model's default state.
      *
      * @return array<string, mixed>
-     */
+     *//*  */
     public function definition(): array
     {
         $hargaBeli = $this->faker->numberBetween(5_000, 100_000);
+        
+        // Daftar nama file dummy agar bervariasi
+        $dummyPhotos = ['default.png', 'placeholder.jpg', 'item-default.png'];
+
         return [
             'user_id' => User::where('role_id', 1)->inRandomOrder()->value('id') ?? 1,
-            // Diubah menjadi null agar tidak memanggil file fisik fiktif yang tidak ada
-            'foto' => null, 
-            'nama' => $this->faker->word(3, true),
+            // Mengisi kolom foto dengan salah satu nama file dummy secara acak
+            'foto' => $this->faker->randomElement($dummyPhotos), 
+            'nama' => $this->faker->words(2, true),
             'harga_beli' => $hargaBeli,
             'harga_jual' => $hargaBeli + $this->faker->numberBetween(5_000, 100_000),
             'stok' => $this->faker->numberBetween(1, 500),
