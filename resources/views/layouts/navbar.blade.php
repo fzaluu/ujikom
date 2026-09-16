@@ -251,11 +251,11 @@
         </li>
 
         
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a href="{{ route('Perusahaan') }}" class="nav-link {{ request()->routeIs('Perusahaan') ? 'active' : '' }}" title="Perusahaan">
                 <i class="bi bi-shop"></i> <span class="nav-label">Perusahaan</span>
             </a>
-        </li>
+        </li> -->
         
     </ul>
 

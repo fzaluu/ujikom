@@ -45,4 +45,28 @@ class LaporanPenjualanService
             ->limit($limit)
             ->get();
     }
+
+    /**
+     * Produk terlaris sepanjang waktu (bukan cuma hari ini) - dipakai untuk
+     * halaman informasi publik supaya selalu ada data untuk ditampilkan,
+     * tidak kosong hanya karena belum ada transaksi hari ini.
+     */
+    public function produkTerlarisKeseluruhan(int $limit = 6)
+    {
+        return DB::table('item_penjualan')
+            ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
+            ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
+            ->where('penjualan.status', 'COMPLETED')
+            ->groupBy('produk.id', 'produk.nama', 'produk.foto', 'produk.harga_jual')
+            ->select(
+                'produk.id',
+                'produk.nama',
+                'produk.foto',
+                'produk.harga_jual',
+                DB::raw('SUM(item_penjualan.kuantitas) as total_terjual')
+            )
+            ->orderByDesc('total_terjual')
+            ->limit($limit)
+            ->get();
+    }
 }

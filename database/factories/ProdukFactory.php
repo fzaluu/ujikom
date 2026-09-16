@@ -11,6 +11,8 @@ use App\Models\User;
  */
 class ProdukFactory extends Factory
 {
+    protected $model = Produk::class;
+
     /**
      * Define the model's default state.
      *
@@ -20,8 +22,9 @@ class ProdukFactory extends Factory
     {
         $hargaBeli = $this->faker->numberBetween(5_000, 100_000);
         return [
-            'user_id' => User::where('role_id', 1)->inRandomOrder()->value('id'),
-            'foto' => 'produk/' . $this->faker->uuid() . '.jpg',
+            'user_id' => User::where('role_id', 1)->inRandomOrder()->value('id') ?? 1,
+            // Diubah menjadi null agar tidak memanggil file fisik fiktif yang tidak ada
+            'foto' => null, 
             'nama' => $this->faker->word(3, true),
             'harga_beli' => $hargaBeli,
             'harga_jual' => $hargaBeli + $this->faker->numberBetween(5_000, 100_000),

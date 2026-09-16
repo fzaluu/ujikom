@@ -10,12 +10,15 @@ use App\Http\Controllers\ItemPenjualanController;
 use App\Http\Controllers\JenisProdukController;
 
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\PerusahaanController;
 
 use App\Http\Controllers\perulanganController;
 use App\Http\Controllers\percabanganController;
 use App\Http\Controllers\variabelController;
-use App\Http\Controllers\PerusahaanController;
+use App\Http\Controllers\HomeController;
 
+// Halaman informasi publik (tanpa login) - profil toko, layanan, produk best seller
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'index'])->name('login');
@@ -25,7 +28,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    
 
     // Grup manajemen user (khusus role admin, ditegakkan lewat RoleMiddleware)
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -67,6 +69,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/tes/variable', [variabelController::class, 'index'])->name('tes.variable');
     
     Route::get('/Perusahaan', [PerusahaanController::class, 'index'])->name('Perusahaan');
-    
     });
    Route::view('/about', 'about')->name('about');

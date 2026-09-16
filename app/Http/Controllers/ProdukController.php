@@ -6,9 +6,8 @@ use App\Models\Produk;
 use App\Models\JenisProduk;
 use App\Http\Requests\Produk\StoreRequest;
 use App\Http\Requests\Produk\UpdateRequest;
-use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class ProdukController extends Controller
 {
@@ -39,12 +38,13 @@ class ProdukController extends Controller
                 END ASC
             ")
             // --- 3. URUTKAN KETIGA: DATA TERBARU JIKA STOK & JENIS SAMA ---
-            ->latest('id') // Menggunakan id DESC (produk yang baru di-input berada di atas dalam kategori/stok yang sama)
+            ->latest('id') 
             ->paginate(10)
             ->withQueryString();
 
         return view('produk.index', compact('products', 'selectedJenis'));
     }
+
     public function create()
     {
         $jenisProduk = JenisProduk::orderBy('nama')->get();
@@ -53,17 +53,18 @@ class ProdukController extends Controller
 
     public function store(StoreRequest $request)
     {
-        // $request->validated() sudah memastikan jenis_id wajib diisi sesuai aturan di StoreRequest
         $data = $request->validated();
-        
         $data['user_id'] = auth()->id();
 
         if ($request->hasFile('foto')) {
-            // Foto di-resize & dikompres dulu (maks 1000x1000px, kualitas 78%) sebelum
-            // disimpan ke folder 'products' di public/ (disk 'product_photos'). Ini
-            // mencegah foto asli dari HP/kamera yang bisa berukuran 5-10 MB membebani
-            // RAM dan penyimpanan server.
-            $data['foto'] = ImageOptimizer::optimizeAndStore($request->file('foto'), 'products', 'product_photos');
+            $file = $request->file('foto');
+            $filename = 'produk_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            
+            // Simpan langsung fisik file ke folder public/products
+            $file->move(public_path('products'), $filename);
+            
+            // Path relatif yang disimpan ke database
+            $data['foto'] = 'products/' . $filename;
         }
 
         Produk::create($data);
@@ -90,12 +91,16 @@ class ProdukController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('foto')) {
-            // Hapus file lama jika ada agar tidak menumpuk
-            if ($produk->foto && Storage::disk('product_photos')->exists($produk->foto)) {
-                Storage::disk('product_photos')->delete($produk->foto);
+            // Hapus file fisik lama jika ada di public/products
+            if ($produk->foto && file_exists(public_path($produk->foto))) {
+                @unlink(public_path($produk->foto));
             }
-            // Upload baru: di-resize & dikompres dulu sebelum disimpan ke public/products
-            $data['foto'] = ImageOptimizer::optimizeAndStore($request->file('foto'), 'products', 'product_photos');
+
+            $file = $request->file('foto');
+            $filename = 'produk_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('products'), $filename);
+            
+            $data['foto'] = 'products/' . $filename;
         }
 
         $produk->update($data);
@@ -108,17 +113,16 @@ class ProdukController extends Controller
         $produk = Produk::findOrFail($id);
 
         try {
-            // Coba hapus data dari database terlebih dahulu
+            // Hapus data dari database terlebih dahulu
             $produk->delete();
 
-            // Jika berhasil terhapus dari database, baru hapus file fisik fotonya dari storage
-            if ($produk->foto && Storage::disk('product_photos')->exists($produk->foto)) {
-                Storage::disk('product_photos')->delete($produk->foto);
+            // Hapus file fisik foto dari public/products jika ada
+            if ($produk->foto && file_exists(public_path($produk->foto))) {
+                @unlink(public_path($produk->foto));
             }
 
             return redirect()->route('produk.index')->with('success', 'Produk berhasil dihapus!');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Jika gagal karena masih terikat transaksi, database menolak dan foto aman tidak terhapus
             return redirect()
                 ->route('produk.index')
                 ->with('error', 'Produk tidak dapat dihapus karena masih tercatat dalam riwayat transaksi penjualan!');
