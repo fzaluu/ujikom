@@ -250,6 +250,12 @@
             </a>
         </li>
 
+
+        <li class="nav-item">
+            <a href="{{ route('recap.index') }}" class="nav-link {{ request()->routeIs('recap*') ? 'active' : '' }}" title="Rekapitulasi">
+                <i class="bi bi-file-earmark-text fs-5"></i> <span class="nav-label">Rekapitulasi</span>
+            </a>
+        </li>
         
         <!-- <li class="nav-item">
             <a href="{{ route('Perusahaan') }}" class="nav-link {{ request()->routeIs('Perusahaan') ? 'active' : '' }}" title="Perusahaan">

@@ -8,14 +8,12 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\ItemPenjualanController;
 use App\Http\Controllers\JenisProdukController;
-
-use App\Http\Controllers\AboutController;
 use App\Http\Controllers\PerusahaanController;
-
 use App\Http\Controllers\perulanganController;
 use App\Http\Controllers\percabanganController;
 use App\Http\Controllers\variabelController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\RekapController;
 
 // Halaman informasi publik (tanpa login) - profil toko, layanan, produk best seller
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -28,6 +26,12 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Rute untuk menyimpan target dashboard
+    Route::post('/dashboard/update-target', [DashboardController::class, 'updateTarget'])->name('settings.update-target');
+
+    // Halaman Rekapitulasi (Dapat diakses semua user yang login)
+    Route::get('/recap', [RekapController::class, 'index'])->name('recap.index');
 
     // Grup manajemen user (khusus role admin, ditegakkan lewat RoleMiddleware)
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -52,15 +56,17 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::get('/jenis-produk/create', [JenisProdukController::class, 'create'])->name('jenis-produk.create');
         Route::get('/jenis-produk/{jenis_produk}/edit', [JenisProdukController::class, 'edit'])->name('jenis-produk.edit');
-        Route::resource('/jenis-produk', JenisProdukController::class)->except(['index', 'create', 'edit']);
-        Route::resource('/jenis-produk', JenisProdukController::class)->only(['index']);
+        Route::resource('/jenis-produk', JenisProdukController::class)->except(['create', 'edit']);
     });
+
     // Penjualan & item penjualan: transaksi POS, dapat diakses semua role login
     Route::resource('/penjualan', PenjualanController::class);
     
-    // Rute otomatis untuk mengubah status jadi BAYAR_NANTI jika kasir tidak sengaja meninggalkan halaman POS
-    Route::post('/penjualan/{penjualan}/bayar-nanti-auto', [PenjualanController::class, 'setBayarNanti'])->name('penjualan.bayarNantiAuto');
-    Route::delete('/penjualan/{penjualan}/batal-edit', [App\Http\Controllers\PenjualanController::class, 'batalEdit'])->name('penjualan.batalEdit');
+    // Rute otomatis untuk mengubah status jadi BAYAR_NANTI (Nama rute diperbaiki)
+    Route::post('/penjualan/{penjualan}/bayar-nanti-auto', [PenjualanController::class, 'setBayarNanti'])->name('penjualan.bayarNantiAuto'); 
+    
+    // Rute untuk membatalkan edit penjualan
+    Route::delete('/penjualan/{penjualan}/batal-edit', [PenjualanController::class, 'batalEdit'])->name('penjualan.batalEdit');
 
     Route::resource('/itempenjualan', ItemPenjualanController::class);
 
@@ -69,5 +75,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/tes/variable', [variabelController::class, 'index'])->name('tes.variable');
     
     Route::get('/Perusahaan', [PerusahaanController::class, 'index'])->name('Perusahaan');
-    });
-   Route::view('/about', 'about')->name('about');
+});
+
+Route::view('/about', 'about')->name('about');

@@ -70,19 +70,18 @@
 <!-- Statistik Kartu Ringkasan -->
 <div class="row g-4 mb-4">
     @php
-        $targetTransaksiHarian = 20; 
-        $persenTransaksi = min(100, ($ringkasan['total_transaksi'] / max(1, $targetTransaksiHarian)) * 100);
-        
-        $persenStokMenipis = $totalProduk > 0 ? min(100, ($stokMenipis / $totalProduk) * 100) : 0;
-        
-        $targetKapasitasProduk = 50; 
-        $persenTotalProduk = min(100, ($totalProduk / $targetKapasitasProduk) * 100);
+        // Ambil target dinamis dari database, jika belum diatur gunakan nilai default
+        $targetOmsetHarian = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 1000000;
+        $targetTransaksiHarian = \App\Models\Setting::where('key', 'target_transaksi')->value('value') ?? 20;
+        $targetKapasitasProduk = \App\Models\Setting::where('key', 'target_kapasitas')->value('value') ?? 50;
 
-        $targetOmsetHarian = 1000000; 
+        $persenTransaksi = min(100, ($ringkasan['total_transaksi'] / max(1, $targetTransaksiHarian)) * 100);
+        $persenStokMenipis = $totalProduk > 0 ? min(100, ($stokMenipis / $totalProduk) * 100) : 0;
+        $persenTotalProduk = min(100, ($totalProduk / max(1, $targetKapasitasProduk)) * 100);
         $persenOmset = min(100, ($ringkasan['total_penjualan'] / max(1, $targetOmsetHarian)) * 100);
 
         $statCardCol = $isAdmin ? 'col-sm-6 col-xl-3' : 'col-sm-6 col-xl-4';
-    @endphp
+    @endphp                                                                     
 
     @if($isAdmin)
     <!-- Penjualan Hari Ini (khusus Admin) -->
@@ -307,7 +306,7 @@
 </div>
 
 <!-- Peringatan Stok: Habis & Menipis -->
-<div class="row g-4 mt-1">
+<div class="row g-4 mt-1 mb-4">
     {{-- Stok Habis --}}
     <div class="col-lg-6">
         <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
@@ -412,6 +411,45 @@
         </div>
    </div>
 </div>
+
+
+{{-- Form Pengaturan Target & Batas Stok Dashboard --}}
+@if($isAdmin)
+<div class="card shadow-sm border-0 rounded-4 p-4 mb-4 bg-light">
+    <h5 class="fw-bold text-dark mb-3">
+        <i class="bi bi-sliders text-primary me-2"></i> Pengaturan Target
+    </h5>
+    <form action="{{ route('settings.update-target') }}" method="POST">
+        @csrf
+        {{-- Tambahkan align-items-end agar posisi bawah input sejajar --}}
+        <div class="row g-3 align-items-end">
+            <div class="col-sm-6 col-xl-3">
+                <label class="form-label small fw-semibold text-truncate d-block">Target Omset Harian (Rp)</label>
+                <input type="number" name="target_omset" class="form-control rounded-3" value="{{ \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 1000000 }}">
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <label class="form-label small fw-semibold text-truncate d-block">Target Transaksi Harian (Order)</label>
+                <input type="number" name="target_transaksi" class="form-control rounded-3" value="{{ \App\Models\Setting::where('key', 'target_transaksi')->value('value') ?? 20 }}">
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <label class="form-label small fw-semibold text-truncate d-block">Target Kapasitas Produk (Item)</label>
+                <input type="number" name="target_kapasitas" class="form-control rounded-3" value="{{ \App\Models\Setting::where('key', 'target_kapasitas')->value('value') ?? 50 }}">
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <label class="form-label small fw-semibold text-truncate d-block">Batas Stok Menipis (Unit)</label>
+                <input type="number" name="batas_stok_menipis" class="form-control rounded-3" value="{{ \App\Models\Setting::where('key', 'batas_stok_menipis')->value('value') ?? 5 }}" min="1">
+            </div>
+        </div>
+        
+        {{-- Tombol Simpan Rapi di Kanan Bawah --}}
+        <div class="mt-4 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary rounded-3 px-4 shadow-sm">
+                <i class="bi bi-save me-1"></i> Simpan Pengaturan
+            </button>
+        </div>
+    </form>
+</div>
+@endif
 
 <!-- MODAL PREVIEW FOTO PRODUK -->
 <div class="modal fade" id="productImageModal" tabindex="-1" aria-labelledby="productImageModalLabel" aria-hidden="true">

@@ -27,6 +27,7 @@ class LaporanPenjualanService
             'total_non_tunai' => $data->total_non_tunai ?? 0,
         ];
     }
+
     public function produkTerlarisHariIni(int $limit = 5)
     {
         return DB::table('item_penjualan')
@@ -46,11 +47,6 @@ class LaporanPenjualanService
             ->get();
     }
 
-    /**
-     * Produk terlaris sepanjang waktu (bukan cuma hari ini) - dipakai untuk
-     * halaman informasi publik supaya selalu ada data untuk ditampilkan,
-     * tidak kosong hanya karena belum ada transaksi hari ini.
-     */
     public function produkTerlarisKeseluruhan(int $limit = 6)
     {
         return DB::table('item_penjualan')
@@ -68,5 +64,88 @@ class LaporanPenjualanService
             ->orderByDesc('total_terjual')
             ->limit($limit)
             ->get();
+    }
+
+    public function rekapBerdasarkanTanggal($startDate, $endDate, $metode = 'ALL')
+    {
+        $cleanMetode = strtoupper(trim($metode));
+
+        // 1. Query Ringkasan Utama
+        $queryRingkasan = DB::table('penjualan')
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+
+        if ($cleanMetode === 'BAYAR_NANTI' || $cleanMetode === 'BAYAR NANTI') {
+            $queryRingkasan->where('status', 'OPEN');
+            $cleanMetode = 'BAYAR_NANTI';
+        } else {
+            $queryRingkasan->where('status', 'COMPLETED');
+        }
+
+        if ($cleanMetode && $cleanMetode !== 'ALL') {
+            $queryRingkasan->where('metode_pembayaran', $cleanMetode);
+        }
+
+        $ringkasan = $queryRingkasan->selectRaw('
+            COUNT(*) as total_transaksi,
+            SUM(total_pembayaran) as total_omset,
+            SUM(CASE WHEN metode_pembayaran = "CASH" THEN total_pembayaran ELSE 0 END) as total_cash,
+            SUM(CASE WHEN metode_pembayaran != "CASH" THEN total_pembayaran ELSE 0 END) as total_non_tunai
+        ')->first();
+
+        // 2. Query Tabel Pertama (Transaksi Lunas: COMPLETED - Cash & QRIS terurut Cash di atas)
+        $queryProduk = DB::table('item_penjualan')
+            ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
+            ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
+            ->whereBetween('penjualan.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('penjualan.status', 'COMPLETED');
+
+        if ($cleanMetode && $cleanMetode !== 'ALL' && $cleanMetode !== 'BAYAR_NANTI') {
+            $queryProduk->where('penjualan.metode_pembayaran', $cleanMetode);
+        }
+
+        $produkTerlaris = (clone $queryProduk)
+            ->groupBy('produk.id', 'produk.nama', 'produk.harga_jual', 'penjualan.id', 'penjualan.status', 'penjualan.metode_pembayaran')
+            ->select(
+                'penjualan.id as penjualan_id',
+                'penjualan.status as status_pesanan',
+                'penjualan.metode_pembayaran',
+                'produk.nama',
+                'produk.harga_jual',
+                DB::raw('SUM(item_penjualan.kuantitas) as total_terjual'),
+                DB::raw('SUM(item_penjualan.subtotal) as total_pendapatan_produk')
+            )
+            ->orderByRaw("FIELD(penjualan.metode_pembayaran, 'CASH', 'QRIS') ASC")
+            ->orderByDesc('total_terjual')
+            ->get();
+
+        // 3. Query Tabel Kedua (Khusus Piutang / Bayar Nanti: OPEN)
+        $queryBayarNanti = DB::table('item_penjualan')
+            ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
+            ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
+            ->whereBetween('penjualan.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('penjualan.status', 'OPEN');
+
+        $bayarNantiList = $queryBayarNanti
+            ->groupBy('produk.id', 'produk.nama', 'produk.harga_jual', 'penjualan.id', 'penjualan.status', 'penjualan.metode_pembayaran')
+            ->select(
+                'penjualan.id as penjualan_id',
+                'penjualan.status as status_pesanan',
+                'penjualan.metode_pembayaran',
+                'produk.nama',
+                'produk.harga_jual',
+                DB::raw('SUM(item_penjualan.kuantitas) as total_terjual'),
+                DB::raw('SUM(item_penjualan.subtotal) as total_pendapatan_produk')
+            )
+            ->orderByDesc('total_terjual')
+            ->get();
+
+        return [
+            'total_transaksi' => $ringkasan->total_transaksi ?? 0,
+            'total_omset' => $ringkasan->total_omset ?? 0,
+            'total_cash' => $ringkasan->total_cash ?? 0,
+            'total_non_tunai' => $ringkasan->total_non_tunai ?? 0,
+            'produkTerlaris' => $produkTerlaris,
+            'bayarNantiList' => $bayarNantiList,
+        ];
     }
 }

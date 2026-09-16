@@ -21,7 +21,11 @@
 </style>
 
 <div class="container-fluid px-0 animate-page">
-    <div class="card shadow-sm border-0 rounded-4 p-4">
+
+    
+
+    {{-- KONTEN UTAMA: Tabel Jenis Produk --}}
+    <div class="card shadow-sm border-0 rounded-4 p-4 mb-4">
 
         {{-- Header --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
@@ -141,6 +145,9 @@
         </div>
 
     </div>
+
+
+
 </div>
 
 {{-- Modal Konfirmasi Hapus di Tengah --}}
@@ -164,6 +171,7 @@
         </div>
     </div>
 </div>
+
 
 <script>
     let activeDeleteFormId = null;

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'RAJA CELL')</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%230d6efd'><path d='M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-10a.5.5 0 0 0-.5-.5H11.5z'/></svg>">
+    
     <!-- Bootstrap 5 CSS -->
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -52,6 +52,8 @@
         @media (max-width: 991.98px) {
             .main-content {
                 margin-left: 0;
+                /* Beri jarak atas agar konten tidak tertutup header melayang */
+                padding-top: 60px; 
             }
         }
 
@@ -69,11 +71,6 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
             transition: var(--transition-smooth);
             background-color: #ffffff;
-        }
-
-        .card-hover-up:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
         }
 
         .btn {
@@ -117,6 +114,31 @@
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
+        /* ============ FLOATING HEADER MOBILE (Melayang di Atas) ============ */
+        .mobile-floating-header {
+            display: none;
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 1050;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+            border-radius: 14px;
+            padding: 0.5rem 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 991.98px) {
+            .mobile-floating-header {
+                display: flex;
+            }
+        }
+
         /* Page Loader & Toast */
         #page-loader {
             position: fixed;
@@ -140,7 +162,7 @@
 <body>
 
     <script>
-        // Terapkan status sidebar (ciut/lebar) sesegera mungkin agar tidak ada efek kedap-kedip
+        // Terapkan status sidebar (ciut/lebar) sesegera mungkin
         (function () {
             try {
                 if (localStorage.getItem('sidebarCollapsed') === '1') {
@@ -149,6 +171,19 @@
             } catch (e) {}
         })();
     </script>
+
+    <!-- Header / Bar Melayang di Atas (Khusus Mobile) -->
+    @auth
+    <div class="mobile-floating-header d-print-none">
+        <span class="fw-bold text-dark tracking-tight">RAJA CELL</span>
+        <div class="d-flex align-items-center gap-2">
+            <span class="small text-muted fw-medium">{{ auth()->user()->name ?? 'User' }}</span>
+            <button type="button" class="btn btn-light btn-sm text-danger border rounded-3 p-1 px-2 shadow-sm" onclick="openLogoutModal()" title="Keluar">
+                <i class="bi bi-box-arrow-right fs-6"></i>
+            </button>
+        </div>
+    </div>
+    @endauth
 
     <!-- Global Loading Overlay -->
     <div id="page-loader">
@@ -183,13 +218,13 @@
     </div>
 
     <div class="app-container">
-        <!-- Sidebar (Pusat Navigasi Utama) -->
+        <!-- Sidebar (Desktop) & Bottom Nav (Mobile) -->
         @auth
             @include('layouts.navbar')
             @include('layouts.bottom-nav')
         @endauth
 
-        <!-- Main Content Wrapper (Tanpa Navbar Atas) -->
+        <!-- Main Content Wrapper -->
         <div class="main-content">
             <main class="container-fluid p-4 p-md-5">
                 @yield('content')
@@ -202,14 +237,12 @@
         document.addEventListener("DOMContentLoaded", function() {
             const loader = document.getElementById('page-loader');
 
-            // 1. Loading hanya aktif saat form dikirim atau link di dalam Sidebar yang diklik
             document.querySelectorAll('form').forEach(form => {
                 form.addEventListener('submit', () => {
                     if(!form.classList.contains('no-loader')) loader.classList.add('show');
                 });
             });
 
-            // Membatasi efek loading hanya untuk menu navigasi di dalam sidebar
             document.querySelectorAll('.sidebar-pos a').forEach(link => {
                 link.addEventListener('click', function(e) {
                     let href = this.getAttribute('href');
@@ -219,11 +252,10 @@
                 });
             });
 
-            // 2. Otomatis menghilangkan Notifikasi / Toast setelah 6 detik (6000 milidetik)
             const toasts = document.querySelectorAll('.toast');
             toasts.forEach(toastEl => {
                 let toast = new bootstrap.Toast(toastEl, {
-                    delay: 6000 // Durasi 6 detik
+                    delay: 6000
                 });
                 toast.show();
             });

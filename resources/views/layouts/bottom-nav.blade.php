@@ -15,26 +15,33 @@
         z-index: 1040;
     }
 
-    /* Kelompok ikon di sisi kiri/kanan bar, masing-masing mengambil separuh lebar
-       agar tombol transaksi (FAB) di tengah selalu presisi center apapun jumlah ikonnya */
     .mobile-bottom-nav-side {
         flex: 1;
         display: flex;
         align-items: center;
-        justify-content: space-evenly;
+        justify-content: space-around; /* Membagi rata 3 ikon di kiri dan 3 di kanan */
+    }
+
+    /* Berikan jarak aman di tengah agar tidak menabrak tombol plus (FAB) */
+    .mobile-bottom-nav-side.left-side {
+        padding-right: 36px;
+    }
+
+    .mobile-bottom-nav-side.right-side {
+        padding-left: 36px;
     }
 
     .mobile-bottom-nav-item {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 42px;
-        height: 42px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         background-color: transparent;
         border: none;
         color: #64748b;
-        font-size: 1.05rem;
+        font-size: 1.15rem;
         text-decoration: none;
         flex-shrink: 0;
         transition: all 0.2s ease;
@@ -54,7 +61,7 @@
         width: 68px;
         height: 68px;
         border-radius: 50%;
-        background-color: var(--bg-body);
+        background-color: var(--bg-body, #f8fafc);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -64,7 +71,7 @@
         width: 52px;
         height: 52px;
         border-radius: 50%;
-        background-color: var(--primary-color);
+        background-color: var(--primary-color, #2563eb);
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -76,7 +83,7 @@
     }
 
     .mobile-bottom-nav-fab:hover {
-        background-color: var(--primary-hover);
+        background-color: var(--primary-hover, #1d4ed8);
         color: #ffffff;
     }
 
@@ -84,42 +91,47 @@
         .mobile-bottom-nav {
             display: flex;
         }
-
-        /* Beri jarak agar konten paling bawah tidak tertutup bottom nav */
         .main-content {
             padding-bottom: 76px;
         }
     }
 </style>
 
-<!-- Bottom Navigation Mobile: menu sama persis dengan sidebar desktop + 1 tombol transaksi (FAB) di tengah -->
+<!-- Bottom Navigation Mobile: 3 di Kiri, Tombol Plus di Tengah, 3 di Kanan -->
 <nav class="mobile-bottom-nav d-print-none">
-    <div class="mobile-bottom-nav-side">
+    {{-- 3 Menu di Sisi Kiri --}}
+    <div class="mobile-bottom-nav-side left-side">
         <a href="{{ route('dashboard') }}" class="mobile-bottom-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}" title="Dashboard">
             <i class="bi bi-speedometer2"></i>
         </a>
 
         @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
-        <a href="{{ route('admin.users') }}" class="mobile-bottom-nav-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}" title="User">
+        <a href="{{ route('admin.users') }}" class="mobile-bottom-nav-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}" title="Pengguna">
             <i class="bi bi-people"></i>
         </a>
-        <a href="{{ route('jenis-produk.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('jenis-produk*') ? 'active' : '' }}" title="Jenis">
+        <a href="{{ route('jenis-produk.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('jenis-produk*') ? 'active' : '' }}" title="Jenis Produk">
             <i class="bi bi-tags"></i>
         </a>
         @else
         <a href="{{ route('produk.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('produk*') ? 'active' : '' }}" title="Produk">
             <i class="bi bi-box-seam"></i>
         </a>
+        <!-- Cadangan menu ke-3 jika kasir -->
+        <a href="{{ route('recap.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('recap*') ? 'active' : '' }}" title="Rekapitulasi">
+            <i class="bi bi-file-earmark-text"></i>
+        </a>
         @endif
     </div>
 
+    {{-- Tombol Transaksi Tengah (FAB) --}}
     <div class="mobile-bottom-nav-fab-wrap">
         <a href="{{ route('penjualan.create') }}" class="mobile-bottom-nav-fab" title="Transaksi Baru">
             <i class="bi bi-plus-lg"></i>
         </a>
     </div>
 
-    <div class="mobile-bottom-nav-side">
+    {{-- 3 Menu di Sisi Kanan --}}
+    <div class="mobile-bottom-nav-side right-side">
         @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
         <a href="{{ route('produk.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('produk*') ? 'active' : '' }}" title="Produk">
             <i class="bi bi-box-seam"></i>
@@ -129,8 +141,9 @@
         <a href="{{ route('penjualan.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('penjualan*') ? 'active' : '' }}" title="Penjualan">
             <i class="bi bi-bag-check"></i>
         </a>
-        <button type="button" class="mobile-bottom-nav-item" onclick="openLogoutModal()" title="Keluar">
-            <i class="bi bi-box-arrow-right"></i>
-        </button>
+
+        <a href="{{ route('recap.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('recap*') ? 'active' : '' }}" title="Rekapitulasi">
+            <i class="bi bi-file-earmark-text"></i>
+        </a>
     </div>
 </nav>
