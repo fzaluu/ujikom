@@ -105,7 +105,7 @@
                 <thead class="table-light text-uppercase text-dark fw-bold">
                     <tr>
                         <th class="align-middle">No</th>
-                        <th class="align-top">User Input</th>
+                        <th class="text-center align-middle">User Input</th>
                         <th class="text-center align-middle">Foto</th>
                         <th class="align-top">Nama<br>Produk</th>
                         <th class="align-middle">Jenis</th>

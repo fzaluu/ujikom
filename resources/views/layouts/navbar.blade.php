@@ -249,7 +249,13 @@
                 <i class="bi bi-bag-check fs-5"></i> <span class="nav-label">Penjualan</span>
             </a>
         </li>
+
         
+        <li class="nav-item">
+            <a href="{{ route('Perusahaan') }}" class="nav-link {{ request()->routeIs('Perusahaan') ? 'active' : '' }}" title="Perusahaan">
+                <i class="bi bi-shop"></i> <span class="nav-label">Perusahaan</span>
+            </a>
+        </li>
         
     </ul>
 

@@ -25,7 +25,6 @@ class PenjualanController extends Controller
                     $q->where('name', 'like', '%' . $keyword . '%');
                 });
             })
-            // Mengatur agar status 'OPEN' berada di paling atas, lalu diurutkan dari yang terbaru
             ->orderByRaw("CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END")
             ->latest()
             ->paginate(10)
@@ -38,21 +37,17 @@ class PenjualanController extends Controller
         return view('penjualan.index', compact('sales'));
     }
 
-    public function create(Request $request) // Atau tetap gunakan SearchRequest jika itu custom request kamu
+    public function create(Request $request) 
     {
-        // Jangan langsung buat record di database saat masuk halaman create.
-        // Buat objek kosong penampung sementara untuk view POS.
         $sale = new Penjualan([
             'user_id' => Auth::id(),
             'status' => 'OPEN',
             'total_pembayaran' => 0,
             'metode_pembayaran' => 'BAYAR_NANTI'
         ]);
-        // Belum disimpan ke database ($sale->id masih null sampai ada item yang ditambahkan)
 
         $keyword = $request->input('search');
 
-        // Diubah dari ->get() menjadi ->paginate(5) (bisa diubah angkanya sesuai selera, misal 5 atau 6 produk per halaman)
         $products = Produk::when($keyword, function ($query) use ($keyword) {
             $query->where('nama', 'like', '%' . $keyword . '%');
         })
@@ -65,7 +60,6 @@ class PenjualanController extends Controller
         $totalProdukCount = Produk::count();
         $mode = 'create';
 
-        // Jika request datang dari AJAX (saat mengetik pencarian atau klik halaman pagination)
         if ($request->ajax()) {
             return response()->json([
                 'html' => view('penjualan.partials.product-grid', compact('products', 'sale'))->render()
@@ -85,13 +79,16 @@ class PenjualanController extends Controller
         $sale->load('itemPenjualan.produk');
         
         $keyword = $request->input('search');
+        
+        // PERBAIKAN DI SINI: Mengubah ->get() menjadi ->paginate(5)->appends($request->all())
         $products = Produk::when($keyword, function ($query) use ($keyword) {
             $query->where('nama', 'like', '%' . $keyword . '%');
         })
         ->orderByRaw('CASE WHEN stok <= 0 THEN 1 ELSE 0 END')
         ->orderBy('stok', 'desc')
         ->orderBy('nama')
-        ->get();
+        ->paginate(5)
+        ->appends($request->all());
 
         $totalProdukCount = Produk::count();
         $mode = 'edit';
@@ -128,9 +125,7 @@ class PenjualanController extends Controller
         $uangDibayar = null;
         $kembalian = null;
 
-        // Validasi khusus jika metode pembayaran CASH
         if ($request->payment_method === 'CASH') {
-            // Memastikan data diambil secara aman (pakai float/numeric, fallback ke 0 jika kosong)
             $uangDibayar = floatval($request->input('uang_dibayar', 0));
             $kembalian = floatval($request->input('kembalian', 0));
 
@@ -191,6 +186,7 @@ class PenjualanController extends Controller
         $sale = $penjualan->load('itemPenjualan.produk', 'user');
         return view('penjualan.show', compact('sale'));
     }
+
     public function batalEdit(Penjualan $penjualan)
     {
         $user = Auth::user();
@@ -202,12 +198,9 @@ class PenjualanController extends Controller
         }
 
         DB::transaction(function () use ($penjualan) {
-            // Cek apakah transaksi ini statusnya OPEN dan keranjangnya masih kosong (belum ada item yang dimasukkan)
             if ($penjualan->status === 'OPEN' && $penjualan->itemPenjualan()->count() === 0) {
-                // Jika kosong, hapus permanen dari database agar tidak menjadi sampah riwayat
                 $penjualan->delete();
             } else {
-                // Jika sudah ada item di dalamnya, kembalikan stok produk yang telanjur terpotong (jika ada) lalu hapus
                 foreach ($penjualan->itemPenjualan as $item) {
                     if ($item->produk) {
                         $item->produk->increment('stok', $item->kuantitas);
