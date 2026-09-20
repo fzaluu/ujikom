@@ -3,21 +3,22 @@
 @section('title', 'Detail Transaksi')
 
 @section('content')
-<div class="container-fluid px-0">
+<div class="container-fluid px-2 px-md-0">
     {{-- Pembungkus utama struk dengan ID #area-struk --}}
-    <div id="area-struk" class="card shadow-sm border-0 rounded-4 col-lg-10 mx-auto p-4 bg-white">
+    <div id="area-struk" class="card shadow-sm border-0 rounded-4 col-12 col-lg-10 mx-auto p-3 p-md-4 bg-white">
         
-        <div class="d-flex justify-content-between align-items-center mb-4 d-print-none">
+        {{-- Header & Tombol Aksi (Dibuat Responsif Stack di Mobile) --}}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-4 d-print-none">
             <div>
                 <span class="text-primary fw-semibold small text-uppercase tracking-wider">Riwayat Kasir</span>
-                <h3 class="fw-bold text-dark mb-1">Detail Penjualan</h3>
+                <h3 class="fw-bold text-dark fs-4 fs-md-3 mb-1">Detail Penjualan</h3>
                 <p class="text-muted small mb-0">Informasi lengkap transaksi dan rincian pembayaran.</p>
             </div>
-            <div class="d-flex gap-2">
-                <button onclick="cetakStruk()" class="btn btn-primary shadow-sm rounded-3 py-2">
+            <div class="d-flex flex-wrap gap-2">
+                <button onclick="cetakStruk()" class="btn btn-primary shadow-sm rounded-3 py-2 flex-fill flex-md-grow-0">
                     <i class="bi bi-printer me-1"></i> Cetak Struk
                 </button>
-                <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 py-2">
+                <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 py-2 flex-fill flex-md-grow-0">
                     <i class="bi bi-arrow-left-circle me-1"></i> Kembali
                 </a>
             </div>
@@ -55,7 +56,7 @@
 
             <div class="struk-items">
                 @php $totalQty = 0; @endphp
-                @forelse($sale->itemPenjualan as $item)
+                @forelse ($sale->itemPenjualan as $item)
                     @php $totalQty +=$item->kuantitas; @endphp
                     <div class="struk-item-name">{{ $loop->iteration }}. {{ $item->nama_produk ?? optional($item->produk)->nama ?? 'Produk Tidak Diketahui' }}</div>
                     <div class="struk-item-detail">
@@ -108,14 +109,14 @@
         </div>
 
         {{-- Kartu Informasi Transaksi (Tampil di Layar / Non-Print) --}}
-        <div class="card border-0 bg-light bg-opacity-50 rounded-4 p-4 mb-4 d-print-none">
+        <div class="card border-0 bg-light bg-opacity-50 rounded-4 p-3 p-md-4 mb-4 d-print-none">
             <h5 class="fw-bold text-dark mb-3">Informasi Transaksi</h5>
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Tanggal Transaksi</div>
                     <div class="fw-semibold text-dark">{{ $sale->created_at->translatedFormat('d F Y H:i:s') }}</div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Kasir Bertugas</div>
                     <div class="fw-semibold text-dark">
                         <span class="badge bg-white text-dark border px-2 py-1">
@@ -123,7 +124,7 @@
                         </span>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Status Pesanan</div>
                     <div>
                         <span class="badge {{ $sale->status == 'COMPLETED' ? 'bg-success bg-opacity-10 text-success' : 'bg-warning bg-opacity-10 text-warning' }} px-2.5 py-1">
@@ -131,7 +132,7 @@
                         </span>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Metode Pembayaran</div>
                     <div>
                         @if($sale->metode_pembayaran === 'CASH')
@@ -153,11 +154,11 @@
                 </div> 
 
                 @if($sale->metode_pembayaran === 'CASH')
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Uang Tunai Dibayar</div>
                         <div class="fw-semibold text-dark">Rp {{ number_format($sale->uang_dibayar ?? 0, 0, ',', '.') }}</div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Uang Kembalian</div>
                         <div class="fw-semibold text-success">Rp {{ number_format($sale->kembalian ?? 0, 0, ',', '.') }}</div>
                     </div>
@@ -167,15 +168,15 @@
                 @if($sale->metode_pembayaran === 'BAYAR_NANTI')
                     <div class="col-12 pt-3 border-top mt-2">
                         <div class="row g-3">
-                            <div class="col-md-4">
+                            <div class="col-12 col-md-4">
                                 <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Nama Pelanggan</div>
                                 <div class="fw-bold text-dark">{{ $sale->customer_name ?? '-' }}</div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-12 col-md-4">
                                 <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">No. HP / WhatsApp</div>
                                 <div class="fw-bold text-dark">{{ $sale->customer_phone ?? '-' }}</div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-12 col-md-4">
                                 <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Tanggal Jatuh Tempo</div>
                                 <div class="fw-bold text-danger">
                                     <i class="bi bi-calendar-check me-1"></i> 
@@ -188,13 +189,14 @@
             </div>
         </div>
 
+        {{-- Tabel Daftar Item Produk --}}
         <div class="card border-0 shadow-sm rounded-4 p-0 overflow-hidden mb-4 d-print-none">
             <div class="card-header bg-white border-0 p-3 pb-0">
                 <h5 class="fw-bold text-dark mb-0">Daftar Item Produk yang Dibeli</h5>
             </div>
             <div class="card-body p-3">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0" style="min-width: 500px;">
                         <thead class="table-light text-uppercase fs-7 text-muted">
                             <tr>
                                 <th width="5%" class="py-3 ps-3 rounded-start">No</th>
@@ -205,7 +207,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($sale->itemPenjualan as $item)
+                            @forelse ($sale->itemPenjualan as $item)
                             <tr>
                                 <td class="ps-3 py-3 text-muted">{{ $loop->iteration }}</td>
                                 <td class="fw-semibold text-dark">
@@ -264,7 +266,7 @@
     </div>
 </div>
 
-{{-- Styling E-Receipt Struk --}}
+{{-- Styling E-Receipt Struk & Mobile Fix --}}
 <style>
     #struk-print {
         font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
