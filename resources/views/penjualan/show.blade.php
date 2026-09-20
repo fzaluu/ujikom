@@ -30,7 +30,6 @@
                     <i class="bi bi-shop"></i>
                 </div>
                 <h2 class="struk-brand">RAJA CELL</h2>
-                {{-- Data toko berikut masih placeholder, silakan sesuaikan dengan data asli --}}
                 <p class="struk-address mb-0">Jl. Contoh Alamat No. 123, Kota Anda</p>
                 <p class="struk-address mb-0">No. Telp 0812-0000-0000</p>
             </div>
@@ -57,14 +56,14 @@
             <div class="struk-items">
                 @php $totalQty = 0; @endphp
                 @forelse($sale->itemPenjualan as $item)
-                    @php $totalQty += $item->kuantitas; @endphp
+                    @php $totalQty +=$item->kuantitas; @endphp
                     <div class="struk-item-name">{{ $loop->iteration }}. {{ $item->nama_produk ?? optional($item->produk)->nama ?? 'Produk Tidak Diketahui' }}</div>
                     <div class="struk-item-detail">
                         <span>{{ $item->kuantitas }} x {{ number_format($item->harga_satuan, 0, ',', '.') }}</span>
                         <span>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
                     </div>
                 @empty
-                    <p class="text-center mb-0">Tidak ada item pada transaksi ini.</p>
+                    <div class="text-center">Tidak ada item pada transaksi ini.</div>
                 @endforelse
             </div>
 
@@ -102,13 +101,13 @@
                 <p class="mb-2">Terimakasih Telah Berbelanja</p>
             </div>
 
-            {{-- Placeholder link kritik & saran, silakan ganti dengan link asli jika ada --}}
             <div class="struk-feedback-box text-center">
                 <p class="mb-1">Link Kritik dan Saran:</p>
                 <p class="mb-0">rajacell.com/e-receipt/{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</p>
             </div>
         </div>
 
+        {{-- Kartu Informasi Transaksi (Tampil di Layar / Non-Print) --}}
         <div class="card border-0 bg-light bg-opacity-50 rounded-4 p-4 mb-4 d-print-none">
             <h5 class="fw-bold text-dark mb-3">Informasi Transaksi</h5>
             <div class="row g-3">
@@ -145,7 +144,7 @@
                             </span>
                         @elseif($sale->metode_pembayaran === 'BAYAR_NANTI')
                             <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-clock-history"></i> Bayar Nanti (Pending)
+                                <i class="bi bi-clock-history"></i> Bayar Nanti (Piutang)
                             </span>
                         @else
                             <span class="text-muted fw-semibold">-</span>
@@ -161,6 +160,29 @@
                     <div class="col-md-6">
                         <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Uang Kembalian</div>
                         <div class="fw-semibold text-success">Rp {{ number_format($sale->kembalian ?? 0, 0, ',', '.') }}</div>
+                    </div>
+                @endif
+
+                {{-- INFORMASI TAMBAHAN JIKA METODE BAYAR NANTI --}}
+                @if($sale->metode_pembayaran === 'BAYAR_NANTI')
+                    <div class="col-12 pt-3 border-top mt-2">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Nama Pelanggan</div>
+                                <div class="fw-bold text-dark">{{ $sale->customer_name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">No. HP / WhatsApp</div>
+                                <div class="fw-bold text-dark">{{ $sale->customer_phone ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Tanggal Jatuh Tempo</div>
+                                <div class="fw-bold text-danger">
+                                    <i class="bi bi-calendar-check me-1"></i> 
+                                    {{ $sale->due_date ? \Carbon\Carbon::parse($sale->due_date)->translatedFormat('d F Y') : '-' }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 @endif
             </div>
@@ -242,7 +264,7 @@
     </div>
 </div>
 
-{{-- STRUK: Tampilan e-receipt toko saat dicetak --}}
+{{-- Styling E-Receipt Struk --}}
 <style>
     #struk-print {
         font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
@@ -311,12 +333,10 @@
     }
 
     @media print {
-        /* Sembunyikan sidebar, navbar, dan seluruh elemen bawaan aplikasi */
         .sidebar-pos, .mobile-bottom-nav, .sidebar-toggle-btn, nav, aside, header, footer, .d-print-none {
             display: none !important;
         }
 
-        /* Paksa body bersih tanpa background abu-abu */
         body, html, .container-fluid {
             background-color: white !important;
             margin: 0 !important;
@@ -324,8 +344,6 @@
             width: 100% !important;
         }
 
-        /* Ukuran default/fallback kalau JS di bawah gagal jalan.
-           Nilai sebenarnya akan ditimpa oleh #page-size-dinamis lewat cetakStruk(). */
         @page {
             size: 100mm 200mm;
             margin: 6mm;
@@ -343,8 +361,6 @@
             background: white !important;
         }
 
-        /* Lebar mengikuti area cetak halaman (lihat @page size) supaya kertas
-           ikut menyusut mengikuti ukuran struk, bukan struk kecil di kertas A4 besar. */
         #struk-print {
             width: 100%;
             margin: 0 auto;
@@ -364,11 +380,6 @@
         if (text) text.textContent = 'Memuat Halaman Kasir...';
     }
 
-    // Menghitung tinggi struk asli lalu mengatur ukuran kertas cetak (@page) persis
-    // sesuai tinggi itu, supaya tidak ada sisa kertas kosong yang panjang saat print.
-    // Catatan: printer virtual seperti "Microsoft Print to PDF" kadang tetap memaksa
-    // ukuran kertas standar (Letter/A4) karena keterbatasan drivernya sendiri, di luar
-    // kendali kode ini. Printer nota/thermal asli umumnya mendukung ukuran custom ini.
     function cetakStruk() {
         const strukEl = document.getElementById('struk-print');
         let styleEl = document.getElementById('page-size-dinamis');
@@ -381,7 +392,6 @@
 
         if (strukEl) {
             const tinggiPx = strukEl.scrollHeight;
-            // 1px = 25.4/96 mm, ditambah sedikit ruang ekstra untuk margin cetak
             const tinggiMm = Math.ceil((tinggiPx * 25.4) / 96) + 15;
 
             styleEl.innerHTML = `

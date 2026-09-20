@@ -20,6 +20,10 @@ class Penjualan extends Model
         'uang_dibayar',
         'kembalian',
         'status',
+        'customer_name',   
+        'customer_phone',  
+        'due_date',        
+        'fine_amount',
     ];
 
     public function user()

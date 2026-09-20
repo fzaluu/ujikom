@@ -11,18 +11,16 @@
             <h3 class="fw-bold text-dark mb-1">Transaksi Penjualan</h3>
             <p class="text-muted small mb-0">Pilih produk di sebelah kiri untuk dimasukkan ke dalam keranjang.</p>
         </div>
-        <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 px-3 py-2" onclick="markExplicitAction()">
+        <!-- <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary shadow-sm rounded-3 px-3 py-2" onclick="markExplicitAction()">
             <i class="bi bi-arrow-left-circle me-1"></i> Kembali ke Riwayat
-        </a>
+        </a> -->
     </div>
 
     <div class="row g-4">
         {{-- BAGIAN KIRI: DAFTAR PRODUK --}}
         <div class="col-lg-7 align-self-start" >
             <div class="card border-0 shadow-sm rounded-4 ">
-                {{-- Dihapus justify-content-between agar tidak meregangkan jarak ke bawah --}}
                 <div class="card-body p-4 pb-3 d-flex flex-column">
-                    {{-- Bagian Atas (Judul, Search, & List Produk) dengan mb-auto --}}
                     <div class="mb-auto">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h6 class="fw-bold text-dark mb-0">
@@ -49,11 +47,11 @@
 
                         {{-- Kotak list produk --}}
                         <div id="product-grid-container" class="product-list-container pe-1 ">
-                            @include('penjualan.partials.product-grid', ['products' => $products, 'sale' => $sale])
+                            @include('penjualan.partials.product-grid', ['products' => $products, 'sale' =>$sale])
                         </div>
                     </div>
 
-                    {{-- BAGIAN BAWAH: PAGINATION (mt-3 agar jaraknya pas dan rapat) --}}
+                    {{-- BAGIAN BAWAH: PAGINATION --}}
                     <div class="mt-3 pt-2 border-top d-flex justify-content-center">
                         <div class="pos-pagination-wrapper">
                             {{ $products->links() }}
@@ -186,6 +184,22 @@
                                 </div>
                             </div>
 
+                            {{-- Form Input Bayar Nanti (Langsung Tampil di Sini, Tanpa Pop-up) --}}
+                            <div id="bayarNantiContainer" class="mb-3">
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold text-muted mb-1">Nama Pelanggan </label>
+                                    <input type="text" name="customer_name" id="inputCustomerName" class="form-control form-control-sm rounded-3 shadow-none" placeholder="Masukkan nama pelanggan" value="{{ $sale->customer_name ?? '' }}">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold text-muted mb-1">No. HP / WhatsApp </label>
+                                    <input type="text" name="customer_phone" id="inputCustomerPhone" class="form-control form-control-sm rounded-3 shadow-none" placeholder="Contoh: 08123456789" value="{{ $sale->customer_phone ?? '' }}">
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label small fw-bold text-muted mb-1">Tanggal Jatuh Tempo</label>
+                                    <input type="date" name="due_date" id="inputDueDate" class="form-control form-control-sm rounded-3 shadow-none" value="{{ $sale->due_date ?? '' }}">
+                                </div>
+                            </div>
+
                             <input type="hidden" name="kembalian" id="inputHiddenKembalian" value="0">
 
                             <button type="button"
@@ -221,7 +235,7 @@
     </div>
 </div>
 
-{{-- Styling Khusus Pagination POS & Scroll --}}
+{{-- Styling Pagination POS & Scroll --}}
 <style>
     .pos-pagination-wrapper {
         width: 100%;
@@ -254,7 +268,7 @@
     }
 </style>
 
-{{-- Modal Pop-up di Tengah (Disamakan dengan halaman Produk/Create) --}}
+{{-- Modal Konfirmasi Umum --}}
 <div class="modal fade" id="posConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -309,7 +323,7 @@
         const confirmBtn = document.getElementById('posModalConfirmBtn');
         const cancelBtn  = document.getElementById('posCancelBtn');
 
-        titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> Peringatan Batas Nominal`;
+        titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> Peringatan`;
         iconEl.innerHTML  = `<i class="bi bi-exclamation-circle text-danger"></i>`;
         msgEl.innerHTML   = `${mainMessage}<br><small class="text-muted">${subMessage}</small>`;
 
@@ -317,13 +331,10 @@
         confirmBtn.innerText = 'Mengerti';
 
         if (cancelBtn) cancelBtn.classList.add('d-none');
-
-        const modal = getPosModal();
-        modal.show();
+        getPosModal().show();
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        // Live Search Produk
         const searchInput = document.getElementById('productSearchInput');
         const gridContainer = document.getElementById('product-grid-container');
         let searchTimeout = null;
@@ -346,41 +357,15 @@
             });
         }
 
-        // Menangani klik pagination via AJAX agar sinkron halamannya dan tombol active menyala dengan benar
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.pos-pagination-wrapper a')) {
-                e.preventDefault();
-                let link = e.target.closest('a');
-                let url = link.getAttribute('href');
-                if (!url) return;
-
-                const keyword = document.getElementById('productSearchInput')?.value || '';
-                let fetchUrl = url;
-                if (keyword && !fetchUrl.includes('search=')) {
-                    let separator = fetchUrl.includes('?') ? '&' : '?';
-                    fetchUrl += `${separator}search=${encodeURIComponent(keyword)}`;
-                }
-
-                fetch(fetchUrl, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    gridContainer.innerHTML = data.html;
-                    window.history.pushState({path: url}, '', url);
-                })
-                .catch(err => console.error('Pagination error:', err));
-            }
-        });
-
-        const paymentSelect     = document.getElementById('paymentMethodSelect');
-        const qrisContainer     = document.getElementById('qrisContainer');
-        const cashContainer     = document.getElementById('cashContainer');
-        const inputUangDibayar  = document.getElementById('inputUangDibayar');
-        const textKembalian     = document.getElementById('textKembalian');
+        const paymentSelect        = document.getElementById('paymentMethodSelect');
+        const qrisContainer        = document.getElementById('qrisContainer');
+        const cashContainer        = document.getElementById('cashContainer');
+        const bayarNantiContainer  = document.getElementById('bayarNantiContainer');
+        const inputUangDibayar     = document.getElementById('inputUangDibayar');
+        const textKembalian        = document.getElementById('textKembalian');
         const inputHiddenKembalian = document.getElementById('inputHiddenKembalian');
-        const checkoutBtnText   = document.getElementById('checkoutBtnText');
-        const uangError         = document.getElementById('uangError');
+        const checkoutBtnText      = document.getElementById('checkoutBtnText');
+        const uangError            = document.getElementById('uangError');
 
         function updatePaymentUI() {
             if (!paymentSelect) return;
@@ -389,6 +374,7 @@
 
             qrisContainer?.classList.add('d-none');
             cashContainer?.classList.add('d-none');
+            bayarNantiContainer?.classList.add('d-none');
             uangError?.classList.add('d-none');
 
             if (method === 'QRIS') {
@@ -399,6 +385,7 @@
                 if (checkoutBtnText) checkoutBtnText.innerText = 'Checkout & Selesaikan';
                 hitungKembalian();
             } else if (method === 'BAYAR_NANTI') {
+                bayarNantiContainer?.classList.remove('d-none');
                 if (checkoutBtnText) checkoutBtnText.innerText = 'Simpan & Bayar Nanti';
             } else {
                 if (checkoutBtnText) checkoutBtnText.innerText = 'Checkout & Selesaikan';
@@ -429,23 +416,12 @@
         if (inputUangDibayar) {
             inputUangDibayar.addEventListener('input', function () {
                 let cleaned = this.value.replace(/[^\d]/g, '');
-
-                if (cleaned.length > 9) {
-                    cleaned = cleaned.substring(0, 9);
-                    showErrorModal(
-                        "Yang bener masukin harganya!", 
-                        "Jika melebihi batas, <strong class='text-danger'>call owner</strong>!"
-                    );
-                }
-
                 if (cleaned !== "") {
                     this.value = Number(cleaned).toLocaleString('id-ID');
                 } else {
                     this.value = "";
                 }
-
                 hitungKembalian();
-                uangError?.classList.add('d-none');
             });
         }
 
@@ -457,7 +433,6 @@
 
     function openCustomConfirm(type) {
         activeActionType = type;
-
         const paymentSelect = document.getElementById('paymentMethodSelect');
         const titleEl   = document.getElementById('posModalTitle');
         const iconEl    = document.getElementById('posModalIcon');
@@ -473,14 +448,7 @@
 
         if (type === 'checkout') {
             if (!paymentSelect || !paymentSelect.value) {
-                titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i> Perhatian`;
-                iconEl.innerHTML  = `<i class="bi bi-exclamation-circle text-warning"></i>`;
-                msgEl.innerText   = 'Silakan pilih metode pembayaran terlebih dahulu!';
-                confirmBtn.className = 'btn btn-primary px-4 rounded-3 shadow-sm';
-                confirmBtn.innerText = 'Mengerti';
-                if (cancelBtn) cancelBtn.classList.add('d-none');
-
-                getPosModal().show();
+                showErrorModal('Perhatian', 'Silakan pilih metode pembayaran terlebih dahulu!');
                 paymentSelect?.focus();
                 return;
             }
@@ -490,27 +458,29 @@
             if (method === 'CASH') {
                 const inputUang = document.getElementById('inputUangDibayar');
                 const uangBayar = parseUang(inputUang?.value);
-
                 if (uangBayar < TOTAL_BELANJA) {
-                    titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i> Perhatian`;
-                    iconEl.innerHTML  = `<i class="bi bi-exclamation-circle text-warning"></i>`;
-                    msgEl.innerText   = 'Uang tunai dari pelanggan kurang dari total pembayaran!';
-                    confirmBtn.className = 'btn btn-primary px-4 rounded-3 shadow-sm';
-                    confirmBtn.innerText = 'Mengerti';
-                    if (cancelBtn) cancelBtn.classList.add('d-none');
-
-                    getPosModal().show();
+                    showErrorModal('Perhatian', 'Uang tunai dari pelanggan kurang dari total pembayaran!');
                     inputUang?.focus();
                     return;
                 }
             }
 
-            const isBayarNanti = (method === 'BAYAR_NANTI');
+            // Validasi inline jika metode Bayar Nanti
+            if (method === 'BAYAR_NANTI') {
+                const nameInput  = document.getElementById('inputCustomerName').value.trim();
+                const phoneInput = document.getElementById('inputCustomerPhone').value.trim();
+                const dateInput  = document.getElementById('inputDueDate').value;
+
+                if (!nameInput || !phoneInput || !dateInput) {
+                    showErrorModal('Form Belum Lengkap', 'Nama Pelanggan, No. HP, dan Tanggal Jatuh Tempo wajib diisi untuk Bayar Nanti!');
+                    return;
+                }
+            }
 
             titleEl.innerHTML = `<i class="bi bi-check-circle-fill me-2 text-success"></i> Konfirmasi Checkout`;
             iconEl.innerHTML  = `<i class="bi bi-cart-check text-success"></i>`;
-            msgEl.innerText   = isBayarNanti
-                ? 'Apakah Anda yakin ingin menyimpan transaksi ini dengan metode Bayar Nanti?'
+            msgEl.innerText   = (method === 'BAYAR_NANTI')
+                ? 'Apakah Anda yakin ingin menyimpan transaksi Bayar Nanti ini?'
                 : 'Apakah Anda yakin ingin menyelesaikan transaksi ini?';
 
             confirmBtn.className = 'btn btn-success px-4 rounded-3 shadow-sm';
@@ -519,7 +489,6 @@
             titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> Konfirmasi Pembatalan`;
             iconEl.innerHTML  = `<i class="bi bi-trash text-danger"></i>`;
             msgEl.innerText   = 'Yakin ingin membatalkan transaksi ini? Semua item di keranjang akan dihapus.';
-
             confirmBtn.className = 'btn btn-danger px-4 rounded-3 shadow-sm';
             confirmBtn.innerText = 'Ya, Batalkan';
         }
@@ -538,15 +507,11 @@
         const cancelBtn  = document.getElementById('posCancelBtn');
 
         confirmBtn.disabled = false;
-        if (cancelBtn) {
-            cancelBtn.disabled = false;
-            cancelBtn.classList.remove('d-none');
-        }
+        if (cancelBtn) cancelBtn.classList.remove('d-none');
 
         titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i> Konfirmasi Hapus`;
         iconEl.innerHTML  = `<i class="bi bi-trash text-danger"></i>`;
         msgEl.innerText   = message;
-
         confirmBtn.className = 'btn btn-danger px-4 rounded-3 shadow-sm';
         confirmBtn.innerText = 'Ya, Hapus';
 
@@ -562,44 +527,33 @@
         isExplicitAction = true;
         const btn = this;
         const cancelBtn = document.getElementById('posCancelBtn');
-
         btn.disabled = true;
         if (cancelBtn) cancelBtn.disabled = true;
 
         if (activeActionType === 'checkout') {
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Memproses...`;
-
             const paymentSelect = document.getElementById('paymentMethodSelect');
             if (paymentSelect?.value === 'CASH') {
                 const inputUang = document.getElementById('inputUangDibayar');
                 const hiddenKembalian = document.getElementById('inputHiddenKembalian');
                 const uangBayar = parseUang(inputUang?.value);
-
                 if (inputUang) inputUang.value = uangBayar;
-
-                if (hiddenKembalian) {
-                    hiddenKembalian.value = Math.max(0, uangBayar - TOTAL_BELANJA);
-                }
+                if (hiddenKembalian) hiddenKembalian.value = Math.max(0, uangBayar - TOTAL_BELANJA);
             }
-
             document.getElementById('checkoutForm').submit();
         } else if (activeActionType === 'cancel') {
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Membatalkan...`;
             document.getElementById('cancelTransactionForm').submit();
         } else if (activeActionType === 'delete_item') {
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menghapus...`;
-            if (activeDeleteFormId) {
-                document.getElementById(activeDeleteFormId)?.submit();
-            }
+            if (activeDeleteFormId) document.getElementById(activeDeleteFormId)?.submit();
         }
     });
 
     window.addEventListener('beforeunload', function (e) {
         if (isExplicitAction) return;
-
         const saleId = "{{ $sale->id ?? '' }}";
         const itemCount = "{{ $sale->itemPenjualan->count() ?? 0 }}";
-
         if (saleId && itemCount > 0) {
             const url = "{{ route('penjualan.bayarNantiAuto', $sale->id ?? 0) }}";
             const formData = new FormData();

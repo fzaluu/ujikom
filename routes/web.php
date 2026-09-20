@@ -18,11 +18,13 @@ use App\Http\Controllers\RekapController;
 // Halaman informasi publik (tanpa login) - profil toko, layanan, produk best seller
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Rute untuk Tamu (Belum Login)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'auth'])->name('auth.login');
 });
 
+// Rute untuk Pengguna yang Sudah Login (Auth)
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -33,7 +35,7 @@ Route::middleware('auth')->group(function () {
     // Halaman Rekapitulasi (Dapat diakses semua user yang login)
     Route::get('/recap', [RekapController::class, 'index'])->name('recap.index');
 
-    // Grup manajemen user (khusus role admin, ditegakkan lewat RoleMiddleware)
+    // Grup manajemen user (khusus role admin)
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
@@ -49,6 +51,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/produk/{produk}/edit', [ProdukController::class, 'edit'])->name('produk.edit');
         Route::resource('/produk', ProdukController::class)->except(['index', 'show', 'create', 'edit']);
     });
+    
     // Produk: Rute publik (index & show) untuk semua role login
     Route::resource('/produk', ProdukController::class)->only(['index', 'show']);
 
@@ -62,7 +65,7 @@ Route::middleware('auth')->group(function () {
     // Penjualan & item penjualan: transaksi POS, dapat diakses semua role login
     Route::resource('/penjualan', PenjualanController::class);
     
-    // Rute otomatis untuk mengubah status jadi BAYAR_NANTI (Nama rute diperbaiki)
+    // Rute otomatis untuk mengubah status jadi BAYAR_NANTI
     Route::post('/penjualan/{penjualan}/bayar-nanti-auto', [PenjualanController::class, 'setBayarNanti'])->name('penjualan.bayarNantiAuto'); 
     
     // Rute untuk membatalkan edit penjualan
@@ -70,6 +73,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/itempenjualan', ItemPenjualanController::class);
 
+    // Rute Pembelajaran / Tugas
     Route::get('/tes/perulangan', [perulanganController::class, 'index'])->name('tes.perulangan');
     Route::get('/tes/percabangan', [percabanganController::class, 'index'])->name('tes.percabangan');
     Route::get('/tes/variable', [variabelController::class, 'index'])->name('tes.variable');
@@ -77,4 +81,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/Perusahaan', [PerusahaanController::class, 'index'])->name('Perusahaan');
 });
 
+// Halaman About Publik
 Route::view('/about', 'about')->name('about');

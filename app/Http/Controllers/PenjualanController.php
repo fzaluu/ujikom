@@ -108,6 +108,9 @@ class PenjualanController extends Controller
             'payment_method' => 'required|in:CASH,QRIS,BAYAR_NANTI',
             'uang_dibayar' => 'nullable',
             'kembalian' => 'nullable',
+            'customer_name' => 'required_if:payment_method,BAYAR_NANTI|nullable|string|max:255',
+            'customer_phone' => 'required_if:payment_method,BAYAR_NANTI|nullable|string|max:255',
+            'due_date' => 'required_if:payment_method,BAYAR_NANTI|nullable|date',
         ]);
 
         if ($penjualan->status == 'COMPLETED') {
@@ -142,12 +145,15 @@ class PenjualanController extends Controller
                 'total_pembayaran' => $total,
                 'uang_dibayar' => $uangDibayar,
                 'kembalian' => $kembalian,
-                'status' => $newStatus
+                'status' => $newStatus,
+                'customer_name' => $request->payment_method === 'BAYAR_NANTI' ? $request->customer_name : null,
+                'customer_phone' => $request->payment_method === 'BAYAR_NANTI' ? $request->customer_phone : null,
+                'due_date' => $request->payment_method === 'BAYAR_NANTI' ? $request->due_date : null,
             ]);
         });
 
         $message = ($newStatus === 'OPEN') 
-            ? 'Transaksi berhasil disimpan (Bayar Nanti)' 
+            ? 'Transaksi Bayar Nanti berhasil disimpan' 
             : 'Transaksi berhasil diselesaikan';
 
         return redirect()
