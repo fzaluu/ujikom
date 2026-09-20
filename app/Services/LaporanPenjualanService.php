@@ -70,16 +70,10 @@ class LaporanPenjualanService
     {
         $cleanMetode = strtoupper(trim($metode));
 
-        // 1. Query Ringkasan Utama
+        // 1. Query Ringkasan Utama (Omset Lunas)
         $queryRingkasan = DB::table('penjualan')
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
-
-        if ($cleanMetode === 'BAYAR_NANTI' || $cleanMetode === 'BAYAR NANTI') {
-            $queryRingkasan->where('status', 'OPEN');
-            $cleanMetode = 'BAYAR_NANTI';
-        } else {
-            $queryRingkasan->where('status', 'COMPLETED');
-        }
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('status', 'COMPLETED');
 
         if ($cleanMetode && $cleanMetode !== 'ALL') {
             $queryRingkasan->where('metode_pembayaran', $cleanMetode);
@@ -92,7 +86,7 @@ class LaporanPenjualanService
             SUM(CASE WHEN metode_pembayaran != "CASH" THEN total_pembayaran ELSE 0 END) as total_non_tunai
         ')->first();
 
-        // 2. Query Tabel Pertama (Transaksi Lunas: COMPLETED - Cash & QRIS terurut Cash di atas)
+        // 2. Query Tabel Produk Terjual Lunas (COMPLETED) + Pagination
         $queryProduk = DB::table('item_penjualan')
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
@@ -116,9 +110,10 @@ class LaporanPenjualanService
             )
             ->orderByRaw("FIELD(penjualan.metode_pembayaran, 'CASH', 'QRIS') ASC")
             ->orderByDesc('total_terjual')
-            ->get();
+            ->paginate(10, ['*'], 'page_lunas')
+            ->withQueryString();
 
-        // 3. Query Tabel Kedua (Khusus Piutang / Bayar Nanti: OPEN)
+        // 3. Query Tabel Piutang / Bayar Nanti (OPEN) + Pagination
         $queryBayarNanti = DB::table('item_penjualan')
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
@@ -137,7 +132,8 @@ class LaporanPenjualanService
                 DB::raw('SUM(item_penjualan.subtotal) as total_pendapatan_produk')
             )
             ->orderByDesc('total_terjual')
-            ->get();
+            ->paginate(10, ['*'], 'page_piutang')
+            ->withQueryString();
 
         return [
             'total_transaksi' => $ringkasan->total_transaksi ?? 0,

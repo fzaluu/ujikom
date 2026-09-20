@@ -142,7 +142,7 @@
             <div class="card h-100 p-3 p-md-4 border-0 shadow-sm rounded-4 bg-white">
                 <span class="text-muted small fw-bold text-uppercase">Total Piutang Aktif</span>
                 <h3 class="fw-bold text-warning fs-4 fs-md-3 mt-2 mb-0">
-                    Rp {{ number_format(collect($rekap['bayarNantiList'] ?? [])->sum('total_pendapatan_produk'), 0, ',', '.') }}
+                    Rp {{ number_format($rekap['bayarNantiList']->getCollection()->sum('total_pendapatan_produk'), 0, ',', '.') }}
                 </h3>
                 <small class="text-muted mt-1">Belum Lunas (Bayar Nanti)</small>
             </div>
@@ -217,7 +217,7 @@
         @if(method_exists($rekap['produkTerlaris'], 'links'))
             <div class="mt-3 px-2 d-flex justify-content-center justify-content-md-end">
                 <div class="recap-pagination-wrapper text-center text-md-end">
-                    {{ $rekap['produkTerlaris']->appends(request()->query())->links() }}
+                    {{ $rekap['produkTerlaris']->links() }}
                 </div>
             </div>
         @endif
@@ -307,12 +307,12 @@
         </div>
 
         @if(is_object($rekap['bayarNantiList']) && method_exists($rekap['bayarNantiList'], 'links'))
-    <div class="mt-3 px-2 d-flex justify-content-center justify-content-md-end">
-        <div class="recap-pagination-wrapper text-center text-md-end">
-            {{ $rekap['bayarNantiList']->appends(request()->query())->links() }}
-        </div>
-    </div>
-@endif
+            <div class="mt-3 px-2 d-flex justify-content-center justify-content-md-end">
+                <div class="recap-pagination-wrapper text-center text-md-end">
+                    {{ $rekap['bayarNantiList']->links() }}
+                </div>
+            </div>
+        @endif
     </div>
 
 </div>
