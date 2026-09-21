@@ -3,7 +3,7 @@
     <div class="row g-2 align-items-center mb-2 p-2 border rounded-3 bg-white shadow-sm">
         <form class="add-to-cart-form w-100 m-0" action="{{ route('itempenjualan.store') }}" method="POST">
             @csrf
-            <input type="hidden" name="penjualan_id" value="{{ $sale->id }}">
+            <input type="hidden" name="penjualan_id" value="{{ isset($sale) ? $sale->id : '' }}">
             <input type="hidden" name="product_id" value="{{ $product->id }}">
             
             <div class="d-flex align-items-center justify-content-between w-100 gap-2">
@@ -51,14 +51,14 @@
                            style="width: 60px; height: 36px; -moz-appearance: textfield;" 
                            data-stok="{{ $product->stok }}"
                            title="Masukkan Jumlah"
-                           {{ $sale->status == 'COMPLETED' || $product->stok <= 0 ? 'disabled' : '' }}>
+                           {{ isset($sale) && $sale->status == 'COMPLETED' || $product->stok <= 0 ? 'disabled' : '' }}>
                     
                     @if($product->stok <= 0)
                         <button type="button" class="btn btn-secondary rounded-2 px-3" style="height: 36px;" disabled title="Produk Habis">
                             <i class="bi bi-slash-circle"></i>
                         </button>
                     @else
-                        <button type="submit" class="btn btn-primary rounded-2 shadow-sm px-3 {{ $sale->status == 'COMPLETED' ? 'disabled' : '' }}" style="height: 36px;" title="Tambah ke Keranjang">
+                        <button type="submit" class="btn btn-primary rounded-2 shadow-sm px-3 {{ isset($sale) &&$sale->status == 'COMPLETED' ? 'disabled' : '' }}" style="height: 36px;" title="Tambah ke Keranjang">
                             <i class="bi bi-plus-lg"></i>
                         </button>
                     @endif

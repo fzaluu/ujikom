@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Http\Controllers; // Pastikan namespace ini benar
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller; // <-- TAMBAHKAN BARIS INI
+use App\Http\Controllers\Controller;
 use App\Models\ItemPenjualan;
 use App\Models\Penjualan;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 class ItemPenjualanController extends Controller
 {
-    
-
     public function store(Request $request)
     {
         $request->validate([
@@ -21,28 +20,44 @@ class ItemPenjualanController extends Controller
         ]);
 
         $errorMessage = null;
+        $activeSaleId = null;
 
-        DB::transaction(function () use ($request, &$errorMessage) {
-            // Cek apakah penjualan_id dikirim dan valid
-            if ($request->filled('penjualan_id')) {
-                $sale = Penjualan::where('id', $request->penjualan_id)
-                    ->where('user_id', Auth::id())
+        DB::transaction(function () use ($request, &$errorMessage, &$activeSaleId) {
+            $user = Auth::user();
+            
+            // Pengecekan Admin yang KUAT dan AMAN dari nilai null (menggunakan role_id atau string role)
+            $isAdmin = ($user->role_id == 1) || 
+                       (isset($user->role) && strtolower($user->role->name) === 'admin');
+
+            $saleId = $request->input('penjualan_id');
+            $sale = null;
+
+            // 1. Cari berdasarkan penjualan_id dari form jika valid
+            if ($saleId) {
+                $sale = Penjualan::where('id', $saleId)
+                    ->when(!$isAdmin, function ($q) use ($user) {
+                        $q->where('user_id', $user->id);
+                    })
                     ->where('status', 'OPEN')
                     ->first();
-            } else {
-                $sale = null;
             }
 
-            // Jika belum ada record penjualan (transaksi baru yang belum masuk database), buat sekarang!
+            // 2. Jika tidak ada dari form, cari transaksi OPEN milik user yang PALING AKTIF
+            if (!$sale) {
+                $sale = Penjualan::when(!$isAdmin, function ($q) use ($user) {
+                        $q->where('user_id', $user->id);
+                    })
+                    ->where('status', 'OPEN')
+                    ->latest()
+                    ->first();
+            }
+
+            // 3. Jika benar-benar belum ada sama sekali, baru buat baru
             if (!$sale) {
                 $sale = Penjualan::create([
-                    'user_id' => Auth::id(),
+                    'user_id' => $user->id,
                     'status' => 'OPEN',
                     'total_pembayaran' => 0,
-                    // Default BAYAR_NANTI (bukan CASH) supaya kalau kasir tidak sengaja
-                    // keluar/pindah halaman sebelum menyelesaikan pembayaran, transaksi yang
-                    // tertinggal di riwayat statusnya jujur menunjukkan "Bayar Nanti" — bukan
-                    // seolah-olah sudah dibayar CASH padahal belum ada uang yang diterima.
                     'metode_pembayaran' => 'BAYAR_NANTI'
                 ]);
             }
@@ -50,16 +65,18 @@ class ItemPenjualanController extends Controller
             $product = Produk::lockForUpdate()->findOrFail($request->product_id);
 
             if ($product->stok < $request->quantity) {
-                $errorMessage = 'Produk stok tidak mencukupi!';
+                $errorMessage = 'Stok produk tidak mencukupi!';
                 return;
             }
 
-            $product->decrement('stok', $request->quantity);
-
+            // Cek apakah produk yang sama sudah ada di keranjang transaksi ini
             $item = ItemPenjualan::where('penjualan_id', $sale->id)
                 ->where('produk_id', $product->id)
                 ->lockForUpdate()
                 ->first();
+
+            // Kurangi stok produk
+            $product->decrement('stok', $request->quantity);
 
             if ($item) {
                 $item->kuantitas += $request->quantity;
@@ -79,18 +96,14 @@ class ItemPenjualanController extends Controller
             $sale->total_pembayaran = $sale->itemPenjualan()->sum('subtotal');
             $sale->save();
             
-            // Simpan ID sale ke session/request agar view bisa merefresh dengan ID yang benar
-            request()->merge(['active_sale_id' => $sale->id]);
+            $activeSaleId = $sale->id;
         });
 
         if ($errorMessage) {
             return redirect()->back()->with('error', $errorMessage);
         }
 
-        // Redirect kembali ke halaman edit POS dengan ID transaksi yang baru dibuat agar keranjang langsung muncul
-        $activeSaleId = Penjualan::where('user_id', Auth::id())->where('status', 'OPEN')->latest()->first()->id;
-
-        return redirect()->route('penjualan.edit', $activeSaleId)->with('success', 'Produk ditambahkan ke keranjang.');
+        return redirect()->route('penjualan.edit', $activeSaleId)->with('success', 'Produk berhasil ditambahkan ke keranjang.');
     }
 
     public function update(Request $request, ItemPenjualan $itempenjualan)
@@ -135,7 +148,9 @@ class ItemPenjualanController extends Controller
             $product = $itempenjualan->produk;
             $sale = $itempenjualan->penjualan;
 
-            $product->increment('stok', $itempenjualan->kuantitas);
+            if ($product) {
+                $product->increment('stok', $itempenjualan->kuantitas);
+            }
             $itempenjualan->delete();
 
             $sale->update([

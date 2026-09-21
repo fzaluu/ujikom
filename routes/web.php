@@ -67,16 +67,25 @@ Route::middleware('auth')->group(function () {
         Route::resource('/jenis-produk', JenisProdukController::class)->except(['create', 'edit']);
     });
 
-    // Penjualan & item penjualan: transaksi POS, dapat diakses semua role login
-    Route::resource('/penjualan', PenjualanController::class);
+    // ==========================================
+    // PERBAIKAN UTAMA: PENJUALAN (EXPLICIT ROUTES)
+    // ==========================================
+    Route::get('/penjualan', [PenjualanController::class, 'index'])->name('penjualan.index');
+    Route::get('/penjualan/create', [PenjualanController::class, 'create'])->name('penjualan.create');
+    Route::post('/penjualan', [PenjualanController::class, 'store'])->name('penjualan.store');
     
-    // Rute otomatis untuk mengubah status jadi BAYAR_NANTI
+    // Rute aksi khusus (Diletakkan di ATAS rute parameter {penjualan} agar tidak tertukar)
     Route::post('/penjualan/{penjualan}/bayar-nanti-auto', [PenjualanController::class, 'setBayarNanti'])->name('penjualan.bayarNantiAuto'); 
-    
-    // Rute untuk membatalkan edit penjualan
     Route::delete('/penjualan/{penjualan}/batal-edit', [PenjualanController::class, 'batalEdit'])->name('penjualan.batalEdit');
 
-    Route::resource('/itempenjualan', ItemPenjualanController::class);
+    // Rute dengan parameter ID dinamis
+    Route::get('/penjualan/{penjualan}', [PenjualanController::class, 'show'])->name('penjualan.show');
+    Route::get('/penjualan/{penjualan}/edit', [PenjualanController::class, 'edit'])->name('penjualan.edit');
+    Route::put('/penjualan/{penjualan}', [PenjualanController::class, 'update'])->name('penjualan.update');
+    Route::delete('/penjualan/{penjualan}', [PenjualanController::class, 'destroy'])->name('penjualan.destroy');
+
+    // Item Penjualan (Kecuali store, update, destroy yang dipakai sistem POS)
+    Route::resource('/itempenjualan', ItemPenjualanController::class)->except(['create', 'edit', 'show', 'index']);
 
     // Rute Pembelajaran / Tugas
     Route::get('/tes/perulangan', [perulanganController::class, 'index'])->name('tes.perulangan');

@@ -139,8 +139,7 @@
                             </h4>
                         </div>
 
-                        <form id="checkoutForm" method="POST" action="{{ $sale->exists ? route('penjualan.update', $sale->id) : '#' }}">
-                            @csrf
+                            <form id="checkoutForm" method="POST" action="{{ ($sale && $sale->exists) ? route('penjualan.update', $sale->id) : route('penjualan.index') }}">                            @csrf
                             @method('PUT')
 
                             <div class="mb-3">
@@ -610,7 +609,14 @@
 
     // Background cleanup jika tab browser ditutup total
     window.addEventListener('beforeunload', function (e) {
+        // JANGAN KIRIM BEACON JIKA USER SEDANG SUBMIT FORM / MENAMBAH PRODUK / CHECKOUT
         if (isExplicitAction) return;
+        
+        // Cek apakah form di halaman sedang melakukan submit
+        if (document.activeElement && document.activeElement.tagName === 'BUTTON') {
+            return; 
+        }
+
         if (HAS_ITEMS && SALE_ID) {
             const url = `{{ url('penjualan') }}/${SALE_ID}`;
             const formData = new FormData();
@@ -618,6 +624,13 @@
             formData.append('_method', 'DELETE');
             navigator.sendBeacon(url, formData);
         }
+    });
+
+    // Tambahkan penanda explicit action setiap kali ada form add-to-cart yang di-submit
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', function() {
+            markExplicitAction(); // Mencegah trigger beforeunload menghapus transaksi saat tombol + diklik
+        });
     });
 </script>
 @endsection
