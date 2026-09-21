@@ -31,7 +31,6 @@ class LaporanPenjualanService
 
     public function produkTerlarisHariIni(int $limit = 5)
     {
-        // Ambil minimal penjualan best seller dari pengaturan database (default 1)
         $minBestseller = Setting::where('key', 'min_penjualan_bestseller')->value('value') ?? 1;
 
         return DB::table('item_penjualan')
@@ -54,7 +53,6 @@ class LaporanPenjualanService
 
     public function produkTerlarisKeseluruhan(int $limit = 6)
     {
-        // Ambil minimal penjualan best seller dari pengaturan database (default 1)
         $minBestseller = Setting::where('key', 'min_penjualan_bestseller')->value('value') ?? 1;
 
         return DB::table('item_penjualan')
@@ -132,15 +130,19 @@ class LaporanPenjualanService
             ->where('penjualan.status', 'OPEN');
 
         if ($searchPiutang) {
-            $queryBayarNanti->where('produk.nama', 'like', '%' . $searchPiutang . '%');
+            $queryBayarNanti->where(function($q) use ($searchPiutang) {
+                $q->where('produk.nama', 'like', '%' . $searchPiutang . '%')
+                  ->orWhere('penjualan.customer_name', 'like', '%' . $searchPiutang . '%');
+            });
         }
 
         $bayarNantiList = $queryBayarNanti
-            ->groupBy('produk.id', 'produk.nama', 'produk.harga_jual', 'penjualan.id', 'penjualan.status', 'penjualan.metode_pembayaran')
+            ->groupBy('produk.id', 'produk.nama', 'produk.harga_jual', 'penjualan.id', 'penjualan.status', 'penjualan.metode_pembayaran', 'penjualan.customer_name')
             ->select(
                 'penjualan.id as penjualan_id',
                 'penjualan.status as status_pesanan',
                 'penjualan.metode_pembayaran',
+                'penjualan.customer_name',
                 'produk.nama',
                 'produk.harga_jual',
                 DB::raw('SUM(item_penjualan.kuantitas) as total_terjual'),

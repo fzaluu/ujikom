@@ -261,7 +261,7 @@
                     <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
                         <i class="bi bi-search"></i>
                     </span>
-                    <input type="text" class="form-control bg-light border-start-0 ps-0 shadow-none" name="search_piutang" placeholder="Cari nama piutang..." value="{{ request('search_piutang') }}" autocomplete="off">
+                    <input type="text" class="form-control bg-light border-start-0 ps-0 shadow-none" name="search_piutang" placeholder="Cari pelanggan / produk..." value="{{ request('search_piutang') }}" autocomplete="off">
                     <button class="btn btn-outline-primary px-3" type="submit">Cari</button>
                     @if(request('search_piutang'))
                         <a href="{{ route('recap.index', ['start_date' => $startDate, 'end_date' => $endDate, 'search_lunas' => request('search_lunas')]) }}" class="btn btn-outline-secondary">Reset</a>
@@ -275,11 +275,12 @@
                 <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">
                     <tr>
                         <th scope="col" class="py-3 ps-3 rounded-start-3 align-middle" style="width: 5%;">No</th>
+                        <th scope="col" class="py-3 align-middle" style="min-width: 150px;">Nama Pelanggan</th>
                         <th scope="col" class="py-3 align-middle" style="min-width: 180px;">Nama Produk</th>
-                        <th scope="col" class="py-3 align-middle" style="min-width: 130px;">Harga Satuan</th>
-                        <th scope="col" class="py-3 align-middle" style="width: 100px;">Jumlah</th>
-                        <th scope="col" class="py-3 align-middle" style="min-width: 150px;">Total Piutang</th>
-                        <th scope="col" class="py-3 align-middle" style="width: 120px;">Status</th>
+                        <th scope="col" class="py-3 align-middle" style="min-width: 120px;">Harga Satuan</th>
+                        <th scope="col" class="py-3 align-middle" style="width: 90px;">Jumlah</th>
+                        <th scope="col" class="py-3 align-middle" style="min-width: 140px;">Total Piutang</th>
+                        <th scope="col" class="py-3 align-middle" style="width: 110px;">Status</th>
                         <th scope="col" class="py-3 text-center pe-3 rounded-end-3 align-middle" style="width: 130px;">Aksi</th>
                     </tr>
                 </thead>
@@ -289,6 +290,9 @@
                         <th scope="row" class="ps-3 py-3 text-muted fw-medium align-middle">
                             {{ method_exists($rekap['bayarNantiList'], 'firstItem') ? $rekap['bayarNantiList']->firstItem() + $loop->index : $loop->iteration }}
                         </th>
+                        <td class="fw-bold text-dark align-middle">
+                            {{ $item->customer_name ?? '-' }}
+                        </td>
                         <td class="fw-semibold text-dark align-middle">
                             {{ $item->nama }}
                         </td>
@@ -305,7 +309,7 @@
                         </td>
                         <td class="align-middle">
                             <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 fw-normal">
-                                {{ $item->metode_pembayaran === 'BAYAR_NANTI' ? 'BAYAR NANTI' : ($item->metode_pembayaran ?? 'Belum Dipilih') }}
+                                BAYAR NANTI
                             </span>
                         </td>
                         <td class="pe-3 text-center align-middle">
@@ -338,7 +342,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
+                        <td colspan="8" class="text-center py-4 text-muted">
                             <i class="bi bi-check-circle fs-2 text-success opacity-50 d-block mb-1"></i>
                             Tidak ada data piutang (Bayar Nanti) pada periode ini.
                         </td>
