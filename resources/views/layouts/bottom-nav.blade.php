@@ -112,11 +112,11 @@
         <a href="{{ route('jenis-produk.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('jenis-produk*') ? 'active' : '' }}" title="Jenis Produk">
             <i class="bi bi-tags"></i>
         </a>
-        @else
+        @endif
         <a href="{{ route('produk.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('produk*') ? 'active' : '' }}" title="Produk">
             <i class="bi bi-box-seam"></i>
         </a>
-        <!-- Cadangan menu ke-3 jika kasir -->
+        @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
         <a href="{{ route('recap.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('recap*') ? 'active' : '' }}" title="Rekapitulasi">
             <i class="bi bi-file-earmark-text"></i>
         </a>
@@ -141,9 +141,10 @@
         <a href="{{ route('penjualan.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('penjualan*') ? 'active' : '' }}" title="Penjualan">
             <i class="bi bi-bag-check"></i>
         </a>
-
+        @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
         <a href="{{ route('recap.index') }}" class="mobile-bottom-nav-item {{ request()->routeIs('recap*') ? 'active' : '' }}" title="Rekapitulasi">
             <i class="bi bi-file-earmark-text"></i>
         </a>
+        @endif
     </div>
 </nav>

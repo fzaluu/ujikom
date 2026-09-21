@@ -31,12 +31,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Rute untuk menyimpan target dashboard
-    Route::post('/dashboard/update-target', [DashboardController::class, 'updateTarget'])->name('settings.update-target');
-
-    // Halaman Rekapitulasi (Dapat diakses semua user yang login)
-    Route::get('/recap', [RekapController::class, 'index'])->name('recap.index');
-    Route::get('/recap/export', [RekapController::class, 'export'])->name('recap.export');
+    // Rute untuk menyimpan target dashboard (Dilindungi middleware admin agar kasir tidak bisa akses via POST)
+    Route::middleware('role:admin')->post('/dashboard/update-target', [DashboardController::class, 'updateTarget'])->name('settings.update-target');
 
     // Grup manajemen user (khusus role admin)
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -46,6 +42,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/edit/{user}', [UserController::class, 'edit'])->name('users.edit');
         Route::post('/users/update/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/destroy/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
+
+    // Halaman Rekapitulasi (Dipisah dari prefix admin agar URL bersih, tapi dikunci khusus Admin)
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/recap', [RekapController::class, 'index'])->name('recap.index');
+        Route::get('/recap/export', [RekapController::class, 'export'])->name('recap.export');
     });
 
     // Produk: Rute khusus ADMIN (ditaruh di ATAS agar rute 'create' tidak dianggap parameter ID)

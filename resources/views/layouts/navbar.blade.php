@@ -259,11 +259,13 @@
             </a>
         </li>
 
+        @if(auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1))
         <li class="nav-item">
             <a href="{{ route('recap.index') }}" class="nav-link {{ request()->routeIs('recap*') ? 'active' : '' }}" title="Rekapitulasi">
                 <i class="bi bi-file-earmark-text fs-5"></i> <span class="nav-label">Rekapitulasi</span>
             </a>
         </li>
+        @endif
     </ul>
 
     <hr class="sidebar-divider my-2">
