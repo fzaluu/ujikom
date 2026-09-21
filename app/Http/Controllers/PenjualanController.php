@@ -41,12 +41,21 @@ class PenjualanController extends Controller
     {
         $user = Auth::user();
 
+        // === TAMBAHKAN BARIS INI (Pembersih transaksi open kosong) ===
+        Penjualan::where('user_id', $user->id)
+            ->where('status', 'OPEN')
+            ->whereNull('customer_name')
+            ->doesntHave('itemPenjualan')
+            ->delete();
+        // ============================================================
+
         // Cari transaksi OPEN yang murni keranjang aktif milik user (belum di-checkout/belum ada nama pelanggannya)
         $sale = Penjualan::where('user_id', $user->id)
             ->where('status', 'OPEN')
             ->whereNull('customer_name')
             ->latest()
             ->first();
+
 
         // Jika tidak ada keranjang aktif yang kosong, buat transaksi baru yang bersih
         if (!$sale) {
@@ -97,6 +106,12 @@ class PenjualanController extends Controller
         // Hanya blokir jika transaksi tidak ada atau statusnya sudah COMPLETED
         if (!$sale || $sale->status == 'COMPLETED') {
             return redirect()->route('penjualan.index')->with('error', 'Transaksi tidak ditemukan atau sudah selesai.');
+        }
+
+        // === TAMBAHKAN BARIS INI (Hapus transaksi open jika itemnya kosong) ===
+        if ($sale->status == 'OPEN' && $sale->itemPenjualan()->count() == 0 && is_null($sale->customer_name)) {
+            $sale->delete();
+            return redirect()->route('penjualan.create');
         }
 
         $this->authorize('update', $sale);
