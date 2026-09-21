@@ -42,6 +42,7 @@ class LaporanPenjualanService
                 'produk.stok',
                 DB::raw('SUM(item_penjualan.kuantitas) as total_terjual')
             )
+            ->having('total_terjual', '>=', 10) // mengatur best seller
             ->orderByDesc('total_terjual')
             ->limit($limit)
             ->get();
@@ -62,7 +63,7 @@ class LaporanPenjualanService
                 'produk.stok',
                 DB::raw('SUM(item_penjualan.kuantitas) as total_terjual')
             )
-            ->having('total_terjual', '>=', 27) // mengatur best seller
+            ->having('total_terjual', '>=', 10) // mengatur best seller
             ->orderByDesc('total_terjual')
             ->limit($limit)
             ->get();
