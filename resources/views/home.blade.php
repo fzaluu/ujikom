@@ -210,19 +210,21 @@
     <div class="container">
         <div class="row justify-content-center mb-5 reveal">
             <div class="col-lg-8 text-center">
-                <div class="section-eyebrow">
-                    {{ request('search') ? 'Hasil Pencarian' : 'Produk Favorit' }}
+                {{-- Tambahkan id="sectionEyebrow" --}}
+                <div class="section-eyebrow" id="sectionEyebrow">
+                    Produk Favorit
                 </div>
-                <h2 class="section-title mb-1">
-                    {{ request('search') ? 'Pencarian: "' . request('search') . '"' : 'Yang paling banyak dicari pelanggan kami.' }}
+                {{-- Tambahkan id="sectionTitle" --}}
+                <h2 class="section-title mb-1" id="sectionTitle">
+                    Yang paling banyak dicari pelanggan kami.
                 </h2>
-                <p class="section-sub mx-auto mb-4">
-                    {{ request('search') ? 'Menampilkan produk dari seluruh inventaris toko.' : 'Diambil langsung dari data penjualan toko, bukan daftar contoh.' }}
+                <p class="section-sub mx-auto mb-4" id="sectionDesc">
+                    Diambil langsung dari data penjualan toko, bukan daftar contoh.
                 </p>
                 
-                {{-- Search Bar Produk (Berada di Tengah & Live Server-Side) --}}
+                {{-- Search Bar Live AJAX --}}
                 <div class="d-flex justify-content-center">
-                    <form action="{{ url('/#produk') }}" method="GET" id="liveSearchForm" class="w-100 mb-0" style="max-width: 400px;">
+                    <div class="w-100 mb-0" style="max-width: 400px;">
                         <div class="input-group shadow-sm">
                             <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
                                 <i class="bi bi-search"></i>
@@ -230,54 +232,20 @@
                             <input
                                 type="text"
                                 id="searchInputField"
-                                class="form-control bg-light border-start-0 ps-0 shadow-none"
-                                name="search"
+                                class="form-control bg-light border-start-0 ps-0 shadow-none rounded-end-3"
                                 placeholder="Ketik nama produk..."
-                                value="{{ request('search') }}"
                                 autocomplete="off"
                             >
-                            @if(request('search'))
-                                <a href="{{ url('/#produk') }}" class="btn btn-outline-secondary d-flex align-items-center" title="Reset Pencarian">Reset</a>
-                            @endif
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
 
-        @if($bestSellers->isEmpty())
-            <div class="text-center text-muted py-5 reveal">
-                <i class="bi bi-search fs-1 opacity-50 d-block mb-2"></i>
-                @if(request('search'))
-                    Produk "{{ request('search') }}" tidak ditemukan di inventaris toko.
-                @else
-                    Produk akan tampil di sini setelah toko mulai mencatat transaksi.
-                @endif
-            </div>
-        @else
-            <div class="row g-4" id="product-list">
-                @foreach($bestSellers as $produk)
-                    <div class="col-sm-6 col-lg-4 reveal product-item">
-                        <div class="product-card">
-                            @if(!empty($produk->foto))
-                                <img src="{{ asset($produk->foto) }}" alt="{{ $produk->nama }}" class="product-photo">
-                            @else
-                                <div class="product-photo-fallback"><i class="bi bi-image"></i></div>
-                            @endif
-                            <div class="product-body">
-                                @if(isset($produk->total_terjual) && !request('search'))
-                                    <span class="badge-bestseller mb-2 d-inline-block">Best Seller</span>
-                                @endif
-                                <h6>{{ $produk->nama }}</h6>
-                                @if(!empty($produk->harga_jual))
-                                    <div class="product-price">Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @endif
+        {{-- WADAH PRODUK AJAX --}}
+        <div id="product-container">
+            @include('partials.product-grid')
+        </div>
     </div>
 </section>
 
@@ -414,21 +382,46 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // 3. Script Live Server-Side Search (Otomatis submit saat diketik per huruf)
+    // 3. Script Live AJAX Search & Dynamic Title
     let searchTimeout;
-    const searchInput = document.getElementById('searchInputField');
+    const searchInputField = document.getElementById('searchInputField');
+    const sectionEyebrow = document.getElementById('sectionEyebrow');
+    const sectionTitle = document.getElementById('sectionTitle');
+    const sectionDesc = document.getElementById('sectionDesc');
 
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
+    if (searchInputField) {
+        searchInputField.addEventListener('input', function() {
+            let keyword = this.value.trim();
             clearTimeout(searchTimeout);
-            
-            // Jeda 350ms agar pencarian berjalan mulus setiap kali huruf diketik
+
+            // Ubah judul secara live saat diketik
+            if (keyword.length > 0) {
+                sectionEyebrow.textContent = "Hasil Pencarian";
+                sectionTitle.textContent = `Pencarian: "${keyword}"`;
+                sectionDesc.textContent = "Menampilkan produk dari seluruh inventaris toko.";
+            } else {
+                sectionEyebrow.textContent = "Produk Favorit";
+                sectionTitle.textContent = "Yang paling banyak dicari pelanggan kami.";
+                sectionDesc.textContent = "Diambil langsung dari data penjualan toko, bukan daftar contoh.";
+            }
+
+            // Jeda 300ms untuk memuat data produk via AJAX secara mulus
             searchTimeout = setTimeout(() => {
-                document.getElementById('liveSearchForm').submit();
-            }, 40);
+                fetch(`{{ route('home.search') }}?search=${encodeURIComponent(keyword)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('product-container').innerHTML = html;
+                })
+                .catch(error => console.error('Error:', error));
+            }, 300);
         });
     }
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script></body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

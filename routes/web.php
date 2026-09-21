@@ -15,8 +15,10 @@ use App\Http\Controllers\variabelController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RekapController;
 
+
 // Halaman informasi publik (tanpa login) - profil toko, layanan, produk best seller
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/home-search', [HomeController::class, 'searchAjax'])->name('home.search');
 
 // Rute untuk Tamu (Belum Login)
 Route::middleware('guest')->group(function () {
