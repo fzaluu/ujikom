@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\Setting;
 
 class LaporanPenjualanService
 {
@@ -30,19 +31,22 @@ class LaporanPenjualanService
 
     public function produkTerlarisHariIni(int $limit = 5)
     {
+        // Ambil minimal penjualan best seller dari pengaturan database (default 1)
+        $minBestseller = Setting::where('key', 'min_penjualan_bestseller')->value('value') ?? 1;
+
         return DB::table('item_penjualan')
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
             ->whereDate('penjualan.created_at', Carbon::today())
             ->where('penjualan.status', 'COMPLETED')
-            ->groupBy('produk.id', 'produk.nama')
+            ->groupBy('produk.id', 'produk.nama', 'produk.foto', 'produk.stok')
             ->select(
                 'produk.nama',
                 'produk.foto',
                 'produk.stok',
                 DB::raw('SUM(item_penjualan.kuantitas) as total_terjual')
             )
-            ->having('total_terjual', '>=', 10) // mengatur best seller
+            ->having('total_terjual', '>=', (int)$minBestseller)
             ->orderByDesc('total_terjual')
             ->limit($limit)
             ->get();
@@ -50,11 +54,14 @@ class LaporanPenjualanService
 
     public function produkTerlarisKeseluruhan(int $limit = 6)
     {
+        // Ambil minimal penjualan best seller dari pengaturan database (default 1)
+        $minBestseller = Setting::where('key', 'min_penjualan_bestseller')->value('value') ?? 1;
+
         return DB::table('item_penjualan')
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
             ->where('penjualan.status', 'COMPLETED')
-            ->groupBy('produk.id', 'produk.nama', 'produk.foto', 'produk.harga_jual')
+            ->groupBy('produk.id', 'produk.nama', 'produk.foto', 'produk.harga_jual', 'produk.stok')
             ->select(
                 'produk.id',
                 'produk.nama',
@@ -63,7 +70,7 @@ class LaporanPenjualanService
                 'produk.stok',
                 DB::raw('SUM(item_penjualan.kuantitas) as total_terjual')
             )
-            ->having('total_terjual', '>=', 10) // mengatur best seller
+            ->having('total_terjual', '>=', (int)$minBestseller)
             ->orderByDesc('total_terjual')
             ->limit($limit)
             ->get();
@@ -73,7 +80,6 @@ class LaporanPenjualanService
     {
         $cleanMetode = strtoupper(trim($metode));
 
-        // 1. Query Ringkasan Utama (Omset Lunas)
         $queryRingkasan = DB::table('penjualan')
             ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('status', 'COMPLETED');
@@ -89,7 +95,6 @@ class LaporanPenjualanService
             SUM(CASE WHEN metode_pembayaran != "CASH" THEN total_pembayaran ELSE 0 END) as total_non_tunai
         ')->first();
 
-        // 2. Query Tabel Produk Terjual Lunas (COMPLETED) + Search + Pagination
         $queryProduk = DB::table('item_penjualan')
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
@@ -120,7 +125,6 @@ class LaporanPenjualanService
             ->paginate(10, ['*'], 'page_lunas')
             ->withQueryString();
 
-        // 3. Query Tabel Piutang / Bayar Nanti (OPEN) + Search + Pagination
         $queryBayarNanti = DB::table('item_penjualan')
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')

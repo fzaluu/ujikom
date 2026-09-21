@@ -1,3 +1,8 @@
+@php
+    // Ambil batas minimal best seller secara dinamis dari tabel settings database
+    $minBestseller = \App\Models\Setting::where('key', 'min_penjualan_bestseller')->value('value') ?? 1;
+@endphp
+
 @if($bestSellers->isEmpty())
     <div class="text-center text-muted py-5 reveal is-visible">
         <i class="bi bi-search fs-1 opacity-50 d-block mb-2"></i>
@@ -18,8 +23,8 @@
                         <div class="product-photo-fallback"><i class="bi bi-image"></i></div>
                     @endif
                     <div class="product-body">
-                        {{-- Tampilkan badge Best Seller jika produk memiliki total_terjual lebih dari 0 --}}
-                        @if(isset($produk->total_terjual) && $produk->total_terjual > 0)
+                        {{-- Tampilkan badge Best Seller HANYA JIKA total_terjual >= batas minimal setting --}}
+                        @if(isset($produk->total_terjual) && $produk->total_terjual >= $minBestseller)
                             <span class="badge-bestseller mb-2 d-inline-block">Best Seller</span>
                         @endif
                         

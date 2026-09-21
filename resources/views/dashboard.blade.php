@@ -417,31 +417,33 @@
 @if($isAdmin)
 <div class="card shadow-sm border-0 rounded-4 p-4 mb-4 bg-light">
     <h5 class="fw-bold text-dark mb-3">
-        <i class="bi bi-sliders text-primary me-2"></i> Pengaturan Target
+        <i class="bi bi-sliders text-primary me-2"></i> Pengaturan Target & Batas Toko
     </h5>
     <form action="{{ route('settings.update-target') }}" method="POST">
         @csrf
-        {{-- Tambahkan align-items-end agar posisi bawah input sejajar --}}
         <div class="row g-3 align-items-end">
-            <div class="col-sm-6 col-xl-3">
+            <div class="col-sm-6 col-xl-4">
                 <label class="form-label small fw-semibold text-truncate d-block">Target Omset Harian (Rp)</label>
                 <input type="number" name="target_omset" class="form-control rounded-3" value="{{ \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 1000000 }}">
             </div>
-            <div class="col-sm-6 col-xl-3">
+            <div class="col-sm-6 col-xl-4">
                 <label class="form-label small fw-semibold text-truncate d-block">Target Transaksi Harian (Order)</label>
                 <input type="number" name="target_transaksi" class="form-control rounded-3" value="{{ \App\Models\Setting::where('key', 'target_transaksi')->value('value') ?? 20 }}">
             </div>
-            <div class="col-sm-6 col-xl-3">
+            <div class="col-sm-6 col-xl-4">
                 <label class="form-label small fw-semibold text-truncate d-block">Target Kapasitas Produk (Item)</label>
                 <input type="number" name="target_kapasitas" class="form-control rounded-3" value="{{ \App\Models\Setting::where('key', 'target_kapasitas')->value('value') ?? 50 }}">
             </div>
-            <div class="col-sm-6 col-xl-3">
+            <div class="col-sm-6 col-xl-6">
                 <label class="form-label small fw-semibold text-truncate d-block">Batas Stok Menipis (Unit)</label>
                 <input type="number" name="batas_stok_menipis" class="form-control rounded-3" value="{{ \App\Models\Setting::where('key', 'batas_stok_menipis')->value('value') ?? 5 }}" min="1">
             </div>
+            <div class="col-sm-6 col-xl-6">
+                <label class="form-label small fw-semibold text-truncate d-block">Minimal Terjual untuk Cap Best Seller (Pcs)</label>
+                <input type="number" name="min_penjualan_bestseller" class="form-control rounded-3" value="{{ \App\Models\Setting::where('key', 'min_penjualan_bestseller')->value('value') ?? 1 }}" min="1">
+            </div>
         </div>
         
-        {{-- Tombol Simpan Rapi di Kanan Bawah --}}
         <div class="mt-4 d-flex justify-content-end">
             <button type="submit" class="btn btn-primary rounded-3 px-4 shadow-sm">
                 <i class="bi bi-save me-1"></i> Simpan Pengaturan
