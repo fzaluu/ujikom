@@ -379,30 +379,35 @@
 
 </div>
 
-{{-- Modal Konfirmasi Hapus di Tengah --}}
+{{-- Modal Konfirmasi (Digunakan Bersama untuk Hapus & Export Excel) --}}
 <div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg animate-page">
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title fw-bold text-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi Hapus
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center py-4">
-                <i class="bi bi-trash text-danger display-4 mb-3"></i>
-                <p id="deleteModalMessage" class="text-dark fs-6 mb-0">Apakah Anda yakin ingin menghapus data ini?</p>
+                <div id="modalIconContainer">
+                    <i class="bi bi-trash text-danger display-4 mb-3" id="modalIcon"></i>
+                </div>
+                <p id="deleteModalMessage" class="text-dark fs-6 mb-0">Apakah Anda yakin?</p>
             </div>
             <div class="modal-footer border-0 justify-content-center pb-4 gap-2">
                 <button type="button" class="btn btn-light px-4 rounded-3 shadow-none border" data-bs-dismiss="modal" id="cancelDeleteBtn">Batal</button>
-                <button type="button" id="confirmDeleteBtn" class="btn btn-danger px-4 rounded-3 shadow-sm">Ya, Hapus</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger px-4 rounded-3 shadow-sm">Ya, Lanjutkan</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Fungsi agar Export Excel membaca input filter yang sedang dipilih
+    let activeDeleteFormId = null;
+    let pendingExportUrl = null;
+
+    // Fungsi untuk menampilkan modal konfirmasi Export Excel
     function exportExcel(event) {
         event.preventDefault();
         
@@ -410,9 +415,29 @@
         const endDate = document.getElementById('endDate').value;
         const metode = document.getElementById('metodeSelect').value;
 
-        // Redirect ke route export dengan membawa parameter inputan aktif
-        const exportUrl = `{{ route('recap.export') }}?start_date=${startDate}&end_date=${endDate}&metode=${metode}`;
-        window.location.href = exportUrl;
+        // Siapkan URL export
+        pendingExportUrl = `{{ route('recap.export') }}?start_date=${startDate}&end_date=${endDate}&metode=${metode}`;
+        activeDeleteFormId = null; // Reset form delete
+
+        // Atur teks dan ikon modal untuk Excel
+        document.getElementById('deleteModalMessage').innerText = 'Apakah Anda ingin mendownload rekapitulasi penjualan dalam format Excel sesuai filter saat ini?';
+        
+        let titleEl = document.querySelector('#customDeleteModal .modal-title');
+        titleEl.innerHTML = `<i class="bi bi-file-earmark-excel-fill text-success me-2"></i> Konfirmasi Export Excel`;
+
+        let iconEl = document.getElementById('modalIcon');
+        iconEl.className = 'bi bi-file-earmark-excel text-success display-4 mb-3';
+
+        let btn = document.getElementById('confirmDeleteBtn');
+        btn.className = 'btn btn-success px-4 rounded-3 shadow-sm';
+        btn.disabled = false;
+        btn.innerHTML = 'Ya, Export Excel';
+
+        let cancelBtn = document.getElementById('cancelDeleteBtn');
+        if (cancelBtn) cancelBtn.disabled = false;
+
+        var myModal = new bootstrap.Modal(document.getElementById('customDeleteModal'));
+        myModal.show();
     }
     
     function setPeriode(tipe) {
@@ -453,13 +478,20 @@
         return [year, month, day].join('-');
     }
 
-    let activeDeleteFormId = null;
-
     function openDeleteModal(identifier, message) {
         activeDeleteFormId = 'delete-form-' + identifier;
+        pendingExportUrl = null; // Reset URL export
+
         document.getElementById('deleteModalMessage').innerText = message;
         
+        let titleEl = document.querySelector('#customDeleteModal .modal-title');
+        titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Konfirmasi Hapus`;
+
+        let iconEl = document.getElementById('modalIcon');
+        iconEl.className = 'bi bi-trash text-danger display-4 mb-3';
+
         let btn = document.getElementById('confirmDeleteBtn');
+        btn.className = 'btn btn-danger px-4 rounded-3 shadow-sm';
         btn.disabled = false;
         btn.innerHTML = 'Ya, Hapus';
 
@@ -471,14 +503,28 @@
     }
 
     document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
-        if (activeDeleteFormId) {
-            let btn = this;
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menghapus...`;
-            
-            let cancelBtn = document.getElementById('cancelDeleteBtn');
-            if (cancelBtn) cancelBtn.disabled = true;
+        let btn = this;
+        btn.disabled = true;
 
+        let cancelBtn = document.getElementById('cancelDeleteBtn');
+        if (cancelBtn) cancelBtn.disabled = true;
+
+        if (pendingExportUrl) {
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Mendownload...`;
+            
+            window.location.href = pendingExportUrl;
+
+            setTimeout(() => {
+                let modalEl = document.getElementById('customDeleteModal');
+                let modalObj = bootstrap.Modal.getInstance(modalEl);
+                if (modalObj) modalObj.hide();
+                btn.disabled = false;
+                btn.innerHTML = 'Ya, Export Excel';
+                if (cancelBtn) cancelBtn.disabled = false;
+            }, 1500);
+
+        } else if (activeDeleteFormId) {
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menghapus...`;
             document.getElementById(activeDeleteFormId).submit();
         }
     });
