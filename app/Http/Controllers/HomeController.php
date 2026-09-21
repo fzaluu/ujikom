@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produk;
+use App\Models\Setting;
 use App\Services\LaporanPenjualanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,8 @@ class HomeController extends Controller
         $search = $request->input('search');
 
         if (!empty($search)) {
-            // Cari produk dari database sekaligus cek apakah produk ini punya data total terjual (best seller)
+            $minBestseller = Setting::where('key', 'min_penjualan_bestseller')->value('value') ?? 1;
+
             $bestSellers = DB::table('produk')
                 ->leftJoin('item_penjualan', 'produk.id', '=', 'item_penjualan.produk_id')
                 ->leftJoin('penjualan', function($join) {
@@ -29,7 +31,7 @@ class HomeController extends Controller
                     'produk.foto',
                     'produk.harga_jual',
                     'produk.stok',
-                    DB::raw('SUM(item_penjualan.kuantitas) as total_terjual')
+                    DB::raw('COALESCE(SUM(CASE WHEN penjualan.status = "COMPLETED" THEN item_penjualan.kuantitas ELSE 0 END), 0) as total_terjual')
                 )
                 ->latest('produk.id')
                 ->get();
@@ -46,11 +48,14 @@ class HomeController extends Controller
         return view('home', compact('bestSellers', 'search'));
     }
 
+    // Method khusus untuk pencarian AJAX tanpa refresh halaman
     public function searchAjax(Request $request, LaporanPenjualanService $laporanService)
     {
         $search = $request->input('search');
 
         if (!empty($search)) {
+            $minBestseller = Setting::where('key', 'min_penjualan_bestseller')->value('value') ?? 1;
+
             $bestSellers = DB::table('produk')
                 ->leftJoin('item_penjualan', 'produk.id', '=', 'item_penjualan.produk_id')
                 ->leftJoin('penjualan', function($join) {
@@ -65,7 +70,7 @@ class HomeController extends Controller
                     'produk.foto',
                     'produk.harga_jual',
                     'produk.stok',
-                    DB::raw('SUM(item_penjualan.kuantitas) as total_terjual')
+                    DB::raw('COALESCE(SUM(CASE WHEN penjualan.status = "COMPLETED" THEN item_penjualan.kuantitas ELSE 0 END), 0) as total_terjual')
                 )
                 ->latest('produk.id')
                 ->get();
