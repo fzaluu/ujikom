@@ -4,13 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\JenisProduk;
 use App\Http\Requests\JenisProduk\StoreRequest;
+use Illuminate\Http\Request;
 
 class JenisProdukController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
-        // withCount agar tahu jumlah produk per jenis tanpa N+1 (1 query saja)
-        $jenisProduk = JenisProduk::withCount('produk')->orderBy('nama')->paginate(10)->withQueryString();
+        $keyword = $request->input('search');
+
+        $jenisProduk = JenisProduk::withCount('produk')
+            ->when($keyword, function ($query) use ($keyword) {
+                $query->where('nama', 'like', '%' . $keyword . '%');
+            })
+            ->orderBy('nama')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('jenis-produk.index', compact('jenisProduk'));
     }

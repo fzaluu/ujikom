@@ -151,9 +151,30 @@
 
     {{-- TABEL 1: TRANSAKSI LUNAS (CASH & QRIS) --}}
     <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4 mb-4">
-        <h5 class="fw-bold text-dark mb-3 fs-5">
-            <i class="bi bi-box-seam text-primary me-2"></i> Detail Produk Terjual (Lunas: Cash & QRIS)
-        </h5>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-3">
+            <h5 class="fw-bold text-dark mb-0 fs-5 text-nowrap">
+                <i class="bi bi-box-seam text-primary me-2"></i> Detail Produk Terjual (Lunas: Cash & QRIS)
+            </h5>
+            
+            {{-- Search Bar di Kanan Judul --}}
+            <form action="{{ route('recap.index') }}" method="GET" class="mb-0" style="max-width: 320px; width: 100%;">
+                <input type="hidden" name="start_date" value="{{ $startDate }}">
+                <input type="hidden" name="end_date" value="{{ $endDate }}">
+                <input type="hidden" name="search_piutang" value="{{ request('search_piutang') }}">
+                
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control bg-light border-start-0 ps-0 shadow-none" name="search_lunas" placeholder="Cari produk lunas..." value="{{ request('search_lunas') }}" autocomplete="off">
+                    <button class="btn btn-outline-primary px-3" type="submit">Cari</button>
+                    @if(request('search_lunas'))
+                        <a href="{{ route('recap.index', ['start_date' => $startDate, 'end_date' => $endDate, 'search_piutang' => request('search_piutang')]) }}" class="btn btn-outline-secondary">Reset</a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-hover table-custom align-middle mb-0">
                 <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">
@@ -225,9 +246,30 @@
 
     {{-- TABEL 2: KHUSUS PIUTANG / BAYAR NANTI --}}
     <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4">
-        <h5 class="fw-bold text-warning mb-3 fs-5">
-            <i class="bi bi-clock-history me-2"></i> Daftar Piutang (Bayar Nanti / Belum Lunas)
-        </h5>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-3">
+            <h5 class="fw-bold text-warning mb-0 fs-5 text-nowrap">
+                <i class="bi bi-clock-history me-2"></i> Daftar Piutang (Bayar Nanti / Belum Lunas)
+            </h5>
+            
+            {{-- Search Bar di Kanan Judul --}}
+            <form action="{{ route('recap.index') }}" method="GET" class="mb-0" style="max-width: 320px; width: 100%;">
+                <input type="hidden" name="start_date" value="{{ $startDate }}">
+                <input type="hidden" name="end_date" value="{{ $endDate }}">
+                <input type="hidden" name="search_lunas" value="{{ request('search_lunas') }}">
+                
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control bg-light border-start-0 ps-0 shadow-none" name="search_piutang" placeholder="Cari nama piutang..." value="{{ request('search_piutang') }}" autocomplete="off">
+                    <button class="btn btn-outline-primary px-3" type="submit">Cari</button>
+                    @if(request('search_piutang'))
+                        <a href="{{ route('recap.index', ['start_date' => $startDate, 'end_date' => $endDate, 'search_lunas' => request('search_lunas')]) }}" class="btn btn-outline-secondary">Reset</a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-hover table-custom align-middle mb-0">
                 <thead class="table-light text-uppercase fs-7 text-secondary fw-bold">

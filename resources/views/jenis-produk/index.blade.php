@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        {{-- Baris Tombol Aksi di Kiri --}}
+        {{-- Baris Tombol Aksi & Form Pencarian --}}
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
             <div>
                 @if($isAdmin)
@@ -47,6 +47,34 @@
                     </a>
                 @endif
             </div>
+
+            {{-- Search Bar --}}
+            <form action="{{ route('jenis-produk.index') }}" method="GET" class="mb-0" style="max-width: 350px; width: 100%;">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                        <i class="bi bi-search"></i>
+                    </span>
+
+                    <input
+                        type="text"
+                        class="form-control bg-light border-start-0 ps-0 shadow-none"
+                        name="search"
+                        placeholder="Cari jenis produk..."
+                        value="{{ request('search') }}"
+                        autocomplete="off"
+                    >
+
+                    <button class="btn btn-outline-primary px-3" type="submit">
+                        Cari
+                    </button>
+
+                    @if(request('search'))
+                        <a href="{{ route('jenis-produk.index') }}" class="btn btn-outline-secondary" title="Reset Pencarian">
+                            Reset
+                        </a>
+                    @endif
+                </div>
+            </form>
         </div>
 
         {{-- Table Jenis Produk --}}

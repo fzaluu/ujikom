@@ -13,9 +13,12 @@ class RekapController extends Controller
         $startDate = $request->input('start_date', Carbon::today()->toDateString());
         $endDate = $request->input('end_date', Carbon::today()->toDateString());
         $metode = $request->input('metode', 'ALL');
+        
+        $searchLunas = $request->input('search_lunas');
+        $searchPiutang = $request->input('search_piutang');
 
-        // Mengambil data rekap (sudah otomatis ada pagination di dalam service)
-        $rekap = $service->rekapBerdasarkanTanggal($startDate, $endDate, $metode);
+
+        $rekap = $service->rekapBerdasarkanTanggal($startDate, $endDate, $metode, $searchLunas, $searchPiutang);
 
         return view('recap.index', compact('rekap', 'startDate', 'endDate', 'metode'));
     }

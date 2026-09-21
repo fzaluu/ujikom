@@ -66,7 +66,7 @@ class LaporanPenjualanService
             ->get();
     }
 
-    public function rekapBerdasarkanTanggal($startDate, $endDate, $metode = 'ALL')
+    public function rekapBerdasarkanTanggal($startDate, $endDate, $metode = 'ALL', $searchLunas = null, $searchPiutang = null)
     {
         $cleanMetode = strtoupper(trim($metode));
 
@@ -86,7 +86,7 @@ class LaporanPenjualanService
             SUM(CASE WHEN metode_pembayaran != "CASH" THEN total_pembayaran ELSE 0 END) as total_non_tunai
         ')->first();
 
-        // 2. Query Tabel Produk Terjual Lunas (COMPLETED) + Pagination
+        // 2. Query Tabel Produk Terjual Lunas (COMPLETED) + Search + Pagination
         $queryProduk = DB::table('item_penjualan')
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
@@ -95,6 +95,10 @@ class LaporanPenjualanService
 
         if ($cleanMetode && $cleanMetode !== 'ALL' && $cleanMetode !== 'BAYAR_NANTI') {
             $queryProduk->where('penjualan.metode_pembayaran', $cleanMetode);
+        }
+
+        if ($searchLunas) {
+            $queryProduk->where('produk.nama', 'like', '%' . $searchLunas . '%');
         }
 
         $produkTerlaris = (clone $queryProduk)
@@ -113,12 +117,16 @@ class LaporanPenjualanService
             ->paginate(10, ['*'], 'page_lunas')
             ->withQueryString();
 
-        // 3. Query Tabel Piutang / Bayar Nanti (OPEN) + Pagination
+        // 3. Query Tabel Piutang / Bayar Nanti (OPEN) + Search + Pagination
         $queryBayarNanti = DB::table('item_penjualan')
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
             ->whereBetween('penjualan.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('penjualan.status', 'OPEN');
+
+        if ($searchPiutang) {
+            $queryBayarNanti->where('produk.nama', 'like', '%' . $searchPiutang . '%');
+        }
 
         $bayarNantiList = $queryBayarNanti
             ->groupBy('produk.id', 'produk.nama', 'produk.harga_jual', 'penjualan.id', 'penjualan.status', 'penjualan.metode_pembayaran')

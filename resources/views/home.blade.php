@@ -205,24 +205,59 @@
     </div>
 </section>
 
-<!-- PRODUK BEST SELLER (DATA ASLI) -->
+<!-- PRODUK BEST SELLER / PENCARIAN PRODUK -->
 <section id="produk" class="py-5 my-4">
     <div class="container">
-        <div class="text-center mx-auto mb-5 reveal" style="max-width:600px;">
-            <div class="section-eyebrow">Produk Favorit</div>
-            <h2 class="section-title">Yang paling banyak dicari pelanggan kami.</h2>
-            <p class="section-sub mx-auto">Diambil langsung dari data penjualan toko, bukan daftar contoh.</p>
+        <div class="row justify-content-center mb-5 reveal">
+            <div class="col-lg-8 text-center">
+                <div class="section-eyebrow">
+                    {{ request('search') ? 'Hasil Pencarian' : 'Produk Favorit' }}
+                </div>
+                <h2 class="section-title mb-1">
+                    {{ request('search') ? 'Pencarian: "' . request('search') . '"' : 'Yang paling banyak dicari pelanggan kami.' }}
+                </h2>
+                <p class="section-sub mx-auto mb-4">
+                    {{ request('search') ? 'Menampilkan produk dari seluruh inventaris toko.' : 'Diambil langsung dari data penjualan toko, bukan daftar contoh.' }}
+                </p>
+                
+                {{-- Search Bar Produk (Berada di Tengah & Live Server-Side) --}}
+                <div class="d-flex justify-content-center">
+                    <form action="{{ url('/#produk') }}" method="GET" id="liveSearchForm" class="w-100 mb-0" style="max-width: 400px;">
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input
+                                type="text"
+                                id="searchInputField"
+                                class="form-control bg-light border-start-0 ps-0 shadow-none"
+                                name="search"
+                                placeholder="Ketik nama produk..."
+                                value="{{ request('search') }}"
+                                autocomplete="off"
+                            >
+                            @if(request('search'))
+                                <a href="{{ url('/#produk') }}" class="btn btn-outline-secondary d-flex align-items-center" title="Reset Pencarian">Reset</a>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
         @if($bestSellers->isEmpty())
             <div class="text-center text-muted py-5 reveal">
-                <i class="bi bi-box-seam fs-1 opacity-50 d-block mb-2"></i>
-                Produk akan tampil di sini setelah toko mulai mencatat transaksi.
+                <i class="bi bi-search fs-1 opacity-50 d-block mb-2"></i>
+                @if(request('search'))
+                    Produk "{{ request('search') }}" tidak ditemukan di inventaris toko.
+                @else
+                    Produk akan tampil di sini setelah toko mulai mencatat transaksi.
+                @endif
             </div>
         @else
-            <div class="row g-4">
+            <div class="row g-4" id="product-list">
                 @foreach($bestSellers as $produk)
-                    <div class="col-sm-6 col-lg-4 reveal">
+                    <div class="col-sm-6 col-lg-4 reveal product-item">
                         <div class="product-card">
                             @if(!empty($produk->foto))
                                 <img src="{{ asset($produk->foto) }}" alt="{{ $produk->nama }}" class="product-photo">
@@ -230,7 +265,7 @@
                                 <div class="product-photo-fallback"><i class="bi bi-image"></i></div>
                             @endif
                             <div class="product-body">
-                                @if(isset($produk->total_terjual))
+                                @if(isset($produk->total_terjual) && !request('search'))
                                     <span class="badge-bestseller mb-2 d-inline-block">Best Seller</span>
                                 @endif
                                 <h6>{{ $produk->nama }}</h6>
@@ -354,6 +389,7 @@
 <button id="backToTop" title="Kembali ke atas"><i class="bi bi-arrow-up"></i></button>
 
 <script>
+    // 1. Script Animasi Scroll Reveal
     const revealEls = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -365,6 +401,7 @@
     }, { threshold: 0.15 });
     revealEls.forEach(el => observer.observe(el));
 
+    // 2. Script Tombol Kembali ke Atas (Back to Top)
     const backToTop = document.getElementById('backToTop');
     window.addEventListener('scroll', () => {
         if (window.scrollY > 400) {
@@ -376,8 +413,22 @@
     backToTop.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+
+    // 3. Script Live Server-Side Search (Otomatis submit saat diketik per huruf)
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInputField');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            
+            // Jeda 350ms agar pencarian berjalan mulus setiap kali huruf diketik
+            searchTimeout = setTimeout(() => {
+                document.getElementById('liveSearchForm').submit();
+            }, 40);
+        });
+    }
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script></body>
 </html>
