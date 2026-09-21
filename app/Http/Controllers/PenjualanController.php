@@ -41,12 +41,14 @@ class PenjualanController extends Controller
     {
         $user = Auth::user();
 
-        // Cari transaksi OPEN terbaru milik user
+        // Cari transaksi OPEN yang murni keranjang aktif milik user (belum di-checkout/belum ada nama pelanggannya)
         $sale = Penjualan::where('user_id', $user->id)
             ->where('status', 'OPEN')
+            ->whereNull('customer_name')
             ->latest()
             ->first();
 
+        // Jika tidak ada keranjang aktif yang kosong, buat transaksi baru yang bersih
         if (!$sale) {
             $sale = Penjualan::create([
                 'user_id' => $user->id,
@@ -55,14 +57,6 @@ class PenjualanController extends Controller
                 'metode_pembayaran' => 'BAYAR_NANTI'
             ]);
         }
-
-        // HAPUS atau KOMENTARI baris redirect ini agar URL dan ID tetap konsisten di /penjualan/create atau /penjualan/{id}/edit 
-        // tanpa memutus state AJAX product-grid:
-        /*
-        if ($sale->itemPenjualan()->count() > 0 && !$request->ajax()) {
-            return redirect()->route('penjualan.edit', $sale->id);
-        }
-        */
 
         $keyword = $request->input('search');
 
@@ -78,7 +72,6 @@ class PenjualanController extends Controller
         $totalProdukCount = Produk::count();
         $mode = 'create';
 
-        // Pastikan relasi itemPenjualan beserta produk dimuat agar view POS selalu membaca data terbaru
         $sale->load('itemPenjualan.produk');
 
         if ($request->ajax()) {
@@ -101,24 +94,9 @@ class PenjualanController extends Controller
             })
             ->first();
 
+        // Hanya blokir jika transaksi tidak ada atau statusnya sudah COMPLETED
         if (!$sale || $sale->status == 'COMPLETED') {
-            $activeSale = Penjualan::when(!$isAdmin, function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                ->where('status', 'OPEN')
-                ->latest()
-                ->first();
-
-            if (!$activeSale) {
-                $activeSale = Penjualan::create([
-                    'user_id' => $user->id,
-                    'status' => 'OPEN',
-                    'total_pembayaran' => 0,
-                    'metode_pembayaran' => 'BAYAR_NANTI'
-                ]);
-            }
-
-            return redirect()->route('penjualan.edit', $activeSale->id);
+            return redirect()->route('penjualan.index')->with('error', 'Transaksi tidak ditemukan atau sudah selesai.');
         }
 
         $this->authorize('update', $sale);
@@ -146,6 +124,13 @@ class PenjualanController extends Controller
         }
 
         return view('penjualan.pos', compact('sale', 'products', 'mode', 'totalProdukCount'));
+    }
+
+    public function show(Penjualan $penjualan)
+    {
+        // Pastikan method view di policy mengizinkan, atau langsung load data tanpa batasan ketat 404
+        $sale = $penjualan->load('itemPenjualan.produk', 'user');
+        return view('penjualan.show', compact('sale'));
     }
 
     public function update(Request $request, Penjualan $penjualan)
@@ -249,11 +234,7 @@ class PenjualanController extends Controller
         return response()->noContent();
     }
 
-    public function show(Penjualan $penjualan)
-    {
-        $sale = $penjualan->load('itemPenjualan.produk', 'user');
-        return view('penjualan.show', compact('sale'));
-    }
+    
 
     public function batalEdit(Penjualan $penjualan)
     {
