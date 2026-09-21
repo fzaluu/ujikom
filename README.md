@@ -15,6 +15,19 @@ Aplikasi POS untuk mengelola transaksi penjualan, produk, dan stok pada usaha ko
 
 ---
 
+cara nyaa adalah 
+1. git clone https//:github.com/fzaluu/ujikom
+2.cd ujikom
+3.composer install
+4.npm install
+5.copy env
+6.atur env
+7.php artisan key:gen
+8.php artisan migrate --seed gunakan :fresh opsional
+9.php artisan serv
+10.npm run dev
+
+
 cara menghapus data dummy
 
 Buka halaman phpMyAdmin, lalu klik nama database kamu (ujikom atau contoh).
