@@ -18,13 +18,27 @@
                         <div class="product-photo-fallback"><i class="bi bi-image"></i></div>
                     @endif
                     <div class="product-body">
-                        @if(isset($produk->total_terjual) && empty($search))
+                        {{-- Tampilkan badge Best Seller jika produk memiliki total_terjual lebih dari 0 --}}
+                        @if(isset($produk->total_terjual) && $produk->total_terjual > 0)
                             <span class="badge-bestseller mb-2 d-inline-block">Best Seller</span>
                         @endif
+                        
                         <h6>{{ $produk->nama }}</h6>
-                        @if(!empty($produk->harga_jual))
-                            <div class="product-price">Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</div>
-                        @endif
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            @if(!empty($produk->harga_jual))
+                                <div class="product-price">Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</div>
+                            @else
+                                <div></div>
+                            @endif
+
+                            {{-- Informasi Stok Produk (Selalu Tampil) --}}
+                            @if(isset($produk->stok))
+                                <span class="badge {{ $produk->stok > 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger' }} px-2 py-1 fw-semibold" style="font-size: 0.75rem;">
+                                    Stok: {{ $produk->stok }}
+                                </span>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>

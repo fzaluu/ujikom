@@ -355,7 +355,6 @@
 </footer>
 
 <button id="backToTop" title="Kembali ke atas"><i class="bi bi-arrow-up"></i></button>
-
 <script>
     // 1. Script Animasi Scroll Reveal
     const revealEls = document.querySelectorAll('.reveal');

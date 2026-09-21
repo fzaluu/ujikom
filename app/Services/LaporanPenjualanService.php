@@ -59,8 +59,10 @@ class LaporanPenjualanService
                 'produk.nama',
                 'produk.foto',
                 'produk.harga_jual',
+                'produk.stok',
                 DB::raw('SUM(item_penjualan.kuantitas) as total_terjual')
             )
+            ->having('total_terjual', '>=', 27) // mengatur best seller
             ->orderByDesc('total_terjual')
             ->limit($limit)
             ->get();
