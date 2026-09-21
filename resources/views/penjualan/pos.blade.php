@@ -295,8 +295,11 @@
     let activeDeleteFormId = null;
     let isExplicitAction = false;
     let posModalObj = null;
+    let pendingRedirectUrl = null;
 
     const TOTAL_BELANJA = {{ (float) ($sale->total_pembayaran ?? 0) }};
+    const HAS_ITEMS = {{ ($sale->itemPenjualan->count() > 0) ? 'true' : 'false' }};
+    const SALE_ID = "{{ $sale->id ?? '' }}";
 
     function markExplicitAction() {
         isExplicitAction = true;
@@ -429,7 +432,49 @@
             paymentSelect.addEventListener('change', updatePaymentUI);
             updatePaymentUI();
         }
+
+        // INTERCEPT NAVIGASI: Jika ada produk di keranjang dan user klik menu lain, munculkan modal!
+        if (HAS_ITEMS && SALE_ID) {
+            document.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    
+                    // Abaikan anchor kosong, tombol modal, link internal/javascript, atau tombol di dalam form POS
+                    if (!href || href.startsWith('#') || href.startsWith('javascript') || this.hasAttribute('data-bs-toggle') || this.classList.contains('no-intercept') || this.closest('form')) {
+                        return;
+                    }
+
+                    e.preventDefault();
+                    pendingRedirectUrl = href;
+                    openLeavePageModal();
+                });
+            });
+        }
     });
+
+    function openLeavePageModal() {
+        activeActionType = 'leave_page';
+        const titleEl = document.getElementById('posModalTitle');
+        const iconEl  = document.getElementById('posModalIcon');
+        const msgEl   = document.getElementById('posModalMessage');
+        const confirmBtn = document.getElementById('posModalConfirmBtn');
+        const cancelBtn  = document.getElementById('posCancelBtn');
+
+        confirmBtn.disabled = false;
+        if (cancelBtn) {
+            cancelBtn.disabled = false;
+            cancelBtn.classList.remove('d-none');
+        }
+
+        titleEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i> Perhatian: Keranjang Aktif`;
+        iconEl.innerHTML  = `<i class="bi bi-cart-dash text-warning"></i>`;
+        msgEl.innerText   = 'Masih ada produk di dalam keranjang! Jika Anda meninggalkan halaman ini, transaksi akan dibatalkan dan stok dikembalikan. Tetap tinggalkan halaman?';
+
+        confirmBtn.className = 'btn btn-danger px-4 rounded-3 shadow-sm';
+        confirmBtn.innerText = 'Ya, Tinggalkan & Batalkan';
+
+        getPosModal().show();
+    }
 
     function openCustomConfirm(type) {
         activeActionType = type;
@@ -465,7 +510,6 @@
                 }
             }
 
-            // Validasi inline jika metode Bayar Nanti
             if (method === 'BAYAR_NANTI') {
                 const nameInput  = document.getElementById('inputCustomerName').value.trim();
                 const phoneInput = document.getElementById('inputCustomerPhone').value.trim();
@@ -547,17 +591,31 @@
         } else if (activeActionType === 'delete_item') {
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menghapus...`;
             if (activeDeleteFormId) document.getElementById(activeDeleteFormId)?.submit();
+        } else if (activeActionType === 'leave_page') {
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Membatalkan...`;
+            
+            // Menggunakan navigator.sendBeacon agar request penghapusan terkirim stabil di background tanpa konflik modal
+            const destroyUrl = `{{ url('penjualan') }}/${SALE_ID}`;
+            navigator.sendBeacon(destroyUrl, new URLSearchParams({
+                '_token': '{{ csrf_token() }}',
+                '_method': 'DELETE'
+            }));
+
+            // Beri jeda singkat agar modal tertutup mulus lalu pindah halaman
+            setTimeout(() => {
+                window.location.href = pendingRedirectUrl;
+            }, 250);
         }
     });
 
+    // Background cleanup jika tab browser ditutup total
     window.addEventListener('beforeunload', function (e) {
         if (isExplicitAction) return;
-        const saleId = "{{ $sale->id ?? '' }}";
-        const itemCount = "{{ $sale->itemPenjualan->count() ?? 0 }}";
-        if (saleId && itemCount > 0) {
-            const url = "{{ route('penjualan.bayarNantiAuto', $sale->id ?? 0) }}";
+        if (HAS_ITEMS && SALE_ID) {
+            const url = `{{ url('penjualan') }}/${SALE_ID}`;
             const formData = new FormData();
             formData.append('_token', '{{ csrf_token() }}');
+            formData.append('_method', 'DELETE');
             navigator.sendBeacon(url, formData);
         }
     });

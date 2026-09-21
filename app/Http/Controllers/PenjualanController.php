@@ -80,7 +80,6 @@ class PenjualanController extends Controller
         
         $keyword = $request->input('search');
         
-        // PERBAIKAN DI SINI: Mengubah ->get() menjadi ->paginate(5)->appends($request->all())
         $products = Produk::when($keyword, function ($query) use ($keyword) {
             $query->where('nama', 'like', '%' . $keyword . '%');
         })
@@ -185,6 +184,22 @@ class PenjualanController extends Controller
         return redirect()
             ->route('penjualan.index')
             ->with('success', 'Transaksi berhasil dibatalkan');
+    }
+
+    public function destroyAuto(Penjualan $penjualan)
+    {
+        if ($penjualan->status === 'OPEN') {
+            DB::transaction(function () use ($penjualan) {
+                foreach ($penjualan->itemPenjualan as $item) {
+                    if ($item->produk) {
+                        $item->produk->increment('stok', $item->kuantitas);
+                    }
+                }
+                $penjualan->itemPenjualan()->delete();
+                $penjualan->delete();
+            });
+        }
+        return response()->noContent();
     }
 
     public function show(Penjualan $penjualan)

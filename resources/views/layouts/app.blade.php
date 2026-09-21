@@ -237,21 +237,33 @@
         document.addEventListener("DOMContentLoaded", function() {
             const loader = document.getElementById('page-loader');
 
+            // 1. Loader untuk semua form submit (kecuali yang ada class 'no-loader')
             document.querySelectorAll('form').forEach(form => {
                 form.addEventListener('submit', () => {
                     if(!form.classList.contains('no-loader')) loader.classList.add('show');
                 });
             });
 
+            // 2. Loader untuk klik link menu di sidebar/navigasi
             document.querySelectorAll('.sidebar-pos a').forEach(link => {
                 link.addEventListener('click', function(e) {
                     let href = this.getAttribute('href');
+                    
+                    // ALUR BARU: 
+                    // Jika kita sedang berada di halaman POS (dideteksi dari variabel HAS_ITEMS yang ada di POS)
+                    // dan keranjang belanja ADA ISINYA (HAS_ITEMS === true), 
+                    // JANGAN NYALAKAN LOADER GLOBAL dan BIARKAN SCRIPT POS YANG MENCEGATNYA.
+                    if (typeof HAS_ITEMS !== 'undefined' && HAS_ITEMS === true) {
+                        return; // Keluar dari fungsi ini agar modal konfirmasi POS bisa tampil mulus!
+                    }
+
                     if (href && href !== '#' && !href.startsWith('javascript') && !this.hasAttribute('data-bs-toggle')) {
                         loader.classList.add('show');
                     }
                 });
             });
 
+            // 3. Auto-show Toast Notifikasi
             const toasts = document.querySelectorAll('.toast');
             toasts.forEach(toastEl => {
                 let toast = new bootstrap.Toast(toastEl, {
@@ -260,6 +272,6 @@
                 toast.show();
             });
         });
-    </script>
+    </script>   
 </body>
 </html>

@@ -127,7 +127,8 @@ class LaporanPenjualanService
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
             ->whereBetween('penjualan.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('penjualan.status', 'OPEN');
+            ->where('penjualan.status', 'OPEN')
+            ->whereNotNull('penjualan.customer_name');
 
         if ($searchPiutang) {
             $queryBayarNanti->where(function($q) use ($searchPiutang) {
@@ -178,7 +179,7 @@ class LaporanPenjualanService
         }
 
         if ($cleanMetode === 'BAYAR_NANTI') {
-            $produkTerlaris = collect(); // Kosongkan jika filter khusus bayar nanti
+            $produkTerlaris = collect();
         } else {
             $produkTerlaris = (clone $queryProduk)
                 ->groupBy('produk.id', 'produk.nama', 'produk.harga_jual', 'penjualan.id', 'penjualan.status', 'penjualan.metode_pembayaran')
@@ -201,15 +202,15 @@ class LaporanPenjualanService
             ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
             ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
             ->whereBetween('penjualan.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('penjualan.status', 'OPEN');
+            ->where('penjualan.status', 'OPEN')
+            ->whereNotNull('penjualan.customer_name');
 
         if ($cleanMetode && $cleanMetode !== 'ALL' && $cleanMetode !== 'CASH' && $cleanMetode !== 'QRIS') {
-            // Jika filter memilih bayar nanti
             $queryBayarNanti->where('penjualan.metode_pembayaran', 'BAYAR_NANTI');
         }
 
         if ($cleanMetode === 'CASH' || $cleanMetode === 'QRIS') {
-            $bayarNantiList = collect(); // Kosongkan jika filter khusus lunas
+            $bayarNantiList = collect();
         } else {
             $bayarNantiList = $queryBayarNanti
                 ->groupBy('produk.id', 'produk.nama', 'produk.harga_jual', 'penjualan.id', 'penjualan.status', 'penjualan.metode_pembayaran', 'penjualan.customer_name')
