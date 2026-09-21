@@ -152,8 +152,8 @@
     {{-- TABEL 1: TRANSAKSI LUNAS (CASH & QRIS) --}}
     <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4 mb-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-3">
-            <h5 class="fw-bold text-dark mb-0 fs-5 text-nowrap">
-                <i class="bi bi-box-seam text-primary me-2"></i> Detail Produk Terjual (Lunas: Cash & QRIS)
+            <h5 class="fw-bold text-dark mb-0 fs-5 pe-2">
+                <i class="bi bi-box-seam text-primary me-2"></i> Detail Produk Terjual <span class="text-muted fw-normal fs-6 d-block d-md-inline">(Lunas: Cash & QRIS)</span>
             </h5>
             
             {{-- Search Bar di Kanan Judul --}}
@@ -247,8 +247,8 @@
     {{-- TABEL 2: KHUSUS PIUTANG / BAYAR NANTI --}}
     <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-3">
-            <h5 class="fw-bold text-warning mb-0 fs-5 text-nowrap">
-                <i class="bi bi-clock-history me-2"></i> Daftar Piutang (Bayar Nanti / Belum Lunas)
+            <h5 class="fw-bold text-warning mb-0 fs-5 pe-2">
+                <i class="bi bi-clock-history me-2"></i> Daftar Piutang <span class="text-muted fw-normal fs-6 d-block d-md-inline">(Bayar Nanti / Belum Lunas)</span>
             </h5>
             
             {{-- Search Bar di Kanan Judul --}}
