@@ -1,63 +1,68 @@
-<div class="mb-0">
-    @forelse($products as $product)
+<div class="mb-0"> 
+    @forelse ($products as $product)
     <div class="row g-2 align-items-center mb-2 p-2 border rounded-3 bg-white shadow-sm">
-        <form class="add-to-cart-form d-flex align-items-center justify-content-between w-100 m-0 flex-wrap flex-sm-nowrap gap-2" action="{{ route('itempenjualan.store') }}" method="POST">
+        <form class="add-to-cart-form w-100 m-0" action="{{ route('itempenjualan.store') }}" method="POST">
             @csrf
             <input type="hidden" name="penjualan_id" value="{{ $sale->id }}">
             <input type="hidden" name="product_id" value="{{ $product->id }}">
             
-            {{-- Bagian Kiri: Tombol Preview Foto & Nama --}}
-            <div class="d-flex align-items-center gap-2 flex-grow-1 overflow-hidden" style="min-width: 0;">
-                @if($product->foto)
-                    <button type="button"
-                            class="btn btn-link p-0 text-decoration-none flex-shrink-0"
-                            data-bs-toggle="modal"
-                            data-bs-target="#productImageModal"
-                            data-image="{{ asset($product->foto) }}"
-                            data-name="{{ $product->nama }}">
-                        <img src="{{ asset($product->foto) }}" 
-                             alt="{{ $product->nama }}" 
-                             class="img-thumbnail rounded-3 shadow-sm border" 
-                             style="width: 42px; height: 42px; object-fit: cover; transition: transform 0.2s;"
-                             onmouseover="this.style.transform='scale(1.08)'"
-                             onmouseout="this.style.transform='scale(1)'">
-                    </button>
-                @else
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 flex-shrink-0" style="font-size: 0.7rem;">No Image</span>
-                @endif
-
-                <div class="overflow-hidden">
-                    <div class="fw-semibold small {{ $product->stok <= 0 ? 'text-muted text-decoration-line-through' : 'text-dark' }} text-truncate">
-                        {{ $product->nama }}
-                    </div>
-                    @if($product->stok <= 0)
-                        <small class="text-danger fw-bold" style="font-size: 0.72rem;">Stok Habis</small>
+            <div class="d-flex align-items-center justify-content-between w-100 gap-2">
+                {{-- Bagian Kiri: Tombol Preview Foto & Nama (Memanjang) --}}
+                <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0;">
+                    @if($product->foto)
+                        <button type="button"
+                                class="btn btn-link p-0 text-decoration-none flex-shrink-0"
+                                data-bs-toggle="modal"
+                                data-bs-target="#productImageModal"
+                                data-image="{{ asset($product->foto) }}"
+                                data-name="{{ $product->nama }}">
+                            <img src="{{ asset($product->foto) }}" 
+                                 alt="{{ $product->nama }}" 
+                                 class="img-thumbnail rounded-3 shadow-sm border" 
+                                 style="width: 46px; height: 46px; object-fit: cover; transition: transform 0.2s;"
+                                 onmouseover="this.style.transform='scale(1.08)'"
+                                 onmouseout="this.style.transform='scale(1)'">
+                        </button>
                     @else
-                        <small class="text-success fw-bold" style="font-size: 0.72rem;">Rp {{ number_format($product->harga_jual, 0, ',', '.') }}</small>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 flex-shrink-0" style="font-size: 0.7rem;">No Image</span>
+                    @endif
+
+                    <div style="min-width: 0; padding-right: 5px;">
+                        {{-- Menggunakan teks membungkus ke bawah tanpa terpotong (text-wrap) --}}
+                        <div class="fw-semibold small lh-sm text-wrap text-break mb-1 {{ $product->stok <= 0 ? 'text-muted text-decoration-line-through' : 'text-dark' }}">
+                            {{ $product->nama }}
+                        </div>
+                        @if($product->stok <= 0)
+                            <small class="text-danger fw-bold" style="font-size: 0.75rem;">Stok Habis</small>
+                        @else
+                            <small class="text-success fw-bold" style="font-size: 0.75rem;">Rp {{ number_format($product->harga_jual, 0, ',', '.') }}</small>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Bagian Kanan: Input Qty & Tombol Tambah (Lebar tetap & konsisten) --}}
+                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                    <input type="number" 
+                           name="quantity" 
+                           value="1" 
+                           min="1" 
+                           max="{{ $product->stok }}"
+                           class="form-control rounded-2 shadow-none qty-input text-center px-1" 
+                           style="width: 60px; height: 36px; -moz-appearance: textfield;" 
+                           data-stok="{{ $product->stok }}"
+                           title="Masukkan Jumlah"
+                           {{ $sale->status == 'COMPLETED' || $product->stok <= 0 ? 'disabled' : '' }}>
+                    
+                    @if($product->stok <= 0)
+                        <button type="button" class="btn btn-secondary rounded-2 px-3" style="height: 36px;" disabled title="Produk Habis">
+                            <i class="bi bi-slash-circle"></i>
+                        </button>
+                    @else
+                        <button type="submit" class="btn btn-primary rounded-2 shadow-sm px-3 {{ $sale->status == 'COMPLETED' ? 'disabled' : '' }}" style="height: 36px;" title="Tambah ke Keranjang">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
                     @endif
                 </div>
-            </div>
-
-            {{-- Bagian Kanan: Input Qty & Tombol Tambah --}}
-            <div class="d-flex align-items-center gap-1 ms-auto ms-sm-0 flex-shrink-0">
-                <input type="number" 
-                       name="quantity" 
-                       value="1" 
-                       min="1" 
-                       class="form-control form-control-sm rounded-2 shadow-none qty-input text-center" 
-                       style="width: 55px;" 
-                       data-stok="{{ $product->stok }}"
-                       {{ $sale->status == 'COMPLETED' || $product->stok <= 0 ? 'disabled' : '' }}>
-                
-                @if($product->stok <= 0)
-                    <button type="button" class="btn btn-secondary btn-sm rounded-2 px-2.5" disabled title="Produk Habis">
-                        <i class="bi bi-slash-circle"></i>
-                    </button>
-                @else
-                    <button type="submit" class="btn btn-primary btn-sm rounded-2 shadow-sm px-2.5 {{ $sale->status == 'COMPLETED' ? 'disabled' : '' }}" title="Tambah ke Keranjang">
-                        <i class="bi bi-plus-lg"></i>
-                    </button>
-                @endif
             </div>
         </form>
     </div>
@@ -68,7 +73,7 @@
     @endforelse
 </div>
 
-{{-- 1. TAMBAHKAN MODAL PREVIEW FOTO PRODUK DI SINI --}}
+{{-- MODAL PREVIEW FOTO PRODUK --}}
 <div class="modal fade" id="productImageModal" tabindex="-1" aria-labelledby="productImageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -83,27 +88,14 @@
     </div>
 </div>
 
-{{-- Modal Konfirmasi Hapus di Tengah --}}
-<div class="modal fade" id="customDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow-lg animate-page">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold text-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi Hapus
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center py-4">
-                <i class="bi bi-trash text-danger display-4 mb-3"></i>
-                <p id="deleteModalMessage" class="text-dark fs-6 mb-0">Apakah Anda yakin ingin menghapus data ini?</p>
-            </div>
-            <div class="modal-footer border-0 justify-content-center pb-4 gap-2">
-                <button type="button" class="btn btn-light px-4 rounded-3 shadow-none border" data-bs-dismiss="modal" id="cancelDeleteBtn">Batal</button>
-                <button type="button" id="confirmDeleteBtn" class="btn btn-danger px-4 rounded-3 shadow-sm">Ya, Hapus</button>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+    /* Menghilangkan panah spinner (up/down arrow) di input number agar teks punya ruang penuh */
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
 
 <script>
     // Validasi stok input quantity
@@ -121,7 +113,7 @@
         });
     });
 
-    // 2. SCRIPT UNTUK MENGISI GAMBAR KE DALAM MODAL PREVIEW
+    // Script Modal Foto
     document.addEventListener('DOMContentLoaded', function () {
         var productImageModal = document.getElementById('productImageModal');
         if (productImageModal) {
