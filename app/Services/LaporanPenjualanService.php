@@ -161,4 +161,75 @@ class LaporanPenjualanService
             'bayarNantiList' => $bayarNantiList,
         ];
     }
+
+    public function rekapSemuaDataTanpaPagination($startDate, $endDate, $metode = 'ALL')
+    {
+        $cleanMetode = strtoupper(trim($metode));
+
+        // Query Produk Lunas (Cash / QRIS)
+        $queryProduk = DB::table('item_penjualan')
+            ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
+            ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
+            ->whereBetween('penjualan.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('penjualan.status', 'COMPLETED');
+
+        if ($cleanMetode && $cleanMetode !== 'ALL' && $cleanMetode !== 'BAYAR_NANTI') {
+            $queryProduk->where('penjualan.metode_pembayaran', $cleanMetode);
+        }
+
+        if ($cleanMetode === 'BAYAR_NANTI') {
+            $produkTerlaris = collect(); // Kosongkan jika filter khusus bayar nanti
+        } else {
+            $produkTerlaris = (clone $queryProduk)
+                ->groupBy('produk.id', 'produk.nama', 'produk.harga_jual', 'penjualan.id', 'penjualan.status', 'penjualan.metode_pembayaran')
+                ->select(
+                    'penjualan.id as penjualan_id',
+                    'penjualan.status as status_pesanan',
+                    'penjualan.metode_pembayaran',
+                    'produk.nama',
+                    'produk.harga_jual',
+                    DB::raw('SUM(item_penjualan.kuantitas) as total_terjual'),
+                    DB::raw('SUM(item_penjualan.subtotal) as total_pendapatan_produk')
+                )
+                ->orderByRaw("FIELD(penjualan.metode_pembayaran, 'CASH', 'QRIS') ASC")
+                ->orderByDesc('total_terjual')
+                ->get();
+        }
+
+        // Query Daftar Piutang (Bayar Nanti)
+        $queryBayarNanti = DB::table('item_penjualan')
+            ->join('penjualan', 'penjualan.id', '=', 'item_penjualan.penjualan_id')
+            ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
+            ->whereBetween('penjualan.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('penjualan.status', 'OPEN');
+
+        if ($cleanMetode && $cleanMetode !== 'ALL' && $cleanMetode !== 'CASH' && $cleanMetode !== 'QRIS') {
+            // Jika filter memilih bayar nanti
+            $queryBayarNanti->where('penjualan.metode_pembayaran', 'BAYAR_NANTI');
+        }
+
+        if ($cleanMetode === 'CASH' || $cleanMetode === 'QRIS') {
+            $bayarNantiList = collect(); // Kosongkan jika filter khusus lunas
+        } else {
+            $bayarNantiList = $queryBayarNanti
+                ->groupBy('produk.id', 'produk.nama', 'produk.harga_jual', 'penjualan.id', 'penjualan.status', 'penjualan.metode_pembayaran', 'penjualan.customer_name')
+                ->select(
+                    'penjualan.id as penjualan_id',
+                    'penjualan.status as status_pesanan',
+                    'penjualan.metode_pembayaran',
+                    'penjualan.customer_name',
+                    'produk.nama',
+                    'produk.harga_jual',
+                    DB::raw('SUM(item_penjualan.kuantitas) as total_terjual'),
+                    DB::raw('SUM(item_penjualan.subtotal) as total_pendapatan_produk')
+                )
+                ->orderByDesc('total_terjual')
+                ->get();
+        }
+
+        return [
+            'produkTerlaris' => $produkTerlaris,
+            'bayarNantiList' => $bayarNantiList,
+        ];
+    }
 }

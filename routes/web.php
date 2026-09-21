@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
 
     // Halaman Rekapitulasi (Dapat diakses semua user yang login)
     Route::get('/recap', [RekapController::class, 'index'])->name('recap.index');
+    Route::get('/recap/export', [RekapController::class, 'export'])->name('recap.export');
 
     // Grup manajemen user (khusus role admin)
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {

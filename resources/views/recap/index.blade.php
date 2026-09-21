@@ -47,34 +47,34 @@
     }
 
     /* Styling Khusus agar Pagination Responsif dan Bisa Digeser di Mobile */
-.recap-pagination-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    white-space: nowrap;
-    padding-bottom: 4px;
-}
-.recap-pagination-wrapper nav {
-    display: inline-block;
-}
-.recap-pagination-wrapper .pagination {
-    font-size: 0.8rem;
-    margin-bottom: 0;
-    display: inline-flex;
-    gap: 2px;
-}
-.recap-pagination-wrapper .page-link {
-    padding: 0.25rem 0.6rem;
-    color: #0d6efd;
-    border-radius: 4px;
-    border: 1px solid #dee2e6;
-}
-.recap-pagination-wrapper .page-item.active .page-link {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-}
+    .recap-pagination-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        padding-bottom: 4px;
+    }
+    .recap-pagination-wrapper nav {
+        display: inline-block;
+    }
+    .recap-pagination-wrapper .pagination {
+        font-size: 0.8rem;
+        margin-bottom: 0;
+        display: inline-flex;
+        gap: 2px;
+    }
+    .recap-pagination-wrapper .page-link {
+        padding: 0.25rem 0.6rem;
+        color: #0d6efd;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+    }
+    .recap-pagination-wrapper .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+    }
 </style>
 
 @php
@@ -95,17 +95,26 @@
             <input type="hidden" name="shortcut" id="shortcutInput" value="{{ $activeShortcut }}">
             
             <div class="row g-3 align-items-end mb-3">
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-4">
                     <label class="form-label small fw-semibold">Dari Tanggal</label>
                     <input type="date" name="start_date" id="startDate" class="form-control rounded-3" value="{{ $startDate }}">
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-4">
                     <label class="form-label small fw-semibold">Sampai Tanggal</label>
                     <input type="date" name="end_date" id="endDate" class="form-control rounded-3" value="{{ $endDate }}">
                 </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label small fw-semibold">Metode Pembayaran</label>
+                    <select name="metode" id="metodeSelect" class="form-select rounded-3">
+                        <option value="ALL" {{ ($metode ?? 'ALL') == 'ALL' ? 'selected' : '' }}>Semua Metode (All)</option>
+                        <option value="CASH" {{ ($metode ?? '') == 'CASH' ? 'selected' : '' }}>Cash (Tunai)</option>
+                        <option value="QRIS" {{ ($metode ?? '') == 'QRIS' ? 'selected' : '' }}>QRIS</option>
+                        <option value="BAYAR_NANTI" {{ ($metode ?? '') == 'BAYAR_NANTI' ? 'selected' : '' }}>Bayar Nanti (Piutang)</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 pt-2 border-top">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-stretch align-items-lg-center gap-3 pt-2 border-top">
                 <div class="d-grid d-flex flex-wrap gap-2">
                     <button type="button" class="btn btn-sm rounded-3 px-3 shortcut-btn flex-fill {{ $activeShortcut == 'hari_ini' ? 'active-shortcut' : '' }}" onclick="setPeriode('hari_ini')">1 Hari</button>
                     <button type="button" class="btn btn-sm rounded-3 px-3 shortcut-btn flex-fill {{ $activeShortcut == '1_minggu' ? 'active-shortcut' : '' }}" onclick="setPeriode('1_minggu')">1 Minggu</button>
@@ -113,9 +122,16 @@
                     <button type="button" class="btn btn-sm rounded-3 px-3 shortcut-btn flex-fill {{ $activeShortcut == '1_tahun' ? 'active-shortcut' : '' }}" onclick="setPeriode('1_tahun')">1 Tahun</button>
                 </div>
 
-                <button type="submit" class="btn btn-primary rounded-3 px-4 shadow-sm">
-                    <i class="bi bi-filter me-1"></i> Tampilkan Rekap
-                </button>
+                <div class="d-flex flex-wrap gap-2 justify-content-end">
+                    {{-- TOMBOL EXPORT EXCEL DINAMIS --}}
+                    <a href="#" id="exportExcelBtn" onclick="exportExcel(event)" class="btn btn-success rounded-3 px-3 shadow-sm d-flex align-items-center gap-1 text-white fw-semibold">
+                        <i class="bi bi-file-earmark-excel"></i> Export Excel (Sesuai Filter)
+                    </a>
+
+                    <button type="submit" class="btn btn-primary rounded-3 px-4 shadow-sm fw-semibold">
+                        <i class="bi bi-filter me-1"></i> Tampilkan Rekap
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -128,7 +144,7 @@
                 <h3 class="fw-bold text-primary fs-4 fs-md-3 mt-2 mb-0">
                     Rp {{ number_format($rekap['total_omset'], 0, ',', '.') }}
                 </h3>
-                <small class="text-muted mt-1">Periode: {{ $startDate }} s/d {{ $endDate }}</small>
+                <small class="text-muted mt-1">Periode: {{ $startDate }} s/d {{$endDate }}</small>
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-4">
@@ -169,7 +185,7 @@
                     <input type="text" class="form-control bg-light border-start-0 ps-0 shadow-none" name="search_lunas" placeholder="Cari produk lunas..." value="{{ request('search_lunas') }}" autocomplete="off">
                     <button class="btn btn-outline-primary px-3" type="submit">Cari</button>
                     @if(request('search_lunas'))
-                        <a href="{{ route('recap.index', ['start_date' => $startDate, 'end_date' => $endDate, 'search_piutang' => request('search_piutang')]) }}" class="btn btn-outline-secondary">Reset</a>
+                        <a href="{{ route('recap.index', ['start_date' => $startDate, 'end_date' =>$endDate, 'search_piutang' => request('search_piutang')]) }}" class="btn btn-outline-secondary">Reset</a>
                     @endif
                 </div>
             </form>
@@ -189,10 +205,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($rekap['produkTerlaris'] as $item)
+                    @forelse ($rekap['produkTerlaris'] as $item)
                     <tr>
                         <th scope="row" class="ps-3 py-3 text-muted fw-medium align-middle">
-                            {{ method_exists($rekap['produkTerlaris'], 'firstItem') ? $rekap['produkTerlaris']->firstItem() + $loop->index : $loop->iteration }}
+                            {{ method_exists($rekap['produkTerlaris'], 'firstItem') ?$rekap['produkTerlaris']->firstItem() + $loop->index :$loop->iteration }}
                         </th>
                         <td class="fw-semibold text-dark align-middle">
                             {{ $item->nama }}
@@ -264,7 +280,7 @@
                     <input type="text" class="form-control bg-light border-start-0 ps-0 shadow-none" name="search_piutang" placeholder="Cari pelanggan / produk..." value="{{ request('search_piutang') }}" autocomplete="off">
                     <button class="btn btn-outline-primary px-3" type="submit">Cari</button>
                     @if(request('search_piutang'))
-                        <a href="{{ route('recap.index', ['start_date' => $startDate, 'end_date' => $endDate, 'search_lunas' => request('search_lunas')]) }}" class="btn btn-outline-secondary">Reset</a>
+                        <a href="{{ route('recap.index', ['start_date' => $startDate, 'end_date' =>$endDate, 'search_lunas' => request('search_lunas')]) }}" class="btn btn-outline-secondary">Reset</a>
                     @endif
                 </div>
             </form>
@@ -285,10 +301,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($rekap['bayarNantiList'] ?? [] as $item)
+                    @forelse ($rekap['bayarNantiList'] ?? [] as $item)
                     <tr>
                         <th scope="row" class="ps-3 py-3 text-muted fw-medium align-middle">
-                            {{ method_exists($rekap['bayarNantiList'], 'firstItem') ? $rekap['bayarNantiList']->firstItem() + $loop->index : $loop->iteration }}
+                            {{ method_exists($rekap['bayarNantiList'], 'firstItem') ?$rekap['bayarNantiList']->firstItem() + $loop->index :$loop->iteration }}
                         </th>
                         <td class="fw-bold text-dark align-middle">
                             {{ $item->customer_name ?? '-' }}
@@ -386,6 +402,19 @@
 </div>
 
 <script>
+    // Fungsi agar Export Excel membaca input filter yang sedang dipilih
+    function exportExcel(event) {
+        event.preventDefault();
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const metode = document.getElementById('metodeSelect').value;
+
+        // Redirect ke route export dengan membawa parameter inputan aktif
+        const exportUrl = `{{ route('recap.export') }}?start_date=${startDate}&end_date=${endDate}&metode=${metode}`;
+        window.location.href = exportUrl;
+    }
+    
     function setPeriode(tipe) {
         const today = new Date();
         let start = new Date();
