@@ -16,7 +16,7 @@ class PenjualanController extends Controller
         $user = Auth::user();
         $keyword = $request->input('search');
 
-        $sales = Penjualan::with('user')
+        $sales = Penjualan::with(['user', 'itemPenjualan.produk']) 
             ->when(strtolower(optional($user->role)->name) === 'kasir', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
@@ -146,12 +146,14 @@ class PenjualanController extends Controller
         // Pastikan method view di policy mengizinkan, atau langsung load data tanpa batasan ketat 404
         $sale = $penjualan->load('itemPenjualan.produk', 'user');
         return view('penjualan.show', compact('sale'));
+        
     }
 
     public function update(Request $request, Penjualan $penjualan)
     {
+        
         $request->validate([
-            'payment_method' => 'required|in:CASH,QRIS,BAYAR_NANTI',
+            'payment_method' => 'required|in:CASH,QRIS,transfer,BAYAR_NANTI',
             'uang_dibayar' => 'nullable',
             'kembalian' => 'nullable',
             'customer_name' => 'required_if:payment_method,BAYAR_NANTI|nullable|string|max:255',

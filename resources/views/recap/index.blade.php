@@ -260,7 +260,8 @@
         @endif
     </div>
 
-    {{-- TABEL 2: KHUSUS PIUTANG / BAYAR NANTI --}}
+    {{-- TABEL 2: KHUSUS PIUTANG / BAYAR NANTI (Hanya muncul jika filter metode ALL atau BAYAR_NANTI) --}}
+    @if(($metode ?? 'ALL') === 'ALL' || ($metode ?? '') === 'BAYAR_NANTI')
     <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-3">
             <h5 class="fw-bold text-warning mb-0 fs-5 pe-2">
@@ -272,6 +273,7 @@
                 <input type="hidden" name="start_date" value="{{ $startDate }}">
                 <input type="hidden" name="end_date" value="{{ $endDate }}">
                 <input type="hidden" name="search_lunas" value="{{ request('search_lunas') }}">
+                <input type="hidden" name="metode" value="{{ $metode }}">
                 
                 <div class="input-group">
                     <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
@@ -280,7 +282,7 @@
                     <input type="text" class="form-control bg-light border-start-0 ps-0 shadow-none" name="search_piutang" placeholder="Cari pelanggan / produk..." value="{{ request('search_piutang') }}" autocomplete="off">
                     <button class="btn btn-outline-primary px-3" type="submit">Cari</button>
                     @if(request('search_piutang'))
-                        <a href="{{ route('recap.index', ['start_date' => $startDate, 'end_date' =>$endDate, 'search_lunas' => request('search_lunas')]) }}" class="btn btn-outline-secondary">Reset</a>
+                        <a href="{{ route('recap.index', ['start_date' => $startDate, 'end_date' => $endDate, 'search_lunas' => request('search_lunas'), 'metode' =>$metode]) }}" class="btn btn-outline-secondary">Reset</a>
                     @endif
                 </div>
             </form>
@@ -376,6 +378,7 @@
             </div>
         @endif
     </div>
+    @endif
 
 </div>
 

@@ -27,6 +27,12 @@ cara nyaa adalah
 9.php artisan serv
 10.npm run dev
 
+a
+                        @if($jumlahItem > 1)
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size: 0.7rem;">
+                                +{{ $jumlahItem - 1 }} produk lainnya
+                            </span>
+                        @endif
 
 cara menghapus data dummy
 

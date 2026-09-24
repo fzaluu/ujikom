@@ -61,7 +61,7 @@
                     <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
                         <i class="bi bi-search"></i>
                     </span>
-                    <input type="text" name="search" value="{{ request()->search }}" class="form-control bg-light border-start-0 ps-0 shadow-none" placeholder="Cari transaksi...">
+                    <input type="text" name="search" value="{{ request()->search }}" class="form-control bg-light border-start-0 ps-0 shadow-none" placeholder="Cari transaksi kasir...">
                     <button class="btn btn-outline-primary px-3" type="submit">Cari</button>
                     @if(request('search'))
                         <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary">Reset</a>
@@ -78,6 +78,7 @@
                         <th scope="col" width="5%" class="py-3 ps-3 rounded-start-3 align-middle">No</th>
                         <th scope="col" width="20%" class="py-3">Tanggal Transaksi</th>
                         <th scope="col" width="18%" class="py-3 align-middle">Kasir</th>
+                        <th scope="col" width="18%" class="py-3 align-middle">  Nama Produk</th>
                         <th scope="col" width="18%" class="py-3">Total Pembayaran</th>
                         <th scope="col" width="14%" class="py-3 align-middle">Metode</th>
                         <th scope="col" width="12%" class="py-3 align-middle">Status</th>
@@ -98,6 +99,24 @@
                                 <i class="bi bi-person me-1 text-muted"></i> {{ optional($sale->user)->name ?? 'Admin' }}
                             </span>
                         </td>
+
+                        <td class="fw-semibold text-dark">
+                        @php
+                            $itemPertama = $sale->itemPenjualan->first();
+                            $namaProduk = optional($itemPertama->produk)->nama ?? $itemPertama->nama_produk ?? '-';
+                            $jumlahItem = $sale->itemPenjualan->count();
+                        @endphp
+
+                        {{ $namaProduk }}
+
+                            @if($jumlahItem > 1)
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size: 0.7rem;">
+                                    +{{ $jumlahItem - 1 }} produk lainnya
+                                </span>
+                            @endif
+                    </td>
+
+
                         <td class="fw-bold text-success">
                             Rp {{ number_format($sale->total_pembayaran, 0, ',', '.') }}
                         </td>

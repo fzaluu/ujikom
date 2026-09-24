@@ -109,8 +109,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="button"
-                                                    class="btn btn-light btn-sm border text-danger shadow-none rounded-circle"
-                                                    style="width: 32px; height: 32px;"
+                                                    class="btn btn-light btn-sm border text-danger shadow-none rounded-circle px-2"
                                                     title="Hapus Item"
                                                     onclick="openDeleteModal('{{ $item->id }}', 'Apakah Anda yakin ingin menghapus item ini dari keranjang?')">
                                                 <i class="bi bi-trash"></i>
@@ -148,7 +147,8 @@
                                     <option value="">-- Pilih Metode Pembayaran --</option>
                                     <option value="CASH" {{ ($sale->metode_pembayaran ?? '') == 'CASH' ? 'selected' : '' }}>Cash (Tunai)</option>
                                     <option value="QRIS" {{ ($sale->metode_pembayaran ?? '') == 'QRIS' ? 'selected' : '' }}>QRIS</option>
-                                    <option value="BAYAR_NANTI" {{ ($sale->metode_pembayaran ?? '') == 'BAYAR NANTI' || ($sale->metode_pembayaran ?? '') == 'BAYAR_NANTI' ? 'selected' : '' }}>BAYAR NANTI</option>
+                                    <option value="transfer" {{ ($sale->metode_pembayaran ?? '') == 'transfer' ? 'selected' : '' }}>TRANSFER</option>
+                                    <option value="BAYAR_NANTI" {{ ($sale->metode_pembayaran ?? '') == 'BAYAR_NANTI' ? 'selected' : '' }}>BAYAR NANTI</option>
                                 </select>
                             </div>
 
@@ -160,6 +160,20 @@
                                     <p class="text-muted small mt-2 mb-0" style="font-size: 0.75rem;">Gunakan E-Wallet / M-Banking</p>
                                 </div>
                             </div>
+
+                            
+
+                            
+                            {{-- Transfer Container --}}
+                            <div id="transferContainer" class="mb-3 d-none">
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold text-muted mb-1">No. Rekening Tujuan</label>
+                                    <div class="p-2 bg-white rounded-3 border d-flex justify-content-between align-items-center">
+                                        <span class="small fw-semibold text-dark">1234-5678-9012 (BCA)</span>
+                                    </div>
+                                </div>                        
+                            </div>
+
 
                             {{-- Cash Input --}}
                             <div id="cashContainer" class="mb-3 d-none">
@@ -360,39 +374,49 @@
         }
 
         const paymentSelect        = document.getElementById('paymentMethodSelect');
-        const qrisContainer        = document.getElementById('qrisContainer');
-        const cashContainer        = document.getElementById('cashContainer');
-        const bayarNantiContainer  = document.getElementById('bayarNantiContainer');
-        const inputUangDibayar     = document.getElementById('inputUangDibayar');
-        const textKembalian        = document.getElementById('textKembalian');
-        const inputHiddenKembalian = document.getElementById('inputHiddenKembalian');
-        const checkoutBtnText      = document.getElementById('checkoutBtnText');
-        const uangError            = document.getElementById('uangError');
+const qrisContainer        = document.getElementById('qrisContainer');
+const transferContainer    = document.getElementById('transferContainer');
+const cashContainer        = document.getElementById('cashContainer');
+const bayarNantiContainer  = document.getElementById('bayarNantiContainer');
+const inputUangDibayar     = document.getElementById('inputUangDibayar');
+const textKembalian        = document.getElementById('textKembalian');
+const inputHiddenKembalian = document.getElementById('inputHiddenKembalian');
+const checkoutBtnText      = document.getElementById('checkoutBtnText');
+const uangError            = document.getElementById('uangError');
 
-        function updatePaymentUI() {
-            if (!paymentSelect) return;
+function updatePaymentUI() {
+    if (!paymentSelect) return;
 
-            const method = paymentSelect.value;
+    const method = paymentSelect.value;
 
-            qrisContainer?.classList.add('d-none');
-            cashContainer?.classList.add('d-none');
-            bayarNantiContainer?.classList.add('d-none');
-            uangError?.classList.add('d-none');
+    qrisContainer?.classList.add('d-none');
+    transferContainer?.classList.add('d-none');
+    cashContainer?.classList.add('d-none');
+    bayarNantiContainer?.classList.add('d-none');
+    uangError?.classList.add('d-none');
 
-            if (method === 'QRIS') {
-                qrisContainer?.classList.remove('d-none');
-                if (checkoutBtnText) checkoutBtnText.innerText = 'Checkout & Selesaikan';
-            } else if (method === 'CASH') {
-                cashContainer?.classList.remove('d-none');
-                if (checkoutBtnText) checkoutBtnText.innerText = 'Checkout & Selesaikan';
-                hitungKembalian();
-            } else if (method === 'BAYAR_NANTI') {
-                bayarNantiContainer?.classList.remove('d-none');
-                if (checkoutBtnText) checkoutBtnText.innerText = 'Simpan & Bayar Nanti';
-            } else {
-                if (checkoutBtnText) checkoutBtnText.innerText = 'Checkout & Selesaikan';
-            }
-        }
+    if (method === 'QRIS') {
+        qrisContainer?.classList.remove('d-none');
+        if (checkoutBtnText) checkoutBtnText.innerText = 'Checkout & Selesaikan';
+    } else if (method === 'transfer') {
+        transferContainer?.classList.remove('d-none');
+        if (checkoutBtnText) checkoutBtnText.innerText = 'Checkout & Selesaikan';
+    } else if (method === 'CASH') {
+        cashContainer?.classList.remove('d-none');
+        if (checkoutBtnText) checkoutBtnText.innerText = 'Checkout & Selesaikan';
+        if (typeof hitungKembalian === 'function') hitungKembalian();
+    } else if (method === 'BAYAR_NANTI') {
+        bayarNantiContainer?.classList.remove('d-none');
+        if (checkoutBtnText) checkoutBtnText.innerText = 'Simpan & Bayar Nanti';
+    } else {
+        if (checkoutBtnText) checkoutBtnText.innerText = 'Checkout & Selesaikan';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updatePaymentUI();
+    paymentSelect?.addEventListener('change', updatePaymentUI);
+});
 
         function hitungKembalian() {
             if (!inputUangDibayar || !textKembalian) return;

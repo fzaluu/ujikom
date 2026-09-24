@@ -3,7 +3,17 @@
 @section('title', 'Produk')
 
 @section('content')
+
+
 @php
+
+$colors = ['primary', 'success', 'warning', 'danger', 'info', 'dark'];
+        function getUserBadgeColor($userId, $colorList) {
+        if (!$userId) return 'secondary';
+        $index = $userId % count($colorList);
+        return $colorList[$index];
+    }
+
     $isAdmin = auth()->check() && (optional(auth()->user()->role)->name === 'admin' || auth()->user()->role_id == 1);
 @endphp
 <style>
@@ -126,8 +136,13 @@
                         </td>
 
                         <td>
-                            <span class="badge bg-light text-dark border px-2 py-1 fw-normal">
-                                <i class="bi bi-person me-1 text-muted"></i> {{ $product->user->name ?? '-' }}
+                            @php
+                                $userId = $product->user_id ?? optional($product->user)->id;
+                                $badgeColor = getUserBadgeColor($userId, $colors);
+                            @endphp
+
+                            <span class="badge bg-{{ $badgeColor }} bg-opacity-10 text-{{ $badgeColor }} border border-{{ $badgeColor }} border-opacity-25 px-2.5 py-1 fw-semibold">
+                                <i class="bi bi-person me-1"></i> {{ optional($product->user)->name ?? '-' }}
                             </span>
                         </td>
 

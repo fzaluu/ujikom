@@ -134,23 +134,27 @@
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="text-uppercase text-muted fs-7 fw-semibold mb-1">Metode Pembayaran</div>
-                    <div>
-                        @if($sale->metode_pembayaran === 'CASH')
-                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-cash-stack"></i> Cash (Tunai)
-                            </span>
-                        @elseif($sale->metode_pembayaran === 'QRIS')
-                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-qr-code-scan"></i> QRIS
-                            </span>
-                        @elseif($sale->metode_pembayaran === 'BAYAR_NANTI')
-                            <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-clock-history"></i> Bayar Nanti (Piutang)
-                            </span>
-                        @else
-                            <span class="text-muted fw-semibold">-</span>
-                        @endif
-                    </div>
+                        <div>
+                            @if($sale->metode_pembayaran === 'CASH')
+                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-cash-stack"></i> Cash (Tunai)
+                                </span>
+                            @elseif($sale->metode_pembayaran === 'QRIS')
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-qr-code-scan"></i> QRIS
+                                </span>
+                            @elseif($sale->metode_pembayaran === 'transfer')
+                                <span class="badge bg-info bg-opacity-10 text-info px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
+                                     Transfer Bank
+                                </span>
+                            @elseif($sale->metode_pembayaran === 'BAYAR_NANTI')
+                                <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1.5 rounded-pill fw-semibold d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-clock-history"></i> Bayar Nanti (Piutang)
+                                </span>
+                            @else
+                                <span class="text-muted fw-semibold">-</span>
+                            @endif
+                        </div>
                 </div> 
 
                 @if($sale->metode_pembayaran === 'CASH')
@@ -196,11 +200,12 @@
             </div>
             <div class="card-body p-3">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" style="min-width: 500px;">
+                    <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
                         <thead class="table-light text-uppercase fs-7 text-muted">
                             <tr>
                                 <th width="5%" class="py-3 ps-3 rounded-start">No</th>
                                 <th class="py-3">Nama Produk</th>
+                                <th class="py-3 text-center" style="width: 100px;">Foto</th> <!-- Kolom Foto Ditambahkan -->
                                 <th class="py-3">Harga Satuan</th>
                                 <th class="py-3">Jumlah</th>
                                 <th class="py-3 pe-3 rounded-end text-end">Subtotal</th>
@@ -209,7 +214,7 @@
                         <tbody>
                             @forelse ($sale->itemPenjualan as $item)
                             <tr>
-                                <td class="ps-3 py-3 text-muted">{{ $loop->iteration }}</td>
+                                <td class="ps-3 py-3 text-muted">{{ $loop->index + 1 }}</td>
                                 <td class="fw-semibold text-dark">
                                     {{ $item->nama_produk ?? optional($item->produk)->nama ?? 'Produk Tidak Diketahui' }}
                                     
@@ -219,28 +224,55 @@
                                         </span>
                                     @endif
                                 </td>
+                                    
+                                {{-- Kolom Tombol Foto & Thumbnail --}}
+                                <td class="text-center">
+                                    @php 
+                                        // Mengambil foto dari relasi produk atau fallback ke data item jika tersimpan
+                                        $fotoProduk = optional($item->produk)->foto ?? $item->foto ?? null;
+                                    @endphp
+
+                                    @if($fotoProduk)
+                                        <button type="button"
+                                            class="btn btn-link p-0 text-decoration-none"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#productImageModal"
+                                            data-image="{{ asset($fotoProduk) }}"
+                                            data-name="{{ $item->nama_produk ?? optional($item->produk)->nama ?? 'Produk' }}">
+                                            <img src="{{ asset($fotoProduk) }}" 
+                                                alt="Foto Produk" 
+                                                class="img-thumbnail rounded-3 shadow-sm border" 
+                                                style="width: 42px; height: 42px; object-fit: cover; transition: transform 0.2s;"
+                                                onmouseover="this.style.transform='scale(1.08)'"
+                                                onmouseout="this.style.transform='scale(1)'">
+                                        </button>
+                                    @else
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1" style="font-size: 0.75rem;">No Image</span>
+                                    @endif
+                                </td>
+
                                 <td class="text-muted small">Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                                 <td>{{ $item->kuantitas }} Unit</td>
                                 <td class="pe-3 fw-bold text-success text-end">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">Tidak ada item produk pada transaksi ini.</td>
+                                <td colspan="6" class="text-center py-4 text-muted">Tidak ada item produk pada transaksi ini.</td>
                             </tr>
                             @endforelse
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
-                                <th colspan="4" class="text-end py-3">Total Pembayaran:</th>
+                                <th colspan="5" class="text-end py-3">Total Pembayaran:</th>
                                 <th class="text-end py-3 text-success fs-5 pe-3">Rp {{ number_format($sale->total_pembayaran, 0, ',', '.') }}</th>
                             </tr>
                             @if($sale->metode_pembayaran === 'CASH')
                             <tr>
-                                <th colspan="4" class="text-end py-2">Tunai:</th>
+                                <th colspan="5" class="text-end py-2">Tunai:</th>
                                 <th class="text-end py-2 text-dark fs-6 pe-3">Rp {{ number_format($sale->uang_dibayar ?? 0, 0, ',', '.') }}</th>
                             </tr>
                             <tr>
-                                <th colspan="4" class="text-end py-2">Kembalian:</th>
+                                <th colspan="5" class="text-end py-2">Kembalian:</th>
                                 <th class="text-end py-2 text-success fs-6 pe-3">Rp {{ number_format($sale->kembalian ?? 0, 0, ',', '.') }}</th>
                             </tr>
                             @endif
@@ -263,6 +295,21 @@
             </div>
         @endif
 
+    </div>
+</div>
+
+{{-- Modal Pop-Up Preview Foto Produk --}}
+<div class="modal fade" id="productImageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold text-dark text-truncate pe-2">Preview Produk</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-3">
+                <img id="productImageModalSrc" src="" alt="Preview" class="img-fluid rounded-3 shadow-sm border" style="max-height: 300px; width: 100%; object-fit: contain;">
+            </div>
+        </div>
     </div>
 </div>
 
@@ -371,6 +418,24 @@
 </style>
 
 <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var productImageModal = document.getElementById('productImageModal');
+        if (productImageModal) {
+            productImageModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var imageSrc = button.getAttribute('data-image');
+                var imageName = button.getAttribute('data-name');
+
+                var modalTitle = productImageModal.querySelector('.modal-title');
+                var modalImage = document.getElementById('productImageModalSrc');
+
+                modalTitle.textContent = 'Produk: ' + imageName;
+                modalImage.src = imageSrc;
+                modalImage.alt = imageName;
+            });
+        }
+    });
     function handleLoading(element) {
         element.style.pointerEvents = 'none';
         element.style.opacity = '0.85';
