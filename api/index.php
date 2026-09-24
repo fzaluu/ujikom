@@ -16,5 +16,10 @@ foreach ($dirs as $dir) {
     }
 }
 
+// Pastikan file sqlite di /tmp tersedia jika digunakan
+if (!file_exists('/tmp/database.sqlite')) {
+    touch('/tmp/database.sqlite');
+}
+
 // Forward ke file utama Laravel
 require __DIR__ . '/../public/index.php';

@@ -2,7 +2,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "echo 'Assets pre-built'",
+        "build:vite": "vite build",
         "dev": "vite"
     },
     "devDependencies": {

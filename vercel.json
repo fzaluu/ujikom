@@ -1,6 +1,8 @@
 {
   "version": 2,
   "framework": null,
+  "buildCommand": "echo 'Assets pre-built'",
+  "installCommand": "echo 'No node dependencies needed in production'",
   "functions": {
     "api/index.php": {
       "runtime": "vercel-php@0.7.3"
@@ -31,6 +33,8 @@
     "VIEW_COMPILED_PATH": "/tmp/storage/framework/views",
     "CACHE_STORE": "array",
     "SESSION_DRIVER": "cookie",
-    "LOG_CHANNEL": "stderr"
+    "LOG_CHANNEL": "stderr",
+    "DB_CONNECTION": "sqlite",
+    "DB_DATABASE": "/tmp/database.sqlite"
   }
 }
