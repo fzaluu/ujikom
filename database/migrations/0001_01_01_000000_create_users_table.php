@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->fullText(['name', 'email']);
+            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+                $table->fullText(['name', 'email']);
+            }
             $table->rememberToken();
             $table->timestamps();
         });

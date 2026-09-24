@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('penjualans', function (Blueprint $table) {
+        Schema::table('penjualan', function (Blueprint $table) {
             $table->string('metode_pembayaran', 50)->default('CASH')->change();
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('penjualans', function (Blueprint $table) {
+        Schema::table('penjualan', function (Blueprint $table) {
             //
         });
     }
